@@ -1,9 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\QsoManager.Core\QsoManager.Core.csproj" />
     <ProjectReference Include="..\QsoManager.Domain\QsoManager.Domain.csproj" />
     <ProjectReference Include="..\QsoManager.Application\QsoManager.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="3.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.6" />
   </ItemGroup>
 
   <PropertyGroup>

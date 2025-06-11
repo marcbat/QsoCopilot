@@ -34,3 +34,15 @@ C:\repos\QsoCopliot\backend\QsoManager.Api\obj\Debug\net9.0\refint\QsoManager.Ap
 C:\repos\QsoCopliot\backend\QsoManager.Api\obj\Debug\net9.0\QsoManager.Api.pdb
 C:\repos\QsoCopliot\backend\QsoManager.Api\obj\Debug\net9.0\QsoManager.Api.genruntimeconfig.cache
 C:\repos\QsoCopliot\backend\QsoManager.Api\obj\Debug\net9.0\ref\QsoManager.Api.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\DnsClient.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\MediatR.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\MediatR.Contracts.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\MongoDB.Bson.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\MongoDB.Driver.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\SharpCompress.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\Snappier.dll
+c:\repos\QsoCopliot\backend\QsoManager.Api\bin\Debug\net9.0\ZstdSharp.dll

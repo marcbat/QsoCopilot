@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj": {}
+    "c:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj": {}
   },
   "projects": {
-    "C:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj": {
+    "c:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj",
+        "projectUniqueName": "c:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj",
         "projectName": "QsoManager.Domain",
-        "projectPath": "C:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj",
+        "projectPath": "c:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj",
         "packagesPath": "C:\\Users\\marcb\\.nuget\\packages\\",
-        "outputPath": "C:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\obj\\",
+        "outputPath": "c:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

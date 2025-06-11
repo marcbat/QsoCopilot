@@ -11,8 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\QsoManager.Core\QsoManager.Core.csproj" />
-    <ProjectReference Include="..\QsoManager.Data\QsoManager.Data.csproj" />
+    <ProjectReference Include="..\QsoManager.Domain\QsoManager.Domain.csproj" />
     <ProjectReference Include="..\QsoManager.Application\QsoManager.Application.csproj" />
     <ProjectReference Include="..\QsoManager.Infrastructure\QsoManager.Infrastructure.csproj" />
   </ItemGroup>

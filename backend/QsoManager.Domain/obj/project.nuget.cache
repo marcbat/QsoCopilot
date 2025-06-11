@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Dh/C8qIAZtU=",
+  "dgSpecHash": "7s3m7GbG5r4=",
   "success": true,
-  "projectFilePath": "C:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj",
+  "projectFilePath": "c:\\repos\\QsoCopliot\\backend\\QsoManager.Domain\\QsoManager.Domain.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\marcb\\.nuget\\packages\\languageext.core\\4.4.9\\languageext.core.4.4.9.nupkg.sha512",
     "C:\\Users\\marcb\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\7.0.0\\microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",

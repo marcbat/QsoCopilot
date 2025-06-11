@@ -17,20 +17,18 @@ public class QsoAggregateService : IQsoAggregateService
     public QsoAggregateService(IQsoAggregateRepository repository)
     {
         _repository = repository;
-    }
-
-    public async Task<Validation<Error, Unit>> ValidateUniqueNameAsync(string name, Guid? excludeId = null)
+    }    public async Task<Validation<Error, Unit>> ValidateUniqueNameAsync(string name, Guid? excludeId = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             return Error.New("Le nom ne peut pas être vide");
 
-        var existingResult = await _repository.GetByNameAsync(name);
+        var existsResult = await _repository.ExistsWithNameAsync(name);
         
-        return existingResult.Match(
-            aggregate => excludeId.HasValue && aggregate.Id == excludeId.Value
-                ? Success<Error, Unit>(unit)
-                : Fail<Error, Unit>(Error.New($"Un QSO Aggregate avec le nom '{name}' existe déjà")),
-            error => Success<Error, Unit>(unit) // Si pas trouvé, c'est OK
+        return existsResult.Match(
+            exists => exists 
+                ? Fail<Error, Unit>(Error.New($"Un QSO Aggregate avec le nom '{name}' existe déjà"))
+                : Success<Error, Unit>(unit),
+            error => Fail<Error, Unit>(error)
         );
     }
 }

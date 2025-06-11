@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("QsoManager.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5fd439e52a787801b60b7616ab9af04f7c659cb1")]
 [assembly: System.Reflection.AssemblyProductAttribute("QsoManager.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("QsoManager.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
