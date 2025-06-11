@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\QsoManager.Core\QsoManager.Core.csproj" />
+    <ProjectReference Include="..\QsoManager.Domain\QsoManager.Domain.csproj" />
+    <ProjectReference Include="..\QsoManager.Application\QsoManager.Application.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

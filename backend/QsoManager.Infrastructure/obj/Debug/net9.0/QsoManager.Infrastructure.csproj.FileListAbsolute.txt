@@ -1,0 +1,17 @@
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\bin\Debug\net9.0\QsoManager.Infrastructure.deps.json
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\bin\Debug\net9.0\QsoManager.Infrastructure.dll
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\bin\Debug\net9.0\QsoManager.Infrastructure.pdb
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\bin\Debug\net9.0\QsoManager.Application.dll
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\bin\Debug\net9.0\QsoManager.Domain.dll
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\bin\Debug\net9.0\QsoManager.Domain.pdb
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\bin\Debug\net9.0\QsoManager.Application.pdb
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\QsoManager.Infrastructure.csproj.AssemblyReference.cache
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\QsoManager.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\QsoManager.Infrastructure.AssemblyInfoInputs.cache
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\QsoManager.Infrastructure.AssemblyInfo.cs
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\QsoManager.Infrastructure.csproj.CoreCompileInputs.cache
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\QsoManag.E5E6270D.Up2Date
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\QsoManager.Infrastructure.dll
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\refint\QsoManager.Infrastructure.dll
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\QsoManager.Infrastructure.pdb
+C:\repos\QsoCopliot\backend\QsoManager.Infrastructure\obj\Debug\net9.0\ref\QsoManager.Infrastructure.dll

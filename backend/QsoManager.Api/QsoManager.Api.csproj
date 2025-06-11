@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QsoManager.Core\QsoManager.Core.csproj" />
+    <ProjectReference Include="..\QsoManager.Data\QsoManager.Data.csproj" />
+    <ProjectReference Include="..\QsoManager.Application\QsoManager.Application.csproj" />
+    <ProjectReference Include="..\QsoManager.Infrastructure\QsoManager.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
