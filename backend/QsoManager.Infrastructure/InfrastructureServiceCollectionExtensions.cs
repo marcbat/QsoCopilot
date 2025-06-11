@@ -5,7 +5,9 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using QsoManager.Application.Interfaces;
+using QsoManager.Application.Projections.Interfaces;
 using QsoManager.Domain.Repositories;
+using QsoManager.Infrastructure.Projections;
 using QsoManager.Infrastructure.Repositories;
 
 namespace QsoManager.Infrastructure;
@@ -27,6 +29,10 @@ public static class InfrastructureServiceCollectionExtensions
         // Repositories
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IQsoAggregateRepository, QsoAggregateRepository>();
+
+        // Projection repositories
+        services.AddScoped<IQsoAggregateProjectionRepository, QsoAggregateProjectionRepository>();
+        services.AddScoped<IMigrationRepository, MigrationRepository>();
 
         return services;
     }
