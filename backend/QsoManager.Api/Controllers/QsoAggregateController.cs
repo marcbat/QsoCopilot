@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using QsoManager.Application.Commands.QsoAggregate;
 using QsoManager.Application.DTOs;
+using QsoManager.Application.Queries.QsoAggregate;
 
 namespace QsoManager.Api.Controllers;
 
@@ -14,7 +15,9 @@ public class QsoAggregateController : ControllerBase
     private readonly IMediator _mediator;
     private readonly ILogger<QsoAggregateController> _logger;
 
-    public QsoAggregateController(IMediator mediator, ILogger<QsoAggregateController> logger)
+    public QsoAggregateController(
+        IMediator mediator, 
+        ILogger<QsoAggregateController> logger)
     {
         _mediator = mediator;
         _logger = logger;
@@ -120,6 +123,74 @@ public class QsoAggregateController : ControllerBase
         {
             _logger.LogError(ex, "Erreur lors du déplacement du participant");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });        }
+    }    /// <summary>
+    /// Récupère tous les QSO Aggregates
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<QsoAggregateDto>>> GetAll()
+    {
+        try
+        {
+            var query = new GetAllQsoAggregatesQuery();
+            var result = await _mediator.Send(query);
+
+            return result.Match<ActionResult<IEnumerable<QsoAggregateDto>>>(
+                qsos => Ok(qsos),
+                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la récupération de tous les QSO Aggregates");
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });
+        }
+    }
+
+    /// <summary>
+    /// Récupère un QSO Aggregate par ID
+    /// </summary>
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<QsoAggregateDto>> GetById(Guid id)
+    {
+        try
+        {
+            var query = new GetQsoAggregateByIdQuery(id);
+            var result = await _mediator.Send(query);
+
+            return result.Match<ActionResult<QsoAggregateDto>>(
+                qso => Ok(qso),
+                errors => NotFound(new { Message = $"QSO Aggregate with ID {id} not found" })
+            );        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la récupération du QSO Aggregate {Id}", id);
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });
+        }
+    }
+
+    /// <summary>
+    /// Recherche les QSO par nom
+    /// </summary>
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<QsoAggregateDto>>> SearchByName([FromQuery] string name)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return BadRequest(new { Message = "Name parameter is required" });
+            }
+
+            var query = new SearchQsoAggregatesByNameQuery(name);
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la recherche des QSO par nom {Name}", name);
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });
+        }
     }
 }
 

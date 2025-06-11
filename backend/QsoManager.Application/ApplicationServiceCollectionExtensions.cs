@@ -21,8 +21,8 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped<IReprojectionService, ReprojectionService>();
         services.AddScoped<ProjectionDispatcherService>();
         
-        // TODO: Add background service for automatic projection processing
-        // services.AddHostedService<QsoManager.Application.Projections.Services.ProjectionHostedService>();
+        // Background service for automatic projection processing
+        services.AddHostedService<QsoManager.Application.Projections.Services.ProjectionHostedService>();
 
         return services;
     }

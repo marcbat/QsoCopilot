@@ -29,22 +29,35 @@ public class MoveParticipantToPositionCommandHandler : BaseCommandHandler<MovePa
                 from updatedAggregate in aggregate.MoveParticipantToPosition(request.CallSign, request.NewPosition)
                 select updatedAggregate;
 
-            return await result.MatchAsync(
-                async aggregate =>
+            return await result.MatchAsync(                async aggregate =>
                 {
                     _logger.LogDebug("Participant '{CallSign}' déplacé avec succès vers la position {NewPosition} dans l'agrégat {AggregateId}", request.CallSign, request.NewPosition, request.AggregateId);
                     
-                    var saveResult = await _repository.SaveAsync(aggregate);
-                    return saveResult.Match(
-                        _ => 
+                    var eventsResult = aggregate.GetUncommittedChanges();
+                    return await eventsResult.MatchAsync(
+                        async events =>
                         {
-                            _logger.LogInformation("Participant '{CallSign}' déplacé avec succès vers la position {NewPosition} et agrégat {AggregateId} sauvegardé", request.CallSign, request.NewPosition, request.AggregateId);
-                            return Validation<Error, LanguageExt.Unit>.Success(LanguageExt.Unit.Default);
+                            var saveResult = await _repository.SaveAsync(aggregate);
+                            return saveResult.Match(
+                                _ => 
+                                {
+                                    // Dispatcher les événements pour les projections
+                                    DispatchEventsAsync(events, cancellationToken);
+                                    
+                                    _logger.LogInformation("Participant '{CallSign}' déplacé avec succès vers la position {NewPosition} et agrégat {AggregateId} sauvegardé", request.CallSign, request.NewPosition, request.AggregateId);
+                                    return Validation<Error, LanguageExt.Unit>.Success(LanguageExt.Unit.Default);
+                                },
+                                errors =>
+                                {
+                                    _logger.LogError("Erreur lors de la sauvegarde de l'agrégat {AggregateId} après déplacement du participant '{CallSign}': {Errors}", request.AggregateId, request.CallSign, string.Join(", ", errors.Select(e => e.Message)));
+                                    return Validation<Error, LanguageExt.Unit>.Fail(errors);
+                                }
+                            );
                         },
-                        errors =>
+                        errors => 
                         {
-                            _logger.LogError("Erreur lors de la sauvegarde de l'agrégat {AggregateId} après déplacement du participant '{CallSign}': {Errors}", request.AggregateId, request.CallSign, string.Join(", ", errors.Select(e => e.Message)));
-                            return Validation<Error, LanguageExt.Unit>.Fail(errors);
+                            _logger.LogError("Erreur lors de la récupération des événements pour l'agrégat {AggregateId}: {Errors}", request.AggregateId, string.Join(", ", errors.Select(e => e.Message)));
+                            return Task.FromResult(Validation<Error, LanguageExt.Unit>.Fail(errors));
                         }
                     );
                 },
