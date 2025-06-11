@@ -85,14 +85,14 @@ public class EventRepository : IEventRepository
             _logger.LogError(ex, "Impossible de sauvegarder les événements.");
             return Error.New("Impossible de sauvegarder les événements.", Error.New(ex.Message));
         }
-    }
-
-    public class EventData
+    }    public class EventData
     {
         [BsonId]
+        [BsonGuidRepresentation(GuidRepresentation.Standard)]
         public Guid Id { get; private set; }
 
         [BsonElement("aggregateId")]
+        [BsonGuidRepresentation(GuidRepresentation.Standard)]
         public Guid AggregateId { get; private set; }
 
         [BsonElement("version")]

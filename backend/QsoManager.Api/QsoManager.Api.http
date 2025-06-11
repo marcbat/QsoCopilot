@@ -1,6 +1,58 @@
-@QsoManager.Api_HostAddress = http://localhost:5041
+### QSO Manager API Tests
 
-GET {{QsoManager.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+# Créer un QSO Aggregate
+POST http://localhost:5041/api/QsoAggregate
+Content-Type: application/json
+
+{
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Test QSO Session",
+    "description": "Une session de test pour le QSO Manager"
+}
 
 ###
+
+# Ajouter un participant
+POST http://localhost:5041/api/QsoAggregate/550e8400-e29b-41d4-a716-446655440000/participants
+Content-Type: application/json
+
+{
+    "callSign": "F1ABC"
+}
+
+###
+
+# Ajouter un deuxième participant
+POST http://localhost:5041/api/QsoAggregate/550e8400-e29b-41d4-a716-446655440000/participants
+Content-Type: application/json
+
+{
+    "callSign": "F4XYZ"
+}
+
+###
+
+# Supprimer un participant
+DELETE http://localhost:5041/api/QsoAggregate/550e8400-e29b-41d4-a716-446655440000/participants/F1ABC
+
+###
+
+# Réordonner les participants
+PUT http://localhost:5041/api/QsoAggregate/550e8400-e29b-41d4-a716-446655440000/participants/reorder
+Content-Type: application/json
+
+{
+    "newOrders": {
+        "F4XYZ": 1
+    }
+}
+
+###
+
+# Déplacer un participant
+PUT http://localhost:5041/api/QsoAggregate/550e8400-e29b-41d4-a716-446655440000/participants/F4XYZ/move
+Content-Type: application/json
+
+{
+    "newPosition": 2
+}
