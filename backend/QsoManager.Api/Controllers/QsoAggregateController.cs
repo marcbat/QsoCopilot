@@ -123,26 +123,6 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors du déplacement du participant");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });        }
     }
-
-    [HttpPut("{aggregateId:guid}/moderator")]
-    public async Task<ActionResult> AssignModerator(Guid aggregateId, [FromBody] AssignModeratorRequest request)
-    {
-        try
-        {
-            var command = new AssignModeratorCommand(aggregateId, request.ModeratorId);
-            var result = await _mediator.Send(command);
-
-            return result.Match<ActionResult>(
-                _ => NoContent(),
-                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erreur lors de l'assignation du modérateur");
-            return StatusCode(500, new { Message = "Erreur interne du serveur" });
-        }
-    }
 }
 
 // Health Check Controller
@@ -166,4 +146,3 @@ public record CreateQsoAggregateRequest(Guid? Id, string Name, string Descriptio
 public record AddParticipantRequest(string CallSign);
 public record ReorderParticipantsRequest(Dictionary<string, int> NewOrders);
 public record MoveParticipantRequest(int NewPosition);
-public record AssignModeratorRequest(Guid ModeratorId);

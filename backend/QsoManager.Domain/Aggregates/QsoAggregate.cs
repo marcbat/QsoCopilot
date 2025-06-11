@@ -7,14 +7,12 @@ using static LanguageExt.Prelude;
 namespace QsoManager.Domain.Aggregates;
 
 public class QsoAggregate : AggregateRoot
-{
-    public static class Events
+{    public static class Events
     {
         public record Created(Guid AggregateId, DateTime DateEvent, string Name, string Description, Guid ModeratorId) : Event(AggregateId, DateEvent);
         public record ParticipantAdded(Guid AggregateId, DateTime DateEvent, string CallSign, int Order) : Event(AggregateId, DateEvent);
         public record ParticipantRemoved(Guid AggregateId, DateTime DateEvent, string CallSign) : Event(AggregateId, DateEvent);
         public record ParticipantsReordered(Guid AggregateId, DateTime DateEvent, Dictionary<string, int> NewOrders) : Event(AggregateId, DateEvent);
-        public record ModeratorAssigned(Guid AggregateId, DateTime DateEvent, Guid ModeratorId) : Event(AggregateId, DateEvent);
     }
 
     internal readonly List<Participant> _participants = [];
@@ -163,29 +161,17 @@ public class QsoAggregate : AggregateRoot
                 }
                 newOrders[p.CallSign] = adjustedPosition;
             }
-        }
-
-        return ReorderParticipants(newOrders);
-    }
-
-    // Assigner un modérateur (remplace le modérateur actuel)
-    public Validation<Error, QsoAggregate> AssignModerator(Guid moderatorId)
-    {
-        return ValidateId(moderatorId)
-            .Bind(vModeratorId => Apply(new Events.ModeratorAssigned(Id, DateTime.Now, vModeratorId)))
-            .Map(x => this);
+        }        return ReorderParticipants(newOrders);
     }
 
     // Application des événements (méthode requise par AggregateRoot)
     protected override Validation<Error, Event> When(IEvent @event)
-    {
-        return @event switch
+    {        return @event switch
         {
             Events.Created e => QsoAggregateCreatedEventHandler(e),
             Events.ParticipantAdded e => ParticipantAddedEventHandler(e),
             Events.ParticipantRemoved e => ParticipantRemovedEventHandler(e),
             Events.ParticipantsReordered e => ParticipantsReorderedEventHandler(e),
-            Events.ModeratorAssigned e => ModeratorAssignedEventHandler(e),
             _ => Error.New($"Event type {@event.GetType().Name} is not supported")
         };
     }
@@ -237,12 +223,5 @@ public class QsoAggregate : AggregateRoot
                 _participants.Add(new Participant(participant.CallSign, newOrder));
             }
         }
-        return Success<Error, Event>(e);
-    }
-
-    private Validation<Error, Event> ModeratorAssignedEventHandler(Events.ModeratorAssigned e)
-    {
-        ModeratorId = e.ModeratorId;
-        return Success<Error, Event>(e);
-    }
+        return Success<Error, Event>(e);    }
 }
