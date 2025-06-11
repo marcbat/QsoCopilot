@@ -7,12 +7,14 @@ using static LanguageExt.Prelude;
 namespace QsoManager.Domain.Aggregates;
 
 public class QsoAggregate : AggregateRoot
-{    public static class Events
+{
+    public static class Events
     {
-        public record Created(Guid AggregateId, DateTime DateEvent, string Name, string Description) : Event(AggregateId, DateEvent);
+        public record Created(Guid AggregateId, DateTime DateEvent, string Name, string Description, Guid ModeratorId) : Event(AggregateId, DateEvent);
         public record ParticipantAdded(Guid AggregateId, DateTime DateEvent, string CallSign, int Order) : Event(AggregateId, DateEvent);
         public record ParticipantRemoved(Guid AggregateId, DateTime DateEvent, string CallSign) : Event(AggregateId, DateEvent);
         public record ParticipantsReordered(Guid AggregateId, DateTime DateEvent, Dictionary<string, int> NewOrders) : Event(AggregateId, DateEvent);
+        public record ModeratorAssigned(Guid AggregateId, DateTime DateEvent, Guid ModeratorId) : Event(AggregateId, DateEvent);
     }
 
     internal readonly List<Participant> _participants = [];
@@ -21,17 +23,20 @@ public class QsoAggregate : AggregateRoot
     {
     }
 
-    internal QsoAggregate(Guid id, string name, string description) : base(id)
+    internal QsoAggregate(Guid id, string name, string description, Guid moderatorId) : base(id)
     {
         Name = name;
         Description = description;
+        ModeratorId = moderatorId;
     }
 
-    protected static Validation<Error, QsoAggregate> Create() => new QsoAggregate();    public static Validation<Error, QsoAggregate> Create(Guid id, string name, string description)
+    protected static Validation<Error, QsoAggregate> Create() => new QsoAggregate();
+
+    public static Validation<Error, QsoAggregate> Create(Guid id, string name, string description, Guid moderatorId)
     {
-        return (ValidateId(id), ValidateName(name), ValidateDescription(description))
-            .Apply((vid, vname, vdesc) => new QsoAggregate(vid, vname, vdesc))
-            .Bind(aggregate => aggregate.Apply(new Events.Created(id, DateTime.Now, name, description))
+        return (ValidateId(id), ValidateName(name), ValidateDescription(description), ValidateId(moderatorId))
+            .Apply((vid, vname, vdesc, vModeratorId) => new QsoAggregate(vid, vname, vdesc, vModeratorId))
+            .Bind(aggregate => aggregate.Apply(new Events.Created(id, DateTime.Now, name, description, moderatorId))
                 .Map(_ => aggregate));
     }
 
@@ -44,6 +49,7 @@ public class QsoAggregate : AggregateRoot
 
     public string Name { get; protected set; } = string.Empty;
     public string Description { get; protected set; } = string.Empty;
+    public Guid ModeratorId { get; protected set; }
     public IReadOnlyList<Participant> Participants => _participants.AsReadOnly();
 
     protected static Validation<Error, string> ValidateName(string name)
@@ -78,7 +84,9 @@ public class QsoAggregate : AggregateRoot
         return ValidateCallSign(callSign)
             .Bind(vCallSign => Apply(new Events.ParticipantAdded(Id, DateTime.Now, vCallSign, nextOrder)))
             .Map(x => this);
-    }    // Supprimer un participant
+    }
+
+    // Supprimer un participant
     public Validation<Error, QsoAggregate> RemoveParticipant(string callSign)
     {
         var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
@@ -111,7 +119,9 @@ public class QsoAggregate : AggregateRoot
 
         return Apply(new Events.ParticipantsReordered(Id, DateTime.Now, newOrders))
             .Map(x => this);
-    }    // Méthode pour déplacer un participant à une position spécifique
+    }
+
+    // Méthode pour déplacer un participant à une position spécifique
     public Validation<Error, QsoAggregate> MoveParticipantToPosition(string callSign, int newPosition)
     {
         var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
@@ -156,7 +166,17 @@ public class QsoAggregate : AggregateRoot
         }
 
         return ReorderParticipants(newOrders);
-    }// Application des événements (méthode requise par AggregateRoot)
+    }
+
+    // Assigner un modérateur (remplace le modérateur actuel)
+    public Validation<Error, QsoAggregate> AssignModerator(Guid moderatorId)
+    {
+        return ValidateId(moderatorId)
+            .Bind(vModeratorId => Apply(new Events.ModeratorAssigned(Id, DateTime.Now, vModeratorId)))
+            .Map(x => this);
+    }
+
+    // Application des événements (méthode requise par AggregateRoot)
     protected override Validation<Error, Event> When(IEvent @event)
     {
         return @event switch
@@ -165,6 +185,7 @@ public class QsoAggregate : AggregateRoot
             Events.ParticipantAdded e => ParticipantAddedEventHandler(e),
             Events.ParticipantRemoved e => ParticipantRemovedEventHandler(e),
             Events.ParticipantsReordered e => ParticipantsReorderedEventHandler(e),
+            Events.ModeratorAssigned e => ModeratorAssignedEventHandler(e),
             _ => Error.New($"Event type {@event.GetType().Name} is not supported")
         };
     }
@@ -174,12 +195,17 @@ public class QsoAggregate : AggregateRoot
         Id = e.AggregateId;
         Name = e.Name;
         Description = e.Description;
+        ModeratorId = e.ModeratorId;
         return Success<Error, Event>(e);
-    }    private Validation<Error, Event> ParticipantAddedEventHandler(Events.ParticipantAdded e)
+    }
+
+    private Validation<Error, Event> ParticipantAddedEventHandler(Events.ParticipantAdded e)
     {
         _participants.Add(new Participant(e.CallSign, e.Order));
         return Success<Error, Event>(e);
-    }    private Validation<Error, Event> ParticipantRemovedEventHandler(Events.ParticipantRemoved e)
+    }
+
+    private Validation<Error, Event> ParticipantRemovedEventHandler(Events.ParticipantRemoved e)
     {
         var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(e.CallSign, StringComparison.OrdinalIgnoreCase));
         if (participant is not null)
@@ -211,6 +237,12 @@ public class QsoAggregate : AggregateRoot
                 _participants.Add(new Participant(participant.CallSign, newOrder));
             }
         }
+        return Success<Error, Event>(e);
+    }
+
+    private Validation<Error, Event> ModeratorAssignedEventHandler(Events.ModeratorAssigned e)
+    {
+        ModeratorId = e.ModeratorId;
         return Success<Error, Event>(e);
     }
 }

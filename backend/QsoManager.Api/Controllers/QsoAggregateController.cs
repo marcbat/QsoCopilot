@@ -24,11 +24,11 @@ public class QsoAggregateController : ControllerBase
     public async Task<ActionResult<QsoAggregateDto>> Create([FromBody] CreateQsoAggregateRequest request)
     {
         try
-        {
-            var command = new CreateQsoAggregateCommand(
+        {            var command = new CreateQsoAggregateCommand(
                 request.Id ?? Guid.NewGuid(),
                 request.Name,
-                request.Description
+                request.Description,
+                request.ModeratorId
             );
 
             var result = await _mediator.Send(command);
@@ -121,6 +121,25 @@ public class QsoAggregateController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors du déplacement du participant");
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });        }
+    }
+
+    [HttpPut("{aggregateId:guid}/moderator")]
+    public async Task<ActionResult> AssignModerator(Guid aggregateId, [FromBody] AssignModeratorRequest request)
+    {
+        try
+        {
+            var command = new AssignModeratorCommand(aggregateId, request.ModeratorId);
+            var result = await _mediator.Send(command);
+
+            return result.Match<ActionResult>(
+                _ => NoContent(),
+                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de l'assignation du modérateur");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
     }
@@ -143,7 +162,8 @@ public class HealthController : ControllerBase
 }
 
 // DTOs pour les requêtes
-public record CreateQsoAggregateRequest(Guid? Id, string Name, string Description);
+public record CreateQsoAggregateRequest(Guid? Id, string Name, string Description, Guid ModeratorId);
 public record AddParticipantRequest(string CallSign);
 public record ReorderParticipantsRequest(Dictionary<string, int> NewOrders);
 public record MoveParticipantRequest(int NewPosition);
+public record AssignModeratorRequest(Guid ModeratorId);

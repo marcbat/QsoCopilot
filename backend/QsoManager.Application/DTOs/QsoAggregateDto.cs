@@ -9,5 +9,6 @@ public record QsoAggregateDto(
     Guid Id,
     string Name,
     string Description,
+    Guid ModeratorId,
     IReadOnlyList<ParticipantDto> Participants
 );

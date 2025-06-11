@@ -5,13 +5,13 @@ using QsoManager.Domain.Entities;
 namespace QsoManager.Application.Mappers;
 
 public static class QsoAggregateMapper
-{
-    public static QsoAggregateDto ToDto(this QsoAggregate aggregate)
+{    public static QsoAggregateDto ToDto(this QsoAggregate aggregate)
     {
         return new QsoAggregateDto(
             aggregate.Id,
             aggregate.Name,
             aggregate.Description,
+            aggregate.ModeratorId,
             aggregate.Participants.Select(p => p.ToDto()).ToList().AsReadOnly()
         );
     }

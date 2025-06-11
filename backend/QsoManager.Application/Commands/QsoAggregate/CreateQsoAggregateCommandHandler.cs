@@ -31,13 +31,11 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler, ICommandHand
     {
         try
         {
-            _logger.LogInformation("Exécution du handler de la commande CreateQsoAggregateCommand");
-
-            var nameValidation = await _domainService.ValidateUniqueNameAsync(request.Name);
+            _logger.LogInformation("Exécution du handler de la commande CreateQsoAggregateCommand");            var nameValidation = await _domainService.ValidateUniqueNameAsync(request.Name);
             
             var aggregateResult = 
                 from _ in nameValidation
-                from aggregate in Domain.Aggregates.QsoAggregate.Create(request.Id, request.Name, request.Description)
+                from aggregate in Domain.Aggregates.QsoAggregate.Create(request.Id, request.Name, request.Description, request.ModeratorId)
                 select aggregate;
 
             return await aggregateResult.MatchAsync(
@@ -54,9 +52,8 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler, ICommandHand
                                     DispatchEventsAsync(events, cancellationToken);
                                     var participantDtos = aggregate.Participants
                                         .Select(p => new ParticipantDto(p.CallSign, p.Order))
-                                        .ToArray();
-                                    return Validation<Error, QsoAggregateDto>.Success(
-                                        new QsoAggregateDto(aggregate.Id, aggregate.Name, aggregate.Description, participantDtos));
+                                        .ToArray();                                return Validation<Error, QsoAggregateDto>.Success(
+                                        new QsoAggregateDto(aggregate.Id, aggregate.Name, aggregate.Description, aggregate.ModeratorId, participantDtos));
                                 },
                                 errors => Validation<Error, QsoAggregateDto>.Fail(errors)
                             );
