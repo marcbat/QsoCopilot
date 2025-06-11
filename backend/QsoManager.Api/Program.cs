@@ -55,3 +55,6 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+// Rendre la classe Program accessible pour les tests d'intégration
+public partial class Program { }

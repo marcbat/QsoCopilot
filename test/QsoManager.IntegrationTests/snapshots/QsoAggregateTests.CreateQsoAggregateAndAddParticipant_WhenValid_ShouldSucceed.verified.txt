@@ -1,0 +1,10 @@
+﻿{
+  CreateResponse: {
+    StatusCode: 200,
+    Content: {"id":"5657022f-7dcf-486c-82c6-32a84c6fe192","name":"QSO avec Participants","description":"QSO pour tester l'ajout de participants","moderatorId":"c6476112-2153-4cb7-be5f-3d5cf0ce87bc","participants":[]}
+  },
+  AddParticipantResponse: {
+    StatusCode: 204,
+    Content: 
+  }
+}

@@ -1,0 +1,14 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      id: Guid_1,
+      name: QSO Duplicate Test,
+      description: Deuxième QSO avec le même nom,
+      moderatorId: Guid_2
+    }
+  }
+}
