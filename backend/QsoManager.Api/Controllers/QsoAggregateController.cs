@@ -43,18 +43,16 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors de la création du QSO Aggregate");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
-    }
-
-    [HttpPost("{aggregateId:guid}/participants")]
-    public async Task<ActionResult> AddParticipant(Guid aggregateId, [FromBody] AddParticipantRequest request)
+    }    [HttpPost("{aggregateId:guid}/participants")]
+    public async Task<ActionResult<QsoAggregateDto>> AddParticipant(Guid aggregateId, [FromBody] AddParticipantRequest request)
     {
         try
         {
             var command = new AddParticipantCommand(aggregateId, request.CallSign);
             var result = await _mediator.Send(command);
 
-            return result.Match<ActionResult>(
-                _ => NoContent(),
+            return result.Match<ActionResult<QsoAggregateDto>>(
+                qsoDto => Ok(qsoDto),
                 errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
             );
         }

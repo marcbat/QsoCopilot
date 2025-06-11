@@ -94,9 +94,7 @@ public class QsoAggregateTests : BaseIntegrationTest
 
         // Assert
         await Verify(response, _verifySettings);
-    }
-
-    [Fact]
+    }    [Fact]
     public async Task CreateQsoAggregateAndAddParticipant_WhenValid_ShouldSucceed()
     {
         // Arrange
@@ -116,7 +114,7 @@ public class QsoAggregateTests : BaseIntegrationTest
         var jsonDoc = JsonDocument.Parse(createResponseContent);
         var qsoId = jsonDoc.RootElement.GetProperty("id").GetGuid();
 
-        // Ajouter un participant
+        // Ajouter un participant - l'endpoint retourne maintenant le QSO complet
         var addParticipantRequest = new
         {
             CallSign = "F1ABC"
@@ -124,21 +122,7 @@ public class QsoAggregateTests : BaseIntegrationTest
 
         var addParticipantResponse = await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", addParticipantRequest);
 
-        // Assert
-        var combinedResult = new
-        {
-            CreateResponse = new
-            {
-                StatusCode = (int)createResponse.StatusCode,
-                Content = createResponseContent
-            },
-            AddParticipantResponse = new
-            {
-                StatusCode = (int)addParticipantResponse.StatusCode,
-                Content = await addParticipantResponse.Content.ReadAsStringAsync()
-            }
-        };
-
-        await Verify(combinedResult, _verifySettings);
+        // Assert - Vérifier que l'ajout du participant retourne le QSO complet avec la liste des participants
+        await Verify(addParticipantResponse, _verifySettings);
     }
 }

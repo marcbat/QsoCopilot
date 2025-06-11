@@ -1,10 +1,20 @@
 ﻿{
-  CreateResponse: {
-    StatusCode: 200,
-    Content: {"id":"d97de317-719b-49fe-8fcf-3f480fe97570","name":"QSO avec Participants","description":"QSO pour tester l'ajout de participants","moderatorId":"74103bc9-0c09-4746-802a-01582b9c4f69","participants":[]}
-  },
-  AddParticipantResponse: {
-    StatusCode: 204,
-    Content: 
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      id: Guid_1,
+      name: QSO avec Participants,
+      description: QSO pour tester l'ajout de participants,
+      moderatorId: Guid_2,
+      participants: [
+        {
+          callSign: F1ABC,
+          order: 1
+        }
+      ]
+    }
   }
 }
