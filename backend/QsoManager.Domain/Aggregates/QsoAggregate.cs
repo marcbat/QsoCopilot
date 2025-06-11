@@ -7,60 +7,12 @@ using static LanguageExt.Prelude;
 namespace QsoManager.Domain.Aggregates;
 
 public class QsoAggregate : AggregateRoot
-{
-    public static class Events
+{    public static class Events
     {
-        public class Created : Event
-        {
-            public override string EventType => nameof(Created);
-            public string Name { get; }
-            public string Description { get; }
-
-            public Created(Guid aggregateId, DateTime dateEvent, string name, string description) 
-                : base(aggregateId, dateEvent)
-            {
-                Name = name;
-                Description = description;
-            }
-        }
-
-        public class ParticipantAdded : Event
-        {
-            public override string EventType => nameof(ParticipantAdded);
-            public string CallSign { get; }
-            public int Order { get; }
-
-            public ParticipantAdded(Guid aggregateId, DateTime dateEvent, string callSign, int order) 
-                : base(aggregateId, dateEvent)
-            {
-                CallSign = callSign;
-                Order = order;
-            }
-        }
-
-        public class ParticipantRemoved : Event
-        {
-            public override string EventType => nameof(ParticipantRemoved);
-            public string CallSign { get; }
-
-            public ParticipantRemoved(Guid aggregateId, DateTime dateEvent, string callSign) 
-                : base(aggregateId, dateEvent)
-            {
-                CallSign = callSign;
-            }
-        }
-
-        public class ParticipantsReordered : Event
-        {
-            public override string EventType => nameof(ParticipantsReordered);
-            public Dictionary<string, int> NewOrders { get; }
-
-            public ParticipantsReordered(Guid aggregateId, DateTime dateEvent, Dictionary<string, int> newOrders) 
-                : base(aggregateId, dateEvent)
-            {
-                NewOrders = newOrders;
-            }
-        }
+        public record Created(Guid AggregateId, DateTime DateEvent, string Name, string Description) : Event(AggregateId, DateEvent);
+        public record ParticipantAdded(Guid AggregateId, DateTime DateEvent, string CallSign, int Order) : Event(AggregateId, DateEvent);
+        public record ParticipantRemoved(Guid AggregateId, DateTime DateEvent, string CallSign) : Event(AggregateId, DateEvent);
+        public record ParticipantsReordered(Guid AggregateId, DateTime DateEvent, Dictionary<string, int> NewOrders) : Event(AggregateId, DateEvent);
     }
 
     internal readonly List<Participant> _participants = [];
@@ -126,13 +78,11 @@ public class QsoAggregate : AggregateRoot
         return ValidateCallSign(callSign)
             .Bind(vCallSign => Apply(new Events.ParticipantAdded(Id, DateTime.Now, vCallSign, nextOrder)))
             .Map(x => this);
-    }
-
-    // Supprimer un participant
+    }    // Supprimer un participant
     public Validation<Error, QsoAggregate> RemoveParticipant(string callSign)
     {
         var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
-        if (participant == null)
+        if (participant is null)
             return Error.New($"Le participant avec l'indicatif {callSign} n'existe pas");
 
         return ValidateCallSign(callSign)
@@ -165,7 +115,7 @@ public class QsoAggregate : AggregateRoot
     public Validation<Error, QsoAggregate> MoveParticipantToPosition(string callSign, int newPosition)
     {
         var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
-        if (participant == null)
+        if (participant is null)
             return Error.New($"Le participant avec l'indicatif {callSign} n'existe pas");
 
         if (newPosition < 1 || newPosition > _participants.Count)
@@ -229,12 +179,10 @@ public class QsoAggregate : AggregateRoot
     {
         _participants.Add(new Participant(e.CallSign, e.Order));
         return Success<Error, Event>(e);
-    }
-
-    private Validation<Error, Event> ParticipantRemovedEventHandler(Events.ParticipantRemoved e)
+    }    private Validation<Error, Event> ParticipantRemovedEventHandler(Events.ParticipantRemoved e)
     {
         var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(e.CallSign, StringComparison.OrdinalIgnoreCase));
-        if (participant != null)
+        if (participant is not null)
         {
             _participants.Remove(participant);
             
