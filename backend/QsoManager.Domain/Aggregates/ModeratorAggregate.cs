@@ -7,7 +7,7 @@ namespace QsoManager.Domain.Aggregates;
 
 public class ModeratorAggregate : AggregateRoot
 {
-    public static class Events
+    public static class Events : object
     {
         public record Created(Guid AggregateId, DateTime DateEvent, string CallSign) : Event(AggregateId, DateEvent);
         public record CallSignUpdated(Guid AggregateId, DateTime DateEvent, string NewCallSign) : Event(AggregateId, DateEvent);
