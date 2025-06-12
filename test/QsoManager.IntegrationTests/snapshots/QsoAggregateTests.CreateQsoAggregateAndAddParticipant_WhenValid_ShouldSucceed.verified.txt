@@ -16,7 +16,9 @@
           country: null,
           name: null
         }
-      ]
+      ],
+      startDateTime: null,
+      createdDate: null
     }
   }
 }

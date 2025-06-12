@@ -12,5 +12,7 @@ public record QsoAggregateDto(
     string Name,
     string Description,
     Guid ModeratorId,
-    IReadOnlyList<ParticipantDto> Participants
+    IReadOnlyList<ParticipantDto> Participants,
+    DateTime? StartDateTime = null,
+    DateTime? CreatedDate = null
 );

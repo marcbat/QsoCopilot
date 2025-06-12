@@ -8,7 +8,9 @@
       id: Guid_1,
       name: QSO Test Integration,
       description: QSO créé pour les tests d'intégration,
-      moderatorId: Guid_2
+      moderatorId: Guid_2,
+      startDateTime: null,
+      createdDate: null
     }
   }
 }

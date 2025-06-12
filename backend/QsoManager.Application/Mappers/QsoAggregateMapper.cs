@@ -12,9 +12,11 @@ public static class QsoAggregateMapper
             aggregate.Name,
             aggregate.Description,
             aggregate.ModeratorId,
-            aggregate.Participants.Select(p => p.ToDto()).ToList().AsReadOnly()
+            aggregate.Participants.Select(p => p.ToDto()).ToList().AsReadOnly(),
+            aggregate.StartDateTime,
+            aggregate.CreatedDate
         );
-    }    public static ParticipantDto ToDto(this Participant participant)
+    }public static ParticipantDto ToDto(this Participant participant)
     {
         return new ParticipantDto(
             participant.CallSign,

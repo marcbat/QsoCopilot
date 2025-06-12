@@ -8,7 +8,9 @@
       id: Guid_1,
       name: QSO Test GetById,
       description: QSO pour tester GetById,
-      moderatorId: Guid_2
+      moderatorId: Guid_2,
+      startDateTime: null,
+      createdDate: null
     }
   }
 }
