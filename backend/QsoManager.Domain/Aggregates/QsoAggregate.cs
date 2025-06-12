@@ -162,6 +162,62 @@ public class QsoAggregate : AggregateRoot
                 newOrders[p.CallSign] = adjustedPosition;
             }
         }        return ReorderParticipants(newOrders);
+    }    // Mettre à jour le pays d'un participant
+    public Validation<Error, QsoAggregate> UpdateParticipantCountry(string callSign, string? country)
+    {
+        var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
+        if (participant is null)
+            return Error.New($"Le participant avec l'indicatif {callSign} n'existe pas");
+
+        return ValidateCallSign(callSign)
+            .Bind(vCallSign => participant.UpdateCountry(Id, country)
+                .Match(
+                    evt => Apply(evt).Map(_ => this),
+                    () => this
+                ));
+    }
+
+    // Mettre à jour le pays d'un participant par Id
+    public Validation<Error, QsoAggregate> UpdateParticipantCountry(Guid participantId, string? country)
+    {
+        var participant = _participants.FirstOrDefault(p => p.Id == participantId);
+        if (participant is null)
+            return Error.New($"Le participant avec l'ID {participantId} n'existe pas");
+
+        return participant.UpdateCountry(Id, country)
+            .Match(
+                evt => Apply(evt).Map(_ => this),
+                () => this
+            );
+    }
+
+    // Mettre à jour le nom d'un participant
+    public Validation<Error, QsoAggregate> UpdateParticipantName(string callSign, string? name)
+    {
+        var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
+        if (participant is null)
+            return Error.New($"Le participant avec l'indicatif {callSign} n'existe pas");
+
+        return ValidateCallSign(callSign)
+            .Bind(vCallSign => participant.UpdateName(Id, name)
+                .Match(
+                    evt => Apply(evt).Map(_ => this),
+                    () => this
+                ));
+    }
+
+    // Mettre à jour le nom d'un participant par Id
+    public Validation<Error, QsoAggregate> UpdateParticipantName(Guid participantId, string? name)
+    {
+        var participant = _participants.FirstOrDefault(p => p.Id == participantId);
+        if (participant is null)
+            return Error.New($"Le participant avec l'ID {participantId} n'existe pas");
+
+        return participant.UpdateName(Id, name)
+            .Match(
+                evt => Apply(evt).Map(_ => this),
+                () => this
+            );
     }
 
     // Application des événements (méthode requise par AggregateRoot)
@@ -172,6 +228,8 @@ public class QsoAggregate : AggregateRoot
             Events.ParticipantAdded e => ParticipantAddedEventHandler(e),
             Events.ParticipantRemoved e => ParticipantRemovedEventHandler(e),
             Events.ParticipantsReordered e => ParticipantsReorderedEventHandler(e),
+            Participant.Events.CountryUpdated e => ParticipantCountryUpdatedEventHandler(e),
+            Participant.Events.NameUpdated e => ParticipantNameUpdatedEventHandler(e),
             _ => Error.New($"Event type {@event.GetType().Name} is not supported")
         };
     }
@@ -183,11 +241,9 @@ public class QsoAggregate : AggregateRoot
         Description = e.Description;
         ModeratorId = e.ModeratorId;
         return Success<Error, Event>(e);
-    }
-
-    private Validation<Error, Event> ParticipantAddedEventHandler(Events.ParticipantAdded e)
+    }    private Validation<Error, Event> ParticipantAddedEventHandler(Events.ParticipantAdded e)
     {
-        _participants.Add(new Participant(e.CallSign, e.Order));
+        _participants.Add(new Participant(e.CallSign, e.Order, null, null));
         return Success<Error, Event>(e);
     }
 
@@ -211,9 +267,7 @@ public class QsoAggregate : AggregateRoot
             }
         }
         return Success<Error, Event>(e);
-    }
-
-    private Validation<Error, Event> ParticipantsReorderedEventHandler(Events.ParticipantsReordered e)
+    }    private Validation<Error, Event> ParticipantsReorderedEventHandler(Events.ParticipantsReordered e)
     {
         foreach (var participant in _participants.ToList())
         {
@@ -223,5 +277,26 @@ public class QsoAggregate : AggregateRoot
                 _participants.Add(new Participant(participant.CallSign, newOrder));
             }
         }
-        return Success<Error, Event>(e);    }
+        return Success<Error, Event>(e);
+    }    private Validation<Error, Event> ParticipantCountryUpdatedEventHandler(Participant.Events.CountryUpdated e)
+    {
+        var participant = _participants.FirstOrDefault(p => p.Id == e.ParticipantId);
+        if (participant is not null)
+        {
+            _participants.Remove(participant);
+            _participants.Add(new Participant(participant.Id, participant.CallSign, participant.Order, e.Country, participant.Name));
+        }
+        return Success<Error, Event>(e);
+    }
+
+    private Validation<Error, Event> ParticipantNameUpdatedEventHandler(Participant.Events.NameUpdated e)
+    {
+        var participant = _participants.FirstOrDefault(p => p.Id == e.ParticipantId);
+        if (participant is not null)
+        {
+            _participants.Remove(participant);
+            _participants.Add(new Participant(participant.Id, participant.CallSign, participant.Order, participant.Country, e.Name));
+        }
+        return Success<Error, Event>(e);
+    }
 }

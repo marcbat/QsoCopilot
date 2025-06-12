@@ -12,7 +12,9 @@
       participants: [
         {
           callSign: F1ABC,
-          order: 1
+          order: 1,
+          country: null,
+          name: null
         }
       ]
     }
