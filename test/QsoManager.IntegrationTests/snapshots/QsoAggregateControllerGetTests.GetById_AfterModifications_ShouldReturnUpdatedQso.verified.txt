@@ -8,7 +8,9 @@
       id: Guid_1,
       name: QSO à Modifier,
       description: QSO qui sera modifié,
-      moderatorId: Guid_2
+      moderatorId: Guid_2,
+      startDateTime: null,
+      createdDate: null
     }
   }
 }

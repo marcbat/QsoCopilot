@@ -2,7 +2,9 @@ namespace QsoManager.Application.DTOs;
 
 public record ParticipantDto(
     string CallSign,
-    int Order
+    int Order,
+    string? Country = null,
+    string? Name = null
 );
 
 public record QsoAggregateDto(
@@ -10,5 +12,7 @@ public record QsoAggregateDto(
     string Name,
     string Description,
     Guid ModeratorId,
-    IReadOnlyList<ParticipantDto> Participants
+    IReadOnlyList<ParticipantDto> Participants,
+    DateTime? StartDateTime = null,
+    DateTime? CreatedDate = null
 );
