@@ -1,6 +1,7 @@
 using LanguageExt;
 using LanguageExt.Common;
 using QsoManager.Application.Interfaces;
+using QsoManager.Application.Projections.Interfaces;
 using QsoManager.Domain.Aggregates;
 using QsoManager.Domain.Repositories;
 
@@ -9,10 +10,12 @@ namespace QsoManager.Infrastructure.Repositories;
 public class QsoAggregateRepository : IQsoAggregateRepository
 {
     private readonly IEventRepository _eventRepository;
+    private readonly IQsoAggregateProjectionRepository _projectionRepository;
 
-    public QsoAggregateRepository(IEventRepository eventRepository)
+    public QsoAggregateRepository(IEventRepository eventRepository, IQsoAggregateProjectionRepository projectionRepository)
     {
         _eventRepository = eventRepository;
+        _projectionRepository = projectionRepository;
     }
 
     public async Task<Validation<Error, QsoAggregate>> GetByIdAsync(Guid id)
@@ -58,14 +61,29 @@ public class QsoAggregateRepository : IQsoAggregateRepository
         {
             return Error.New("Impossible de sauvegarder l'agrégat QSO.");
         }
-    }
-
-    public async Task<Validation<Error, bool>> ExistsWithNameAsync(string name)
+    }    public async Task<Validation<Error, bool>> ExistsWithNameAsync(string name)
     {
-        // Pour l'instant, implémentation simple - dans un vrai projet, 
-        // on utiliserait des projections ou des snapshots
-        // Ici on retourne false pour permettre la création
-        await Task.CompletedTask;
-        return false;
+        try
+        {
+            // Obtenir tous les événements du système
+            var allEventsResult = await _eventRepository.GetAllEventsAsync();
+            
+            return allEventsResult.Match(
+                events =>
+                {
+                    // Chercher tous les événements "Created" avec le même nom
+                    var existingQsoWithName = events
+                        .OfType<Domain.Aggregates.QsoAggregate.Events.Created>()
+                        .Any(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    
+                    return Validation<Error, bool>.Success(existingQsoWithName);
+                },
+                errors => Validation<Error, bool>.Fail(errors)
+            );
+        }
+        catch (Exception ex)
+        {
+            return Error.New($"Impossible de vérifier l'unicité du nom '{name}': {ex.Message}");
+        }
     }
 }

@@ -1,0 +1,14 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      id: Guid_1,
+      name: QSO à Modifier,
+      description: QSO qui sera modifié,
+      moderatorId: Guid_2
+    }
+  }
+}

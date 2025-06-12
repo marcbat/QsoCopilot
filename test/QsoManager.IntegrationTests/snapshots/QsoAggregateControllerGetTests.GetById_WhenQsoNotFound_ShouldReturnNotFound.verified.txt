@@ -1,0 +1,11 @@
+﻿{
+  Status: 404 Not Found,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      message: QSO Aggregate with ID 9f77aec3-2a24-43c8-8cd8-44f77951377f not found
+    }
+  }
+}

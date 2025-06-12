@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  mongodb-test:
+    image: mongo:7.0.4
+    container_name: qso-mongodb-test
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: QsoManagerIntegrationTests
+    volumes:
+      - mongodb_test_data:/data/db
+    networks:
+      - qso-test-network
+
+volumes:
+  mongodb_test_data:
+
+networks:
+  qso-test-network:
+    driver: bridge

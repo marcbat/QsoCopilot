@@ -1,0 +1,19 @@
+﻿{
+  Status: 400 Bad Request,
+  Content: {
+    Headers: {
+      Content-Type: application/problem+json; charset=utf-8
+    },
+    Value: {
+      type: https://tools.ietf.org/html/rfc9110#section-15.5.1,
+      title: One or more validation errors occurred.,
+      status: 400,
+      errors: {
+        name: [
+          The name field is required.
+        ]
+      },
+      traceId: 00-d415ba641b5ed917f75e1d7a20f3d2c7-21d4f47c11a4e0af-00
+    }
+  }
+}

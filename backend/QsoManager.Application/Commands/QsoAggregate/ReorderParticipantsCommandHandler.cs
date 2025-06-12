@@ -29,22 +29,35 @@ public class ReorderParticipantsCommandHandler : BaseCommandHandler<ReorderParti
                 from updatedAggregate in aggregate.ReorderParticipants(request.NewOrders)
                 select updatedAggregate;
 
-            return await result.MatchAsync(
-                async aggregate =>
+            return await result.MatchAsync(                async aggregate =>
                 {
                     _logger.LogDebug("Participants réordonnés avec succès pour l'agrégat {AggregateId}", request.AggregateId);
                     
-                    var saveResult = await _repository.SaveAsync(aggregate);
-                    return saveResult.Match(
-                        _ => 
+                    var eventsResult = aggregate.GetUncommittedChanges();
+                    return await eventsResult.MatchAsync(
+                        async events =>
                         {
-                            _logger.LogInformation("Réordonnancement des participants terminé avec succès pour l'agrégat {AggregateId}", request.AggregateId);
-                            return Validation<Error, LanguageExt.Unit>.Success(LanguageExt.Unit.Default);
+                            var saveResult = await _repository.SaveAsync(aggregate);
+                            return saveResult.Match(
+                                _ => 
+                                {
+                                    // Dispatcher les événements pour les projections
+                                    DispatchEventsAsync(events, cancellationToken);
+                                    
+                                    _logger.LogInformation("Réordonnancement des participants terminé avec succès pour l'agrégat {AggregateId}", request.AggregateId);
+                                    return Validation<Error, LanguageExt.Unit>.Success(LanguageExt.Unit.Default);
+                                },
+                                errors =>
+                                {
+                                    _logger.LogError("Erreur lors de la sauvegarde de l'agrégat {AggregateId} après réordonnancement des participants: {Errors}", request.AggregateId, string.Join(", ", errors.Select(e => e.Message)));
+                                    return Validation<Error, LanguageExt.Unit>.Fail(errors);
+                                }
+                            );
                         },
-                        errors =>
+                        errors => 
                         {
-                            _logger.LogError("Erreur lors de la sauvegarde de l'agrégat {AggregateId} après réordonnancement des participants: {Errors}", request.AggregateId, string.Join(", ", errors.Select(e => e.Message)));
-                            return Validation<Error, LanguageExt.Unit>.Fail(errors);
+                            _logger.LogError("Erreur lors de la récupération des événements pour l'agrégat {AggregateId}: {Errors}", request.AggregateId, string.Join(", ", errors.Select(e => e.Message)));
+                            return Task.FromResult(Validation<Error, LanguageExt.Unit>.Fail(errors));
                         }
                     );
                 },

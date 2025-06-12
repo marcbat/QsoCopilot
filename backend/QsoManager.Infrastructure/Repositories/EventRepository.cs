@@ -117,4 +117,27 @@ public class EventRepository : IEventRepository
             EventType = eventType;
         }
     }
+
+    public async Task<Validation<Error, IEnumerable<IEvent>>> GetAllEventsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var database = _mongoClient.GetDatabase(_databaseName);
+            var collection = database.GetCollection<EventData>("Events");
+            
+            var sort = Builders<EventData>.Sort.Ascending(x => x.Timestamp).Ascending(x => x.Version);
+            var result = await collection
+                .Find(_ => true)
+                .Sort(sort)
+                .ToListAsync(cancellationToken);
+
+            var events = result.Select(x => x.PayLoad);
+            return Validation<Error, IEnumerable<IEvent>>.Success(events);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Impossible de récupérer tous les événements.");
+            return Error.New("Impossible de récupérer tous les événements.", Error.New(ex.Message));
+        }
+    }
 }
