@@ -14,13 +14,13 @@ public static class QsoAggregateMapper
             aggregate.ModeratorId,
             aggregate.Participants.Select(p => p.ToDto()).ToList().AsReadOnly()
         );
-    }
-
-    public static ParticipantDto ToDto(this Participant participant)
+    }    public static ParticipantDto ToDto(this Participant participant)
     {
         return new ParticipantDto(
             participant.CallSign,
-            participant.Order
+            participant.Order,
+            participant.Country,
+            participant.Name
         );
     }
 }
