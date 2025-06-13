@@ -1,7 +1,6 @@
 version: '3.8'
 
-services:
-  # MongoDB Database
+services:  # MongoDB Database
   mongodb:
     image: mongo:7.0
     container_name: qso-manager-mongodb
@@ -15,6 +14,7 @@ services:
     volumes:
       - mongodb_data:/data/db
       - ./mongo-init:/docker-entrypoint-initdb.d
+    command: mongod --auth --bind_ip_all
     networks:
       - qso-network
   # QSO Manager API

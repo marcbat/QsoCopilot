@@ -38,14 +38,13 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
         var random = new Random();
         _randomPort = random.Next(10000, 30001);
 
-        _factory = factory;
-        
-        _containerMongo = new MongoDbBuilder()
+        _factory = factory;        _containerMongo = new MongoDbBuilder()
             .WithImage("mongo:7.0.4")
             .WithPortBinding(_randomPort, 27017)
             .WithEnvironment("MONGO_INITDB_ROOT_USERNAME", "admin")
-            .WithEnvironment("MONGO_INITDB_ROOT_PASSWORD", "password")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(27017))
+            .WithEnvironment("MONGO_INITDB_ROOT_PASSWORD", "password")            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilPortIsAvailable(27017)
+                .UntilCommandIsCompleted("mongosh", "--eval", "db.adminCommand('ping').ok", "--authenticationDatabase", "admin", "-u", "admin", "-p", "password"))
             .Build();
     }
 

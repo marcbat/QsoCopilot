@@ -17,16 +17,18 @@ namespace QsoManager.Infrastructure;
 public static class InfrastructureServiceCollectionExtensions
 {    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        // Get MongoDB connection string
+        var mongoConnectionString = configuration.GetConnectionString("MongoDB") ?? "mongodb://localhost:27017";
+        var mongoDatabaseName = configuration["Mongo:Database"] ?? "QsoManagerDb";
+        
         // MongoDB
         services.AddSingleton<IMongoClient>(provider =>
         {
-            var connectionString = configuration.GetConnectionString("MongoDB") ?? "mongodb://localhost:27017";
-            return new MongoClient(connectionString);
-        });
-
-        // Repositories
+            return new MongoClient(mongoConnectionString);
+        });        // Repositories
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IQsoAggregateRepository, QsoAggregateRepository>();
+        services.AddScoped<IModeratorAggregateRepository, ModeratorAggregateRepository>();
 
         // Projection repositories
         services.AddScoped<IQsoAggregateProjectionRepository, QsoManager.Infrastructure.Projections.QsoAggregateProjectionRepository>();
@@ -52,8 +54,8 @@ public static class InfrastructureServiceCollectionExtensions
             identity.User.RequireUniqueEmail = true;
         })
         .AddMongoDbStores<ApplicationUser, ApplicationRole, string>(
-            configuration.GetConnectionString("MongoDB") ?? "mongodb://localhost:27017",
-            "QsoManagerDb")
+            mongoConnectionString,
+            mongoDatabaseName)
         .AddDefaultTokenProviders();        // Authentication Service
         services.AddScoped<IAuthenticationService, AuthenticationService>();
 
