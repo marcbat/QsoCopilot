@@ -15,20 +15,32 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     protected MongoDbContainer _containerMongo;
     protected HttpClient _client = null!;
     
-    protected readonly VerifySettings _verifySettings;
-
-    public BaseIntegrationTest(WebApplicationFactory<Program> factory)
+    protected readonly VerifySettings _verifySettings;    public BaseIntegrationTest(WebApplicationFactory<Program> factory)
     {
         _verifySettings = new VerifySettings();
         _verifySettings.UseDirectory(Path.Combine("snapshots"));
         
         // Attention à bien désactiver AutoVerify pour les tests
-        _verifySettings.AutoVerify();
+        // _verifySettings.AutoVerify();
+          // Scrubbers pour normaliser les valeurs qui changent à chaque test
+        _verifySettings.ScrubMember("traceId");
+        
+        // Scrubber pour remplacer les GUIDs par des valeurs consistantes
+        _verifySettings.AddScrubber(text => 
+        {
+            var result = System.Text.RegularExpressions.Regex.Replace(text.ToString(), 
+                @"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b", 
+                "NORMALIZED_GUID");
+            text.Clear();
+            text.Append(result);
+        });
 
         var random = new Random();
         _randomPort = random.Next(10000, 30001);
 
-        _factory = factory;        _containerMongo = new MongoDbBuilder()
+        _factory = factory;
+        
+        _containerMongo = new MongoDbBuilder()
             .WithImage("mongo:7.0.4")
             .WithPortBinding(_randomPort, 27017)
             .WithEnvironment("MONGO_INITDB_ROOT_USERNAME", "admin")

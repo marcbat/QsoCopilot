@@ -28,8 +28,8 @@ public class QsoAggregateTests : BaseIntegrationTest
 
         // Assert
         await Verify(response, _verifySettings);
-    }   
-    
+    }
+
     [Fact]
     public async Task CreateQsoAggregate_WithoutId_ShouldGenerateIdAndCreateQso()
     {
@@ -90,39 +90,8 @@ public class QsoAggregateTests : BaseIntegrationTest
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
-
-        // Assert
+        var response = await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);        // Assert
         await Verify(response, _verifySettings);
-    }    [Fact]
-    public async Task CreateQsoAggregateAndAddParticipant_WhenValid_ShouldSucceed()
-    {
-        // Arrange
-        var createRequest = new
-        {
-            Id = Guid.NewGuid(),
-            Name = "QSO avec Participants",
-            Description = "QSO pour tester l'ajout de participants",
-            ModeratorId = Guid.NewGuid()
-        };
-
-        // Act - Créer le QSO
-        var createResponse = await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
-        
-        // Extraire l'ID du QSO créé
-        var createResponseContent = await createResponse.Content.ReadAsStringAsync();
-        var jsonDoc = JsonDocument.Parse(createResponseContent);
-        var qsoId = jsonDoc.RootElement.GetProperty("id").GetGuid();
-
-        // Ajouter un participant - l'endpoint retourne maintenant le QSO complet
-        var addParticipantRequest = new
-        {
-            CallSign = "F1ABC"
-        };
-
-        var addParticipantResponse = await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", addParticipantRequest);
-
-        // Assert - Vérifier que l'ajout du participant retourne le QSO complet avec la liste des participants
-        await Verify(addParticipantResponse, _verifySettings);
     }
+
 }

@@ -13,7 +13,7 @@
           The name field is required.
         ]
       },
-      traceId: 00-04f27bb913bc71301e4358493f1821cd-7a4f69390d7439bb-00
+      traceId: {Scrubbed}
     }
   }
 }
