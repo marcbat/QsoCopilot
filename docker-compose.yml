@@ -17,7 +17,6 @@ services:
       - ./mongo-init:/docker-entrypoint-initdb.d
     networks:
       - qso-network
-
   # QSO Manager API
   qso-api:
     build:
@@ -26,22 +25,15 @@ services:
     container_name: qso-manager-api
     restart: unless-stopped
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__MongoDB=mongodb://admin:password123@mongodb:27017
-      - Mongo__Database=QsoManager
+      - ConnectionStrings__MongoDB=mongodb://admin:password123@mongodb:27017/QsoManager?authSource=admin
     ports:
       - "5041:8080"
     depends_on:
       - mongodb
     networks:
       - qso-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
 networks:
   qso-network:
