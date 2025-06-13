@@ -54,9 +54,7 @@ public static class InfrastructureServiceCollectionExtensions
         .AddMongoDbStores<ApplicationUser, ApplicationRole, string>(
             configuration.GetConnectionString("MongoDB") ?? "mongodb://localhost:27017",
             "QsoManagerDb")
-        .AddDefaultTokenProviders();
-
-        // Authentication Service
+        .AddDefaultTokenProviders();        // Authentication Service
         services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         return services;

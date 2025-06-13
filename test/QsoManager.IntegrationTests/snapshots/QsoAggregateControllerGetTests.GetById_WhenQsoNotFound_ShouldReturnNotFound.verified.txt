@@ -5,7 +5,7 @@
       Content-Type: application/json; charset=utf-8
     },
     Value: {
-      message: QSO Aggregate with ID 34e799a9-673c-4186-8068-98c5ceaa72a0 not found
+      message: QSO Aggregate with ID NORMALIZED_GUID not found
     }
   }
 }

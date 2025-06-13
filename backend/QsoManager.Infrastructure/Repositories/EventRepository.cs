@@ -37,13 +37,12 @@ public class EventRepository : IEventRepository
                 filterBuilder.Gte(x => x.Version, fromVersion)
             );
 
-            var sort = Builders<EventData>.Sort.Ascending(x => x.Version);
-            var result = await collection
+            var sort = Builders<EventData>.Sort.Ascending(x => x.Version);            var result = await collection
                 .Find(filter)
                 .Sort(sort)
                 .ToListAsync(cancellationToken);
 
-            var events = result.Select(x => x.PayLoad);
+            var events = result.Select(x => x.GetPayLoad());
             return Validation<Error, IEnumerable<IEvent>>.Success(events);
         }
         catch (Exception ex)
@@ -62,15 +61,14 @@ public class EventRepository : IEventRepository
 
             var database = _mongoClient.GetDatabase(_databaseName);
             var collection = database.GetCollection<EventData>("Events");
-            var bulkOps = new List<WriteModel<EventData>>();
-
-            foreach (var @event in events)
+            var bulkOps = new List<WriteModel<EventData>>();            foreach (var @event in events)
             {
+                var eventJson = JsonSerializer.Serialize(@event, @event.GetType());
                 var eventData = new EventData(
                     Guid.NewGuid(), 
                     @event.AggregateId, 
                     @event.Version, 
-                    @event, 
+                    eventJson, 
                     DateTime.UtcNow, 
                     @event.GetType().AssemblyQualifiedName!
                 );
@@ -98,8 +96,8 @@ public class EventRepository : IEventRepository
         [BsonElement("version")]
         public int Version { get; private set; }
 
-        [BsonElement("payload")]
-        public IEvent PayLoad { get; private set; }
+        [BsonElement("payloadJson")]
+        public string PayLoadJson { get; private set; }
 
         [BsonElement("timestamp")]
         public DateTime Timestamp { get; private set; }
@@ -107,14 +105,23 @@ public class EventRepository : IEventRepository
         [BsonElement("eventType")]
         public string EventType { get; private set; }
 
-        public EventData(Guid id, Guid aggregateId, int version, IEvent payLoad, DateTime timestamp, string eventType)
+        public EventData(Guid id, Guid aggregateId, int version, string payLoadJson, DateTime timestamp, string eventType)
         {
             Id = id;
             AggregateId = aggregateId;
             Version = version;
-            PayLoad = payLoad;
+            PayLoadJson = payLoadJson;
             Timestamp = timestamp;
             EventType = eventType;
+        }
+
+        public IEvent GetPayLoad()
+        {
+            var type = Type.GetType(EventType);
+            if (type == null)
+                throw new InvalidOperationException($"Cannot find type {EventType}");
+
+            return (IEvent)JsonSerializer.Deserialize(PayLoadJson, type)!;
         }
     }
 
@@ -124,14 +131,13 @@ public class EventRepository : IEventRepository
         {
             var database = _mongoClient.GetDatabase(_databaseName);
             var collection = database.GetCollection<EventData>("Events");
-            
-            var sort = Builders<EventData>.Sort.Ascending(x => x.Timestamp).Ascending(x => x.Version);
+              var sort = Builders<EventData>.Sort.Ascending(x => x.Timestamp).Ascending(x => x.Version);
             var result = await collection
                 .Find(_ => true)
                 .Sort(sort)
                 .ToListAsync(cancellationToken);
 
-            var events = result.Select(x => x.PayLoad);
+            var events = result.Select(x => x.GetPayLoad());
             return Validation<Error, IEnumerable<IEvent>>.Success(events);
         }
         catch (Exception ex)
