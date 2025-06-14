@@ -1,6 +1,9 @@
+using LanguageExt;
+using LanguageExt.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using QsoManager.Application.Commands.Authentication;
+using QsoManager.Application.Commands.ModeratorAggregate;
 using QsoManager.Application.DTOs.Authentication;
 using QsoManager.Application.Interfaces.Auth;
 using System.Security.Claims;
@@ -78,19 +81,43 @@ public class LoginByEmailCommandHandler : IRequestHandler<LoginByEmailCommand, T
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, string>
 {
     private readonly IAuthenticationService _authenticationService;
+    private readonly IMediator _mediator;
     private readonly ILogger<RegisterCommandHandler> _logger;
 
-    public RegisterCommandHandler(IAuthenticationService authenticationService, ILogger<RegisterCommandHandler> logger)
+    public RegisterCommandHandler(
+        IAuthenticationService authenticationService, 
+        IMediator mediator,
+        ILogger<RegisterCommandHandler> logger)
     {
         _authenticationService = authenticationService;
+        _mediator = mediator;
         _logger = logger;
-    }
-
-    public async Task<string> Handle(RegisterCommand request, CancellationToken cancellationToken)
+    }    public async Task<string> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            return await _authenticationService.Register(request.UserName, request.Password, request.Email);
+            // Créer l'utilisateur
+            var userId = await _authenticationService.Register(request.UserName, request.Password, request.Email);
+            
+            // Créer automatiquement un modérateur associé avec le même ID utilisateur
+            // et utiliser le username comme CallSign
+            var createModeratorCommand = new CreateModeratorCommand(
+                Guid.Parse(userId),
+                request.UserName,
+                request.Email
+            );
+            
+            var moderatorResult = await _mediator.Send(createModeratorCommand, cancellationToken);
+            
+            // Vérifier si la création du modérateur a réussi
+            moderatorResult.Match(
+                success => _logger.LogInformation("Utilisateur {UserName} créé avec succès avec modérateur associé ID {ModeratorId}", 
+                    request.UserName, success.Id),
+                errors => _logger.LogWarning("Utilisateur {UserName} créé mais erreur lors de la création du modérateur: {Errors}", 
+                    request.UserName, string.Join(", ", errors.Select(e => e.Message)))
+            );
+            
+            return userId;
         }
         catch (Exception ex)
         {

@@ -15,15 +15,22 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     protected MongoDbContainer _containerMongo;
     protected HttpClient _client = null!;
     
-    protected readonly VerifySettings _verifySettings;    public BaseIntegrationTest(WebApplicationFactory<Program> factory)
+    protected readonly VerifySettings _verifySettings;    
+    
+    public BaseIntegrationTest(WebApplicationFactory<Program> factory)
     {
         _verifySettings = new VerifySettings();
         _verifySettings.UseDirectory(Path.Combine("snapshots"));
         
         // Attention à bien désactiver AutoVerify pour les tests
-        // _verifySettings.AutoVerify();
-          // Scrubbers pour normaliser les valeurs qui changent à chaque test
+        // _verifySettings.AutoVerify();        // Scrubbers pour normaliser les valeurs qui changent à chaque test
         _verifySettings.ScrubMember("traceId");
+        
+        // Scrubber pour les tokens JWT - ils changent à chaque fois car ils contiennent des timestamps
+        _verifySettings.ScrubMember("token");
+        
+        // Scrubber pour les dates d'expiration des tokens
+        _verifySettings.ScrubMember("expiration");
         
         // Scrubber pour remplacer les GUIDs par des valeurs consistantes
         _verifySettings.AddScrubber(text => 
@@ -38,14 +45,13 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
         var random = new Random();
         _randomPort = random.Next(10000, 30001);
 
-        _factory = factory;
-        
-        _containerMongo = new MongoDbBuilder()
+        _factory = factory;        _containerMongo = new MongoDbBuilder()
             .WithImage("mongo:7.0.4")
             .WithPortBinding(_randomPort, 27017)
             .WithEnvironment("MONGO_INITDB_ROOT_USERNAME", "admin")
-            .WithEnvironment("MONGO_INITDB_ROOT_PASSWORD", "password")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(27017))
+            .WithEnvironment("MONGO_INITDB_ROOT_PASSWORD", "password")            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilPortIsAvailable(27017)
+                .UntilCommandIsCompleted("mongosh", "--eval", "db.adminCommand('ping').ok", "--authenticationDatabase", "admin", "-u", "admin", "-p", "password"))
             .Build();
     }
 
@@ -53,7 +59,9 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     public static void Initialize()
     {
         VerifierSettings.InitializePlugins();
-    }    public async Task InitializeAsync()
+    }    
+    
+    public async Task InitializeAsync()
     {
         await _containerMongo.StartAsync();
 
