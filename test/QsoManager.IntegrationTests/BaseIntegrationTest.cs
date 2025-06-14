@@ -21,9 +21,14 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
         _verifySettings.UseDirectory(Path.Combine("snapshots"));
         
         // Attention à bien désactiver AutoVerify pour les tests
-        // _verifySettings.AutoVerify();
-          // Scrubbers pour normaliser les valeurs qui changent à chaque test
+        // _verifySettings.AutoVerify();        // Scrubbers pour normaliser les valeurs qui changent à chaque test
         _verifySettings.ScrubMember("traceId");
+        
+        // Scrubber pour les tokens JWT - ils changent à chaque fois car ils contiennent des timestamps
+        _verifySettings.ScrubMember("token");
+        
+        // Scrubber pour les dates d'expiration des tokens
+        _verifySettings.ScrubMember("expiration");
         
         // Scrubber pour remplacer les GUIDs par des valeurs consistantes
         _verifySettings.AddScrubber(text => 

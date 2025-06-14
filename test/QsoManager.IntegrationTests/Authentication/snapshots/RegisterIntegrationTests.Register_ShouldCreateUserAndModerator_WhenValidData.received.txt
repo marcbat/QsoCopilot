@@ -17,7 +17,7 @@ A timeout occurred after 30000ms selecting a server using CompositeServerSelecto
    at MongoDB.Driver.Core.Connections.BinaryConnection.OpenHelper(CancellationToken cancellationToken)
    at MongoDB.Driver.Core.Connections.BinaryConnection.Open(CancellationToken cancellationToken)
    at MongoDB.Driver.Core.Servers.ServerMonitor.InitializeConnection(CancellationToken cancellationToken)
-   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2025-06-14T20:50:20.3441593Z", LastUpdateTimestamp: "2025-06-14T20:50:20.3441595Z" }] }.
+   at MongoDB.Driver.Core.Servers.ServerMonitor.Heartbeat(CancellationToken cancellationToken)", LastHeartbeatTimestamp: "2025-06-14T20:47:27.4796163Z", LastUpdateTimestamp: "2025-06-14T20:47:27.4796169Z" }] }.
     }
   }
 }
