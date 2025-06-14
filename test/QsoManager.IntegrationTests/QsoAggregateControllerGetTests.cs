@@ -10,7 +10,9 @@ public class QsoAggregateControllerGetTests : BaseIntegrationTest
 {
     public QsoAggregateControllerGetTests(WebApplicationFactory<Program> factory) : base(factory)
     {
-    }    [Fact]
+    }    
+    
+    [Fact]
     public async Task GetAll_WhenNoQsoAggregates_ShouldReturnEmptyList()
     {
         // Act
@@ -18,7 +20,9 @@ public class QsoAggregateControllerGetTests : BaseIntegrationTest
 
         // Assert
         await Verify(response, _verifySettings);
-    }    [Fact]
+    }    
+    
+    [Fact]
     public async Task GetAll_WhenQsoAggregatesExist_ShouldReturnAllQsos()
     {
         // Arrange - Créer plusieurs QSO
@@ -47,7 +51,9 @@ public class QsoAggregateControllerGetTests : BaseIntegrationTest
 
         // Assert
         await Verify(response, _verifySettings);
-    }    [Fact]
+    }    
+    
+    [Fact]
     public async Task GetById_WhenQsoExists_ShouldReturnQso()
     {
         // Arrange - Créer un QSO
@@ -68,7 +74,9 @@ public class QsoAggregateControllerGetTests : BaseIntegrationTest
 
         // Assert
         await Verify(response, _verifySettings);
-    }    [Fact]
+    }    
+    
+    [Fact]
     public async Task GetById_WhenQsoNotFound_ShouldReturnNotFound()
     {
         // Arrange
@@ -87,7 +95,9 @@ public class QsoAggregateControllerGetTests : BaseIntegrationTest
 
         // Assert
         await Verify(response, _verifySettings);
-    }    [Fact]
+    }    
+    
+    [Fact]
     public async Task GetById_WhenQsoHasParticipants_ShouldReturnQsoWithParticipants()
     {
         // Arrange - Créer un QSO et ajouter des participants
@@ -116,7 +126,9 @@ public class QsoAggregateControllerGetTests : BaseIntegrationTest
 
         // Assert
         await Verify(response, _verifySettings);
-    }    [Fact]
+    }    
+    
+    [Fact]
     public async Task GetAll_Performance_ShouldHandleMultipleQsos()
     {
         // Arrange - Créer plusieurs QSO pour tester les performances
@@ -144,7 +156,9 @@ public class QsoAggregateControllerGetTests : BaseIntegrationTest
 
         // Assert
         await Verify(response, _verifySettings);
-    }    [Fact]
+    }    
+    
+    [Fact]
     public async Task GetById_AfterModifications_ShouldReturnUpdatedQso()
     {
         // Arrange - Créer un QSO et le modifier
@@ -204,7 +218,9 @@ public class QsoAggregateControllerGetTests : BaseIntegrationTest
             Name = "QSO Alpha",
             Description = "Premier QSO",
             ModeratorId = Guid.NewGuid()
-        };        await _client.PostAsJsonAsync("/api/QsoAggregate", qso1);
+        };       
+        
+        await _client.PostAsJsonAsync("/api/QsoAggregate", qso1);
 
         // Attendre que les projections soient mises à jour
         await Task.Delay(100);

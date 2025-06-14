@@ -15,7 +15,9 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     protected MongoDbContainer _containerMongo;
     protected HttpClient _client = null!;
     
-    protected readonly VerifySettings _verifySettings;    public BaseIntegrationTest(WebApplicationFactory<Program> factory)
+    protected readonly VerifySettings _verifySettings;    
+    
+    public BaseIntegrationTest(WebApplicationFactory<Program> factory)
     {
         _verifySettings = new VerifySettings();
         _verifySettings.UseDirectory(Path.Combine("snapshots"));
@@ -57,7 +59,9 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     public static void Initialize()
     {
         VerifierSettings.InitializePlugins();
-    }    public async Task InitializeAsync()
+    }    
+    
+    public async Task InitializeAsync()
     {
         await _containerMongo.StartAsync();
 
