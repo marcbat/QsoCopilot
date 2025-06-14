@@ -1,0 +1,11 @@
+﻿{
+  Status: 400 Bad Request,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      message: Il existe déjà un utilisateur avec l'adresse shared@example.com.
+    }
+  }
+}

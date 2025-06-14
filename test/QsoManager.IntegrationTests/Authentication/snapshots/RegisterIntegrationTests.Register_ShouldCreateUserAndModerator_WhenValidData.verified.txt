@@ -1,0 +1,12 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      userId: Guid_1,
+      message: User created successfully
+    }
+  }
+}

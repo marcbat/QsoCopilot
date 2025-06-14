@@ -5,6 +5,9 @@ PMP-Reference/
 .vscode/
 .vscode-test/
 
+# Visual Studio
+.vs/
+
 # .NET build outputs
 bin/
 obj/

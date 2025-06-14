@@ -1,0 +1,26 @@
+﻿{
+  RegisterResponse: {
+    Status: 200 OK,
+    Content: {
+      Headers: {
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: {
+        userId: Guid_1,
+        message: User created successfully
+      }
+    }
+  },
+  LoginResponse: {
+    Status: 200 OK,
+    Content: {
+      Headers: {
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: {
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6Ijc0NjhmYzU5LWY2ZTEtNDY2Yi1iYjY4LTEwMTM0NTVhZTI0ZCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJGMVNUVSIsImV4cCI6MTc0OTg5NzI5NywiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo1MDAwIiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo0MjAwIn0.xTFhKTQR0EKuiIDS4xaO3YtGHxTRHpW_qPTkPVfSE9w,
+        expiration: DateTimeOffset_1
+      }
+    }
+  }
+}
