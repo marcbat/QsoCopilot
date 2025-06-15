@@ -1,0 +1,24 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      id: Guid_1,
+      name: ,
+      description: ,
+      moderatorId: Guid_Empty,
+      participants: [
+        {
+          callSign: F4XYZ,
+          order: 1,
+          country: null,
+          name: null
+        }
+      ],
+      startDateTime: null,
+      createdDate: null
+    }
+  }
+}

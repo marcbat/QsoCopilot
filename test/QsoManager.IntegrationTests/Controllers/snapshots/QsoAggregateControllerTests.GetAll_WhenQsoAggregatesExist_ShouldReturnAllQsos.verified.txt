@@ -1,0 +1,26 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: [
+      {
+        id: Guid_1,
+        name: QSO Test 1,
+        description: Premier QSO pour test GetAll,
+        moderatorId: Guid_2,
+        startDateTime: null,
+        createdDate: null
+      },
+      {
+        id: Guid_3,
+        name: QSO Test 2,
+        description: Deuxième QSO pour test GetAll,
+        moderatorId: Guid_4,
+        startDateTime: null,
+        createdDate: null
+      }
+    ]
+  }
+}

@@ -46,7 +46,9 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors de la création du QSO Aggregate");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
-    }    [HttpPost("{aggregateId:guid}/participants")]
+    }    
+    
+    [HttpPost("{aggregateId:guid}/participants")]
     public async Task<ActionResult<QsoAggregateDto>> AddParticipant(Guid aggregateId, [FromBody] AddParticipantRequest request)
     {
         try
@@ -123,7 +125,9 @@ public class QsoAggregateController : ControllerBase
         {
             _logger.LogError(ex, "Erreur lors du déplacement du participant");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });        }
-    }    /// <summary>
+    }    
+    
+    /// <summary>
     /// Récupère tous les QSO Aggregates
     /// </summary>
     [HttpGet]
