@@ -1,0 +1,16 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      id: Guid_1,
+      name: QSO Test Integration,
+      description: QSO créé pour les tests d'intégration,
+      moderatorId: Guid_2,
+      startDateTime: null,
+      createdDate: null
+    }
+  }
+}

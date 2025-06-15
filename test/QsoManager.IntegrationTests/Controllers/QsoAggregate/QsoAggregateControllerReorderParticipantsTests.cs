@@ -14,15 +14,14 @@ public class QsoAggregateControllerReorderParticipantsTests : BaseIntegrationTes
 
     [Fact]
     public async Task ReorderParticipants_WhenValidRequest_ShouldReorderParticipants()
-    {
-        // Arrange
+    {        // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST1");
         var qsoId = Guid.NewGuid();
         var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Reorder",
-            Description = "QSO pour test de réorganisation",
-            ModeratorId = Guid.NewGuid()
+            Description = "QSO pour test de réorganisation"
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);

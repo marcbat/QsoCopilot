@@ -10,19 +10,17 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
 {
     public QsoAggregateControllerAddParticipantTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)
     {
-    }
-
-    [Fact]
+    }    [Fact]
     public async Task AddParticipant_WhenValidRequest_ShouldAddParticipant()
     {
         // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST1");
         var qsoId = Guid.NewGuid();
         var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Participants",
-            Description = "QSO pour test des participants",
-            ModeratorId = Guid.NewGuid()
+            Description = "QSO pour test des participants"
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
