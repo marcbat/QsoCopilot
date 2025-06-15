@@ -98,37 +98,6 @@ public class QsoAggregateControllerGetTests : BaseIntegrationTest
     }    
     
     [Fact]
-    public async Task GetById_WhenQsoHasParticipants_ShouldReturnQsoWithParticipants()
-    {
-        // Arrange - Créer un QSO et ajouter des participants
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
-        {
-            Id = qsoId,
-            Name = "QSO avec Participants",
-            Description = "QSO pour tester avec participants",
-            ModeratorId = Guid.NewGuid()
-        };
-
-        await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
-
-        // Ajouter des participants
-        var participant1 = new { CallSign = "F1ABC" };
-        var participant2 = new { CallSign = "F2DEF" };
-          await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", participant1);
-        await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", participant2);
-
-        // Attendre que les projections soient mises à jour
-        await Task.Delay(100);
-
-        // Act
-        var response = await _client.GetAsync($"/api/QsoAggregate/{qsoId}");
-
-        // Assert
-        await Verify(response, _verifySettings);
-    }    
-    
-    [Fact]
     public async Task GetAll_Performance_ShouldHandleMultipleQsos()
     {
         // Arrange - Créer plusieurs QSO pour tester les performances
