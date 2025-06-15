@@ -6,7 +6,7 @@ namespace QsoManager.IntegrationTests;
 
 public class ReprojectionControllerGetTests : BaseIntegrationTest
 {
-    public ReprojectionControllerGetTests(WebApplicationFactory<Program> factory) : base(factory)
+    public ReprojectionControllerGetTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)
     {
     }
 

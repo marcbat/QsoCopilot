@@ -4,20 +4,18 @@ using QsoManager.Api;
 using System.Runtime.CompilerServices;
 using Testcontainers.MongoDb;
 using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
 
 namespace QsoManager.IntegrationTests;
 
-public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>, IAsyncLifetime
+public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>, IClassFixture<MongoDbTestFixture>, IAsyncLifetime
 {
-    private readonly int _randomPort;
     protected readonly WebApplicationFactory<Program> _factory;
-    protected MongoDbContainer _containerMongo;
+    protected readonly MongoDbTestFixture _mongoFixture;
+    protected MongoDbContainer _containerMongo = null!;
     protected HttpClient _client = null!;
     
     protected readonly VerifySettings _verifySettings;    
-    
-    public BaseIntegrationTest(WebApplicationFactory<Program> factory)
+    public BaseIntegrationTest(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture)
     {
         _verifySettings = new VerifySettings();
         _verifySettings.UseDirectory(Path.Combine("snapshots"));
@@ -42,17 +40,8 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
             text.Append(result);
         });
 
-        var random = new Random();
-        _randomPort = random.Next(10000, 30001);
-
-        _factory = factory;        _containerMongo = new MongoDbBuilder()
-            .WithImage("mongo:7.0.4")
-            .WithPortBinding(_randomPort, 27017)
-            .WithEnvironment("MONGO_INITDB_ROOT_USERNAME", "admin")
-            .WithEnvironment("MONGO_INITDB_ROOT_PASSWORD", "password")            .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(27017)
-                .UntilCommandIsCompleted("mongosh", "--eval", "db.adminCommand('ping').ok", "--authenticationDatabase", "admin", "-u", "admin", "-p", "password"))
-            .Build();
+        _factory = factory;
+        _mongoFixture = mongoFixture;
     }
 
     [ModuleInitializer]
@@ -60,24 +49,35 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     {
         VerifierSettings.InitializePlugins();
     }    
-    
     public async Task InitializeAsync()
     {
+        // Création du container MongoDB avec le port partagé du fixture
+        _containerMongo = new MongoDbBuilder()
+            .WithImage("mongo:7.0.4")
+            .WithPortBinding(_mongoFixture.Port, 27017)
+            .WithEnvironment("MONGO_INITDB_ROOT_USERNAME", "admin")
+            .WithEnvironment("MONGO_INITDB_ROOT_PASSWORD", "password")
+            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilPortIsAvailable(27017)
+                .UntilCommandIsCompleted("mongosh", "--eval", "db.adminCommand('ping').ok", "--authenticationDatabase", "admin", "-u", "admin", "-p", "password"))
+            .Build();
+
         await _containerMongo.StartAsync();
 
         var host = _factory.WithWebHostBuilder(builder =>
         {
-            builder.UseSetting("ConnectionStrings:MongoDB", $"mongodb://admin:password@localhost:{_randomPort}");
+            builder.UseSetting("ConnectionStrings:MongoDB", _mongoFixture.ConnectionString);
             builder.UseSetting("Mongo:Database", "QsoManagerIntegrationTests");
         });
 
         _client = host.CreateClient();
-    }
-
-    public async Task DisposeAsync()
+    }    public async Task DisposeAsync()
     {
         _client?.Dispose();
-        await _containerMongo.StopAsync();
-        await _containerMongo.DisposeAsync();
+        if (_containerMongo != null)
+        {
+            await _containerMongo.StopAsync();
+            await _containerMongo.DisposeAsync();
+        }
     }
 }

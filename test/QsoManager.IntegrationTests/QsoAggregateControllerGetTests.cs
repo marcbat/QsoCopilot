@@ -8,9 +8,9 @@ namespace QsoManager.IntegrationTests;
 
 public class QsoAggregateControllerGetTests : BaseIntegrationTest
 {
-    public QsoAggregateControllerGetTests(WebApplicationFactory<Program> factory) : base(factory)
+    public QsoAggregateControllerGetTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)
     {
-    }    
+    }
     
     [Fact]
     public async Task GetAll_WhenNoQsoAggregates_ShouldReturnEmptyList()

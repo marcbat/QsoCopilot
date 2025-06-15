@@ -7,7 +7,7 @@ namespace QsoManager.IntegrationTests.Authentication;
 
 public class RegisterIntegrationTests : BaseIntegrationTest
 {
-    public RegisterIntegrationTests(WebApplicationFactory<Program> factory) : base(factory)
+    public RegisterIntegrationTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)
     {
     }
 

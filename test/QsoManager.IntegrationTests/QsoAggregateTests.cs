@@ -7,7 +7,7 @@ namespace QsoManager.IntegrationTests;
 
 public class QsoAggregateTests : BaseIntegrationTest
 {
-    public QsoAggregateTests(WebApplicationFactory<Program> factory) : base(factory)
+    public QsoAggregateTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)
     {
     }
 
