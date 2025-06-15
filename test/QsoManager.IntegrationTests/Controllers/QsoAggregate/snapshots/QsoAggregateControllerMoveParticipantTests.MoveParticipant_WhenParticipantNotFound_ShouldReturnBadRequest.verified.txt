@@ -1,0 +1,13 @@
+﻿{
+  Status: 400 Bad Request,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      errors: [
+        Le participant avec l'indicatif F4INEXISTANT n'existe pas
+      ]
+    }
+  }
+}
