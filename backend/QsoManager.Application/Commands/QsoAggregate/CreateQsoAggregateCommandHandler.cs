@@ -6,6 +6,7 @@ using QsoManager.Application.DTOs;
 using QsoManager.Application.Interfaces;
 using QsoManager.Domain.Aggregates;
 using QsoManager.Domain.Common;
+using QsoManager.Domain.Repositories;
 using QsoManager.Domain.Services;
 using System.Threading.Channels;
 using static LanguageExt.Prelude;
@@ -16,25 +17,31 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
 {
     private readonly IEventRepository _eventRepository;
     private readonly IQsoAggregateService _domainService;
+    private readonly IModeratorAggregateRepository _moderatorRepository;
 
     public CreateQsoAggregateCommandHandler(
         IEventRepository eventRepository,
         IQsoAggregateService domainService,
+        IModeratorAggregateRepository moderatorRepository,
         Channel<IEvent> channel,
         ILogger<CreateQsoAggregateCommandHandler> logger) : base(channel, logger)
     {
-        _eventRepository = eventRepository;
-        _domainService = domainService;
-    }    public async Task<Validation<Error, QsoAggregateDto>> Handle(CreateQsoAggregateCommand request, CancellationToken cancellationToken)
+        _eventRepository = eventRepository;        _domainService = domainService;
+        _moderatorRepository = moderatorRepository;
+    }
+
+    public async Task<Validation<Error, QsoAggregateDto>> Handle(CreateQsoAggregateCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Début de l'exécution de CreateQsoAggregateCommand pour l'agrégat {AggregateId} avec le nom '{Name}'", request.Id, request.Name);
+            _logger.LogInformation("Début de l'exécution de CreateQsoAggregateCommand pour l'agrégat {AggregateId} avec le nom '{Name}' et modérateur {ModeratorId}", request.Id, request.Name, request.ModeratorId);
 
             var nameValidation = await _domainService.ValidateUniqueNameAsync(request.Name);
+            var moderatorValidation = await ValidateModeratorExistsAsync(request.ModeratorId);
             
             var aggregateResult = 
                 from _ in nameValidation
+                from __ in moderatorValidation
                 from aggregate in Domain.Aggregates.QsoAggregate.Create(request.Id, request.Name, request.Description, request.ModeratorId)
                 select aggregate;
 
@@ -90,7 +97,28 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
         catch (Exception ex)
         {
             _logger.LogError(ex, "Une erreur inattendue s'est produite lors de l'exécution de CreateQsoAggregateCommand pour l'agrégat {AggregateId}", request.Id);
-            return Error.New("Impossible de créer l'agrégat QSO.");
-        }
+            return Error.New("Impossible de créer l'agrégat QSO.");        }
+    }    private async Task<Validation<Error, Unit>> ValidateModeratorExistsAsync(Guid moderatorId)
+    {
+        _logger.LogDebug("Validation de l'existence du modérateur {ModeratorId}", moderatorId);
+        
+        var moderatorResult = await _moderatorRepository.GetByIdAsync(moderatorId);
+        return moderatorResult.Match(
+            moderator =>
+            {
+                // Vérifier que le modérateur a un CallSign (c'est-à-dire qu'il existe vraiment)                if (string.IsNullOrWhiteSpace(moderator.CallSign))
+                {
+                    _logger.LogWarning("Modérateur {ModeratorId} non trouvé (agrégat vide)", moderatorId);
+                    return Validation<Error, Unit>.Fail(Seq1(Error.New("Impossible de créer le QSO Le modérateur n'existe pas.")));
+                }
+                
+                _logger.LogDebug("Modérateur {ModeratorId} trouvé avec succès (CallSign: {CallSign})", moderatorId, moderator.CallSign);
+                return Validation<Error, Unit>.Success(Unit.Default);
+            },            errors =>
+            {
+                _logger.LogWarning("Modérateur {ModeratorId} non trouvé: {Errors}", moderatorId, string.Join(", ", errors.Select(e => e.Message)));
+                return Validation<Error, Unit>.Fail(Seq1(Error.New("Impossible de créer le QSO Le modérateur n'existe pas.")));
+            }
+        );
     }
 }

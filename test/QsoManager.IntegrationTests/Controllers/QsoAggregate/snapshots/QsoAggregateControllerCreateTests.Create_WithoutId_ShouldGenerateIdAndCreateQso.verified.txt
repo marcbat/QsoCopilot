@@ -1,16 +1,13 @@
 ﻿{
-  Status: 200 OK,
+  Status: 400 Bad Request,
   Content: {
     Headers: {
       Content-Type: application/json; charset=utf-8
     },
     Value: {
-      id: Guid_1,
-      name: QSO Sans ID,
-      description: QSO créé sans ID spécifique,
-      moderatorId: Guid_2,
-      startDateTime: null,
-      createdDate: null
+      errors: [
+        Impossible de créer le QSO Le modérateur n'existe pas.
+      ]
     }
   }
 }
