@@ -144,22 +144,26 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors de la récupération de tous les QSO Aggregates");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Récupère un QSO Aggregate par ID
     /// </summary>
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<QsoAggregateDto>> GetById(Guid id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<QsoAggregateDto>> GetById(string id)
     {
         try
         {
-            var query = new GetQsoAggregateByIdQuery(id);
+            // Valider que l'ID est un GUID valide
+            if (!Guid.TryParse(id, out var guidId))
+            {
+                return BadRequest(new { Message = $"Invalid GUID format: {id}" });
+            }
+
+            var query = new GetQsoAggregateByIdQuery(guidId);
             var result = await _mediator.Send(query);
 
             return result.Match<ActionResult<QsoAggregateDto>>(
                 qso => Ok(qso),
-                errors => NotFound(new { Message = $"QSO Aggregate with ID {id} not found" })
+                errors => NotFound(new { Message = $"QSO Aggregate with ID {guidId} not found" })
             );        }
         catch (Exception ex)
         {
