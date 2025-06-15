@@ -54,4 +54,66 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
         // Assert
         await Verify(response, _verifySettings);
     }
+
+    [Fact]
+    public async Task AddParticipant_WhenNotModerator_ShouldReturnForbidden()
+    {
+        // Arrange - Créer un QSO avec un premier utilisateur
+        var (moderatorId, moderatorToken) = await CreateAndAuthenticateUserAsync("F4MODERATOR");
+        var qsoId = Guid.NewGuid();
+        var createRequest = new
+        {
+            Id = qsoId,
+            Name = "QSO Test Unauthorized",
+            Description = "QSO pour test d'autorisation"
+        };
+
+        await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
+        await Task.Delay(100);
+
+        // Changer d'utilisateur - utiliser un autre utilisateur qui n'est pas le modérateur
+        var (otherId, otherToken) = await CreateAndAuthenticateUserAsync("F4OTHER");
+        
+        var addParticipantRequest = new
+        {
+            CallSign = "F4XYZ"
+        };
+
+        // Act - Essayer d'ajouter un participant avec un utilisateur différent
+        var response = await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", addParticipantRequest);
+
+        // Assert
+        await Verify(response, _verifySettings);
+    }
+
+    [Fact]
+    public async Task AddParticipant_WithoutAuthentication_ShouldReturnUnauthorized()
+    {
+        // Arrange - Créer un QSO avec un utilisateur authentifié
+        var (moderatorId, moderatorToken) = await CreateAndAuthenticateUserAsync("F4MODERATOR2");
+        var qsoId = Guid.NewGuid();
+        var createRequest = new
+        {
+            Id = qsoId,
+            Name = "QSO Test No Auth",
+            Description = "QSO pour test sans authentification"
+        };
+
+        await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
+        await Task.Delay(100);
+
+        // Supprimer l'authentification
+        ClearAuthentication();
+        
+        var addParticipantRequest = new
+        {
+            CallSign = "F4NOAUTH"
+        };
+
+        // Act - Essayer d'ajouter un participant sans authentification
+        var response = await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", addParticipantRequest);
+
+        // Assert
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, response.StatusCode);
+    }
 }

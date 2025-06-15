@@ -47,13 +47,13 @@ public class QsoAggregateController : ControllerBase
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
     }    
-    
-    [HttpPost("{aggregateId:guid}/participants")]
+      [HttpPost("{aggregateId:guid}/participants")]
+    [Authorize]
     public async Task<ActionResult<QsoAggregateDto>> AddParticipant(Guid aggregateId, [FromBody] AddParticipantRequest request)
     {
         try
         {
-            var command = new AddParticipantCommand(aggregateId, request.CallSign);
+            var command = new AddParticipantCommand(aggregateId, request.CallSign, User);
             var result = await _mediator.Send(command);
 
             return result.Match<ActionResult<QsoAggregateDto>>(

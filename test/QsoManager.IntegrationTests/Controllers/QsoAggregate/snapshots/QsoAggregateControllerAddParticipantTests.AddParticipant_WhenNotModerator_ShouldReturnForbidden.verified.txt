@@ -1,0 +1,13 @@
+﻿{
+  Status: 400 Bad Request,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      errors: [
+        Vous n'êtes pas autorisé à modifier ce QSO. Seul le modérateur peut ajouter des participants.
+      ]
+    }
+  }
+}
