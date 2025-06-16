@@ -117,13 +117,15 @@ public class AuthenticationService : IAuthenticationService
     public Task<bool> UserListEmpty()
     {
         return Task.FromResult(!_userManager.Users.Any());
-    }
-
-    public async Task<string> GeneratePasswordResetUrlCallBackAsync(string resetPasswordUrl, string userEmail)
+    }    public async Task<string> GeneratePasswordResetUrlCallBackAsync(string resetPasswordUrl, string userEmail)
     {
         var user = await _userManager.FindByEmailAsync(userEmail);
         if (user is null)
             throw new UserNotFoundException($"Erreur de génération du reset password, utilisateur non trouvé avec l'email {userEmail}");
+
+        // Validate the reset password URL
+        if (!Uri.TryCreate(resetPasswordUrl, UriKind.Absolute, out var validatedUri))
+            throw new ArgumentException($"Invalid reset password URL: {resetPasswordUrl}");
 
         var code = await _userManager.GeneratePasswordResetTokenAsync(user);
         var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
