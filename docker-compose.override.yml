@@ -4,13 +4,6 @@ services:
   qso-api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443;http://+:80
-      - ASPNETCORE_HTTPS_PORT=5001
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=qsocopilot
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/root/.aspnet/https/QsoCopilot.pfx
+      - ASPNETCORE_URLS=http://+:80
     ports:
       - "5000:80"
-      - "5001:443"
-    volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
