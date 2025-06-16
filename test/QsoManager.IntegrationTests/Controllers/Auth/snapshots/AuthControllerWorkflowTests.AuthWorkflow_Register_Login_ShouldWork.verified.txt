@@ -12,24 +12,26 @@
     }
   },
   LoginResponse: {
-    Status: 401 Unauthorized,
+    Status: 200 OK,
     Content: {
       Headers: {
         Content-Type: application/json; charset=utf-8
       },
       Value: {
-        message: Invalid credentials
+        token: {Scrubbed},
+        expiration: {Scrubbed}
       }
     }
   },
   LoginByEmailResponse: {
-    Status: 401 Unauthorized,
+    Status: 200 OK,
     Content: {
       Headers: {
         Content-Type: application/json; charset=utf-8
       },
       Value: {
-        message: Invalid credentials
+        token: {Scrubbed},
+        expiration: {Scrubbed}
       }
     }
   }
