@@ -1,4 +1,6 @@
 {
   "methodDisplay": "method",
-  "methodDisplayOptions": "all"
+  "methodDisplayOptions": "all",
+  "parallelizeTestCollections": false,
+  "maxParallelThreads": 1
 }

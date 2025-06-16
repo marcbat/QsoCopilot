@@ -3,9 +3,12 @@ using QsoManager.Api;
 using System.Net.Http.Json;
 using System.Net;
 using System.Text.Json;
+using Xunit;
+
 
 namespace QsoManager.IntegrationTests.Controllers.QsoAggregate;
 
+[Collection("Integration Tests")]
 public class QsoAggregateControllerSearchTests : BaseIntegrationTest
 {
     public QsoAggregateControllerSearchTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)

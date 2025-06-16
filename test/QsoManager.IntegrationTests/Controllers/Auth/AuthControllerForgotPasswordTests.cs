@@ -2,9 +2,11 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using QsoManager.Application.DTOs.Authentication;
+using Xunit;
 
 namespace QsoManager.IntegrationTests.Controllers.Auth;
 
+[Collection("Integration Tests")]
 public class AuthControllerForgotPasswordTests : BaseIntegrationTest
 {
     public AuthControllerForgotPasswordTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)

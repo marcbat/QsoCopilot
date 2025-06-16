@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using QsoManager.Api;
 using System.Net;
+using Xunit;
+
 
 namespace QsoManager.IntegrationTests.Controllers;
 
+[Collection("Integration Tests")]
 public class HealthControllerTests : BaseIntegrationTest
 {
     public HealthControllerTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)
