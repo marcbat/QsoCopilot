@@ -6,7 +6,7 @@
     },
     Value: {
       errors: [
-        Impossible de créer le QSO Le modérateur n'existe pas.
+        Un QSO Aggregate avec le nom 'QSO Duplicate Test' existe déjà
       ]
     }
   }
