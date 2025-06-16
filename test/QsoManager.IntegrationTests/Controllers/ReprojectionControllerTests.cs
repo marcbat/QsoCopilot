@@ -2,9 +2,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using QsoManager.Api;
 using System.Net.Http.Json;
 using System.Net;
+using Xunit;
+
 
 namespace QsoManager.IntegrationTests.Controllers;
 
+[Collection("Integration Tests")]
 public class ReprojectionControllerTests : BaseIntegrationTest
 {
     public ReprojectionControllerTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)

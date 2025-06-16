@@ -40,7 +40,9 @@ public class MongoDbTestFixture : IAsyncLifetime
         // Initialiser le client MongoDB et la base de données
         _mongoClient = new MongoClient(ConnectionString);
         _database = _mongoClient.GetDatabase("QsoManagerIntegrationTests");
-    }    public async Task DisposeAsync()
+    }   
+    
+    public async Task DisposeAsync()
     {
         if (_mongoContainer != null)
         {

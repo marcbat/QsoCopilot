@@ -5,10 +5,12 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Xunit;
 
 namespace QsoManager.IntegrationTests;
 
-public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>, IClassFixture<MongoDbTestFixture>, IAsyncLifetime
+[Collection("Integration Tests")]
+public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>, IAsyncLifetime
 {
     protected readonly WebApplicationFactory<Program> _factory;
     protected readonly MongoDbTestFixture _mongoFixture;
@@ -49,7 +51,9 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     public static void Initialize()
     {
         VerifierSettings.InitializePlugins();
-    }      public async Task InitializeAsync()
+    }     
+    
+    public async Task InitializeAsync()
     {
         // Nettoyer la base de données avant chaque test
         await _mongoFixture.CleanDatabaseAsync();
