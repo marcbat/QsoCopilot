@@ -5,8 +5,6 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using Testcontainers.MongoDb;
-using DotNet.Testcontainers.Builders;
 
 namespace QsoManager.IntegrationTests;
 
@@ -14,10 +12,9 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
 {
     protected readonly WebApplicationFactory<Program> _factory;
     protected readonly MongoDbTestFixture _mongoFixture;
-    protected MongoDbContainer _containerMongo = null!;
     protected HttpClient _client = null!;
     
-    protected readonly VerifySettings _verifySettings;    
+    protected readonly VerifySettings _verifySettings;
     public BaseIntegrationTest(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture)
     {
         _verifySettings = new VerifySettings();
@@ -52,21 +49,10 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     public static void Initialize()
     {
         VerifierSettings.InitializePlugins();
-    }    
-    public async Task InitializeAsync()
+    }      public async Task InitializeAsync()
     {
-        // Création du container MongoDB avec le port partagé du fixture
-        _containerMongo = new MongoDbBuilder()
-            .WithImage("mongo:7.0.4")
-            .WithPortBinding(_mongoFixture.Port, 27017)
-            .WithEnvironment("MONGO_INITDB_ROOT_USERNAME", "admin")
-            .WithEnvironment("MONGO_INITDB_ROOT_PASSWORD", "password")
-            .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(27017)
-                .UntilCommandIsCompleted("mongosh", "--eval", "db.adminCommand('ping').ok", "--authenticationDatabase", "admin", "-u", "admin", "-p", "password"))
-            .Build();
-
-        await _containerMongo.StartAsync();
+        // Nettoyer la base de données avant chaque test
+        await _mongoFixture.CleanDatabaseAsync();
 
         var host = _factory.WithWebHostBuilder(builder =>
         {
@@ -75,14 +61,10 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
         });
 
         _client = host.CreateClient();
-    }    public async Task DisposeAsync()
+    }    public Task DisposeAsync()
     {
         _client?.Dispose();
-        if (_containerMongo != null)
-        {
-            await _containerMongo.StopAsync();
-            await _containerMongo.DisposeAsync();
-        }
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -144,5 +126,30 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
         var (userId, _) = await CreateAndAuthenticateUserAsync(callSign);
         ClearAuthentication(); // Nettoyer l'authentification pour les tests qui n'en ont pas besoin
         return userId;
+    }    /// <summary>
+    /// Méthode helper pour vérifier que la base de données est vide (utile pour tester le nettoyage)
+    /// </summary>
+    protected async Task<bool> IsDatabaseEmptyAsync()
+    {
+        var database = _mongoFixture.Database;
+        var collectionNames = await database.ListCollectionNamesAsync();
+        var collections = new List<string>();
+        
+        while (await collectionNames.MoveNextAsync())
+        {
+            collections.AddRange(collectionNames.Current);
+        }
+        
+        if (!collections.Any()) return true;
+        
+        // Vérifier que toutes les collections sont vides
+        foreach (var collectionName in collections)
+        {
+            var collection = database.GetCollection<object>(collectionName);
+            var count = await collection.CountDocumentsAsync("{}");
+            if (count > 0) return false;
+        }
+        
+        return true;
     }
 }
