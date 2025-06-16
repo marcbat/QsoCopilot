@@ -8,6 +8,7 @@ using QsoManager.Domain.Aggregates;
 using QsoManager.Domain.Common;
 using QsoManager.Domain.Repositories;
 using QsoManager.Domain.Services;
+using System.Security.Claims;
 using System.Threading.Channels;
 using static LanguageExt.Prelude;
 
@@ -28,21 +29,27 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
     {
         _eventRepository = eventRepository;        _domainService = domainService;
         _moderatorRepository = moderatorRepository;
-    }
-
-    public async Task<Validation<Error, QsoAggregateDto>> Handle(CreateQsoAggregateCommand request, CancellationToken cancellationToken)
+    }    public async Task<Validation<Error, QsoAggregateDto>> Handle(CreateQsoAggregateCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Début de l'exécution de CreateQsoAggregateCommand pour l'agrégat {AggregateId} avec le nom '{Name}' et modérateur {ModeratorId}", request.Id, request.Name, request.ModeratorId);
+            // Extraire l'ID utilisateur du ClaimsPrincipal
+            var userIdClaim = request.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var moderatorId))
+            {
+                _logger.LogWarning("ID utilisateur introuvable ou invalide dans les claims");
+                return Error.New("Utilisateur non authentifié ou ID utilisateur invalide.");
+            }
+
+            _logger.LogInformation("Début de l'exécution de CreateQsoAggregateCommand pour l'agrégat {AggregateId} avec le nom '{Name}' et modérateur {ModeratorId}", request.Id, request.Name, moderatorId);
 
             var nameValidation = await _domainService.ValidateUniqueNameAsync(request.Name);
-            var moderatorValidation = await ValidateModeratorExistsAsync(request.ModeratorId);
+            var moderatorValidation = await ValidateModeratorExistsAsync(moderatorId);
             
             var aggregateResult = 
                 from _ in nameValidation
                 from __ in moderatorValidation
-                from aggregate in Domain.Aggregates.QsoAggregate.Create(request.Id, request.Name, request.Description, request.ModeratorId)
+                from aggregate in Domain.Aggregates.QsoAggregate.Create(request.Id, request.Name, request.Description, moderatorId)
                 select aggregate;
 
             return await aggregateResult.MatchAsync(
@@ -106,7 +113,8 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
         return moderatorResult.Match(
             moderator =>
             {
-                // Vérifier que le modérateur a un CallSign (c'est-à-dire qu'il existe vraiment)                if (string.IsNullOrWhiteSpace(moderator.CallSign))
+                // Vérifier que le modérateur a un CallSign (c'est-à-dire qu'il existe vraiment)
+                if (string.IsNullOrWhiteSpace(moderator.CallSign))
                 {
                     _logger.LogWarning("Modérateur {ModeratorId} non trouvé (agrégat vide)", moderatorId);
                     return Validation<Error, Unit>.Fail(Seq1(Error.New("Impossible de créer le QSO Le modérateur n'existe pas.")));
@@ -114,7 +122,8 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
                 
                 _logger.LogDebug("Modérateur {ModeratorId} trouvé avec succès (CallSign: {CallSign})", moderatorId, moderator.CallSign);
                 return Validation<Error, Unit>.Success(Unit.Default);
-            },            errors =>
+            },
+            errors =>
             {
                 _logger.LogWarning("Modérateur {ModeratorId} non trouvé: {Errors}", moderatorId, string.Join(", ", errors.Select(e => e.Message)));
                 return Validation<Error, Unit>.Fail(Seq1(Error.New("Impossible de créer le QSO Le modérateur n'existe pas.")));

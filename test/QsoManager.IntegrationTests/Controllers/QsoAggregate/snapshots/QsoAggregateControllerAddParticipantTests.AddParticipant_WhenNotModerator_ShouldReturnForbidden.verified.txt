@@ -6,7 +6,7 @@
     },
     Value: {
       errors: [
-        Un QSO Aggregate avec le nom 'QSO Duplicate Test' existe déjà
+        Vous n'êtes pas autorisé à modifier ce QSO. Seul le modérateur peut ajouter des participants.
       ]
     }
   }

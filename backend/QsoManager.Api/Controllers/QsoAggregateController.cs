@@ -1,6 +1,7 @@
 using LanguageExt;
 using LanguageExt.Common;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QsoManager.Application.Commands.QsoAggregate;
 using QsoManager.Application.DTOs;
@@ -21,9 +22,8 @@ public class QsoAggregateController : ControllerBase
     {
         _mediator = mediator;
         _logger = logger;
-    }
-
-    [HttpPost]
+    }    [HttpPost]
+    [Authorize]
     public async Task<ActionResult<QsoAggregateDto>> Create([FromBody] CreateQsoAggregateRequest request)
     {
         try
@@ -31,7 +31,7 @@ public class QsoAggregateController : ControllerBase
                 request.Id ?? Guid.NewGuid(),
                 request.Name,
                 request.Description,
-                request.ModeratorId
+                User // Passer le ClaimsPrincipal au lieu du ModeratorId
             );
 
             var result = await _mediator.Send(command);
@@ -47,13 +47,13 @@ public class QsoAggregateController : ControllerBase
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
     }    
-    
-    [HttpPost("{aggregateId:guid}/participants")]
+      [HttpPost("{aggregateId:guid}/participants")]
+    [Authorize]
     public async Task<ActionResult<QsoAggregateDto>> AddParticipant(Guid aggregateId, [FromBody] AddParticipantRequest request)
     {
         try
         {
-            var command = new AddParticipantCommand(aggregateId, request.CallSign);
+            var command = new AddParticipantCommand(aggregateId, request.CallSign, User);
             var result = await _mediator.Send(command);
 
             return result.Match<ActionResult<QsoAggregateDto>>(
@@ -219,7 +219,7 @@ public class HealthController : ControllerBase
 }
 
 // DTOs pour les requêtes
-public record CreateQsoAggregateRequest(Guid? Id, string Name, string Description, Guid ModeratorId);
+public record CreateQsoAggregateRequest(Guid? Id, string Name, string Description);
 public record AddParticipantRequest(string CallSign);
 public record ReorderParticipantsRequest(Dictionary<string, int> NewOrders);
 public record MoveParticipantRequest(int NewPosition);

@@ -20,30 +20,31 @@ public class QsoAggregateControllerGetAllTests : BaseIntegrationTest
 
         // Assert
         await Verify(response, _verifySettings);
-    }
-
-    [Fact]
+    }    [Fact]
     public async Task GetAll_WhenQsoAggregatesExist_ShouldReturnAllQsos()
     {
-        // Arrange - Créer plusieurs QSO
+        // Arrange - Créer plusieurs QSO avec utilisateurs authentifiés
+        var (userId1, token1) = await CreateAndAuthenticateUserAsync("F4TEST1");
         var qso1 = new
         {
             Id = Guid.NewGuid(),
             Name = "QSO Test 1",
-            Description = "Premier QSO pour test GetAll",
-            ModeratorId = Guid.NewGuid()
+            Description = "Premier QSO pour test GetAll"
         };
+        await _client.PostAsJsonAsync("/api/QsoAggregate", qso1);
 
+        // Changer d'utilisateur pour le deuxième QSO
+        var (userId2, token2) = await CreateAndAuthenticateUserAsync("F4TEST2");
         var qso2 = new
         {
             Id = Guid.NewGuid(),
             Name = "QSO Test 2",
-            Description = "Deuxième QSO pour test GetAll",
-            ModeratorId = Guid.NewGuid()
+            Description = "Deuxième QSO pour test GetAll"
         };
-
-        await _client.PostAsJsonAsync("/api/QsoAggregate", qso1);
         await _client.PostAsJsonAsync("/api/QsoAggregate", qso2);
+
+        // Supprimer l'authentification pour le test GetAll (lecture publique)
+        ClearAuthentication();
 
         // Attendre que les projections soient mises à jour
         await Task.Delay(100);

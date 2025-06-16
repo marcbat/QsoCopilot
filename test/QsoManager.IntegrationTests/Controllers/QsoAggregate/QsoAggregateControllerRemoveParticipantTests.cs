@@ -10,19 +10,17 @@ public class QsoAggregateControllerRemoveParticipantTests : BaseIntegrationTest
 {
     public QsoAggregateControllerRemoveParticipantTests(WebApplicationFactory<Program> factory, MongoDbTestFixture mongoFixture) : base(factory, mongoFixture)
     {
-    }
-
-    [Fact]
+    }    [Fact]
     public async Task RemoveParticipant_WhenParticipantExists_ShouldRemoveParticipant()
     {
         // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST1");
         var qsoId = Guid.NewGuid();
         var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Remove Participant",
-            Description = "QSO pour test de suppression de participant",
-            ModeratorId = Guid.NewGuid()
+            Description = "QSO pour test de suppression de participant"
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
@@ -42,15 +40,14 @@ public class QsoAggregateControllerRemoveParticipantTests : BaseIntegrationTest
 
     [Fact]
     public async Task RemoveParticipant_WhenParticipantNotFound_ShouldReturnBadRequest()
-    {
-        // Arrange
+    {        // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST2");
         var qsoId = Guid.NewGuid();
         var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Remove Non-Existent Participant",
-            Description = "QSO pour test de suppression de participant inexistant",
-            ModeratorId = Guid.NewGuid()
+            Description = "QSO pour test de suppression de participant inexistant"
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);

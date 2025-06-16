@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using QsoManager.Application.Commands;
 using QsoManager.Application.DTOs;
 using QsoManager.Domain.Repositories;
+using System.Security.Claims;
 using System.Threading.Channels;
 using QsoManager.Domain.Common;
 using static LanguageExt.Prelude;
@@ -17,27 +18,36 @@ public class AddParticipantCommandHandler : BaseCommandHandler<AddParticipantCom
     public AddParticipantCommandHandler(IQsoAggregateRepository repository, Channel<IEvent> channel, ILogger<AddParticipantCommandHandler> logger) : base(channel, logger)
     {
         _repository = repository;
-    }    public async Task<Validation<Error, QsoAggregateDto>> Handle(AddParticipantCommand request, CancellationToken cancellationToken)    {
+    }    public async Task<Validation<Error, QsoAggregateDto>> Handle(AddParticipantCommand request, CancellationToken cancellationToken)
+    {
         try
         {
-            _logger.LogInformation("Début de l'ajout du participant '{CallSign}' à l'agrégat {AggregateId}", request.CallSign, request.AggregateId);
+            // Extraire l'ID utilisateur du ClaimsPrincipal
+            var userIdClaim = request.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                _logger.LogWarning("ID utilisateur introuvable ou invalide dans les claims pour l'ajout du participant");
+                return Error.New("Utilisateur non authentifié ou ID utilisateur invalide.");
+            }
+
+            _logger.LogInformation("Début de l'ajout du participant '{CallSign}' à l'agrégat {AggregateId} par l'utilisateur {UserId}", request.CallSign, request.AggregateId, userId);
             
             var aggregateResult = await _repository.GetByIdAsync(request.AggregateId);
             
-            var result =
+            var authorizationAndUpdateResult = 
                 from aggregate in aggregateResult
+                from _ in ValidateUserIsModerator(aggregate, userId)
                 from updatedAggregate in aggregate.AddParticipant(request.CallSign)
-                select updatedAggregate;
-
-            return await result.MatchAsync(                async aggregate =>
+                select updatedAggregate;            return await authorizationAndUpdateResult.MatchAsync(
+                async updatedAggregate =>
                 {
                     _logger.LogDebug("Participant '{CallSign}' ajouté avec succès à l'agrégat {AggregateId}", request.CallSign, request.AggregateId);
                     
-                    var eventsResult = aggregate.GetUncommittedChanges();
+                    var eventsResult = updatedAggregate.GetUncommittedChanges();
                     return await eventsResult.MatchAsync(
                         async events =>
                         {
-                            var saveResult = await _repository.SaveAsync(aggregate);
+                            var saveResult = await _repository.SaveAsync(updatedAggregate);
                             return saveResult.Match(
                                 _ => 
                                 {
@@ -47,15 +57,15 @@ public class AddParticipantCommandHandler : BaseCommandHandler<AddParticipantCom
                                     _logger.LogInformation("Participant '{CallSign}' ajouté avec succès et agrégat {AggregateId} sauvegardé", request.CallSign, request.AggregateId);
                                     
                                     // Créer le DTO avec l'agrégat mis à jour
-                                    var participantDtos = aggregate.Participants
+                                    var participantDtos = updatedAggregate.Participants
                                         .Select(p => new ParticipantDto(p.CallSign, p.Order))
                                         .ToArray();
 
                                     var qsoDto = new QsoAggregateDto(
-                                        aggregate.Id, 
-                                        aggregate.Name, 
-                                        aggregate.Description, 
-                                        aggregate.ModeratorId, 
+                                        updatedAggregate.Id, 
+                                        updatedAggregate.Name, 
+                                        updatedAggregate.Description, 
+                                        updatedAggregate.ModeratorId, 
                                         participantDtos);
 
                                     return Validation<Error, QsoAggregateDto>.Success(qsoDto);
@@ -86,5 +96,18 @@ public class AddParticipantCommandHandler : BaseCommandHandler<AddParticipantCom
             _logger.LogError(ex, "Une erreur inattendue s'est produite lors de l'ajout du participant '{CallSign}' à l'agrégat {AggregateId}", request.CallSign, request.AggregateId);
             return Error.New("Impossible d'ajouter le participant.");
         }
+    }
+
+    private Validation<Error, Unit> ValidateUserIsModerator(Domain.Aggregates.QsoAggregate aggregate, Guid userId)
+    {
+        if (aggregate.ModeratorId != userId)
+        {
+            _logger.LogWarning("Utilisateur {UserId} n'est pas autorisé à modifier l'agrégat {AggregateId}. Modérateur attendu: {ModeratorId}", 
+                userId, aggregate.Id, aggregate.ModeratorId);
+            return Error.New("Vous n'êtes pas autorisé à modifier ce QSO. Seul le modérateur peut ajouter des participants.");
+        }
+
+        _logger.LogDebug("Utilisateur {UserId} autorisé à modifier l'agrégat {AggregateId}", userId, aggregate.Id);
+        return Unit.Default;
     }
 }

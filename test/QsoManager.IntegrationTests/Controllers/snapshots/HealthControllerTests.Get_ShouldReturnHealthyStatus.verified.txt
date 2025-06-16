@@ -5,7 +5,9 @@
       Content-Type: application/json; charset=utf-8
     },
     Value: {
-      message: Password reset email sent successfully
+      status: healthy,
+      timestamp: DateTimeOffset_1,
+      service: QSO Manager API
     }
   }
 }
