@@ -6,7 +6,7 @@ Application complète de gestion de QSO (contacts radioamateurs) avec architectu
 
 - **Backend** : API REST en .NET 9 avec architecture Event Sourcing
 - **Base de données** : MongoDB (Event Store + Projections)
-- **Frontend** : React 18 avec TypeScript (en développement)
+- **Frontend** : React 18 avec TypeScript ✅
 - **Conteneurisation** : Docker Compose
 
 ### Patterns et Technologies
