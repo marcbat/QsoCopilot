@@ -74,9 +74,7 @@ const QsoManagerPage: React.FC = () => {
       <div className="card">
         <div className="card-header">
           <h2 className="card-title">Liste des QSO</h2>
-        </div>
-        
-        <form onSubmit={handleSearch} className="form-row">
+        </div>        <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div className="form-group">
             <label htmlFor="search" className="form-label">
               Rechercher par nom
@@ -89,7 +87,7 @@ const QsoManagerPage: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Entrez le nom d'un QSO..."
             />
-          </div>          <div className="form-group" style={{ display: 'flex', gap: '0.5rem' }}>
+          </div>          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
             <button type="submit" className="btn btn-primary" disabled={isLoading}>
               {isLoading ? 'Recherche...' : 'Rechercher'}
             </button>
