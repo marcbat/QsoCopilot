@@ -65,7 +65,7 @@ const QsoManagerPage: React.FC = () => {
   return (
     <div className="qso-manager-page">      {/* Formulaire de création QSO pour utilisateurs connectés */}
       {isAuthenticated && (
-        <div className="qso-creation-section">
+        <div className="qso-creation-section" style={{ marginBottom: '2rem' }}>
           <CreateQsoForm onQsoCreated={handleQsoCreated} />
         </div>
       )}
@@ -89,8 +89,7 @@ const QsoManagerPage: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Entrez le nom d'un QSO..."
             />
-          </div>
-          <div className="form-group">
+          </div>          <div className="form-group" style={{ display: 'flex', gap: '0.5rem' }}>
             <button type="submit" className="btn btn-primary" disabled={isLoading}>
               {isLoading ? 'Recherche...' : 'Rechercher'}
             </button>
@@ -101,7 +100,6 @@ const QsoManagerPage: React.FC = () => {
                 setSearchTerm('');
                 loadQsos();
               }}
-              style={{ marginLeft: '0.5rem' }}
             >
               Effacer
             </button>
