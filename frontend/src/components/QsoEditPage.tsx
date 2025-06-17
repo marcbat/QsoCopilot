@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { QsoAggregateDto, ParticipantDto, UpdateQsoRequest } from '../types';
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
+import { extractErrorMessage } from '../utils/errorUtils';
 
 const QsoEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,10 +53,9 @@ const QsoEditPage: React.FC = () => {
         endDateTime: response.endDateTime ? formatDateForInput(response.endDateTime) : '',
         frequency: response.frequency?.toString() || '',
         mode: response.mode || ''
-      });
-    } catch (err) {
+      });    } catch (err: any) {
       console.error('Erreur lors du chargement du QSO:', err);
-      setError('Impossible de charger les détails du QSO');
+      setError(extractErrorMessage(err, 'Impossible de charger les détails du QSO'));
     } finally {
       setIsLoading(false);
     }
@@ -92,10 +92,9 @@ const QsoEditPage: React.FC = () => {
       setSuccessMessage('QSO mis à jour avec succès');
       
       // Recharger les données
-      await loadQso();
-    } catch (err) {
+      await loadQso();    } catch (err: any) {
       console.error('Erreur lors de la mise à jour:', err);
-      setError('Impossible de mettre à jour le QSO');
+      setError(extractErrorMessage(err, 'Impossible de mettre à jour le QSO'));
     } finally {
       setIsSaving(false);
     }

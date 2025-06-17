@@ -1,0 +1,1 @@
+{"errors":["La fréquence doit être supérieure à 0"]}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CreateQsoRequest, CreateParticipantRequest } from '../types';
 import { qsoApiService } from '../api/qsoApi';
+import { extractErrorMessage } from '../utils/errorUtils';
 
 interface QsoFormProps {
   onQsoCreated: (qsoId: string) => void;
@@ -52,9 +53,8 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
         frequency: 0,
         startDateTime: '',
         mode: ''
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la création du QSO');
+      });    } catch (err: any) {
+      setError(extractErrorMessage(err, 'Erreur lors de la création du QSO'));
     } finally {
       setIsLoading(false);
     }
@@ -73,9 +73,8 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
       setParticipant({
         callSign: '',
         name: ''
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'ajout du participant');
+      });    } catch (err: any) {
+      setError(extractErrorMessage(err, 'Erreur lors de l\'ajout du participant'));
     } finally {
       setIsLoading(false);
     }

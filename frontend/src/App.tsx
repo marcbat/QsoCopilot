@@ -7,6 +7,7 @@ import QsoDetailPage from './components/QsoDetailPage';
 import QsoEditPage from './components/QsoEditPage';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
+import ErrorTestComponent from './components/ErrorTestComponent';
 import './styles/global.css';
 
 const App: React.FC = () => {
@@ -15,13 +16,13 @@ const App: React.FC = () => {
       <Router>
         <div className="app">
           <Header />
-          <main className="main-content">
-            <Routes>
+          <main className="main-content">            <Routes>
               <Route path="/" element={<QsoManagerPage />} />
               <Route path="/qso/:id" element={<QsoDetailPage />} />
               <Route path="/qso/:id/edit" element={<QsoEditPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/test-errors" element={<ErrorTestComponent />} />
             </Routes>
           </main>
         </div>

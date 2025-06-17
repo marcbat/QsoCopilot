@@ -4,6 +4,7 @@ import { qsoApiService } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import NewQsoForm from './NewQsoForm';
 import QsoList from './QsoList';
+import { extractErrorMessage } from '../utils/errorUtils';
 
 const QsoManagerPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -18,10 +19,9 @@ const QsoManagerPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       const data = await qsoApiService.getAllQsoAggregates();
-      setQsos(data);
-    } catch (err) {
+      setQsos(data);    } catch (err: any) {
       console.error('Erreur lors du chargement des QSO:', err);
-      setError('Erreur lors du chargement de la liste des QSO');
+      setError(extractErrorMessage(err, 'Erreur lors du chargement de la liste des QSO'));
     } finally {
       setIsLoading(false);
     }
@@ -38,10 +38,9 @@ const QsoManagerPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       const data = await qsoApiService.searchQsoByName(term);
-      setQsos(data);
-    } catch (err) {
+      setQsos(data);    } catch (err: any) {
       console.error('Erreur lors de la recherche:', err);
-      setError('Erreur lors de la recherche');
+      setError(extractErrorMessage(err, 'Erreur lors de la recherche'));
     } finally {
       setIsLoading(false);
     }
