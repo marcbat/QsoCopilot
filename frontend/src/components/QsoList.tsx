@@ -91,10 +91,9 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
                 <div className="qso-description" style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {qso.description || 'Aucune description'}
                 </div>
-              </td>
-              <td>
+              </td>              <td>
                 <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>
-                  {qso.frequency ? `${qso.frequency} MHz` : 'Non définie'}
+                  {qso.frequency ? `${qso.frequency.toFixed(3)} MHz` : 'Non définie'}
                 </div>
               </td>
               <td>
