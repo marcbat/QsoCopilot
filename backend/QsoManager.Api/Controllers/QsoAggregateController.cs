@@ -31,6 +31,7 @@ public class QsoAggregateController : ControllerBase
                 request.Id ?? Guid.NewGuid(),
                 request.Name,
                 request.Description,
+                request.Frequency,
                 User // Passer le ClaimsPrincipal au lieu du ModeratorId
             );
 
@@ -219,7 +220,7 @@ public class HealthController : ControllerBase
 }
 
 // DTOs pour les requêtes
-public record CreateQsoAggregateRequest(Guid? Id, string Name, string Description);
+public record CreateQsoAggregateRequest(Guid? Id, string Name, string? Description, decimal Frequency);
 public record AddParticipantRequest(string CallSign);
 public record ReorderParticipantsRequest(Dictionary<string, int> NewOrders);
 public record MoveParticipantRequest(int NewPosition);

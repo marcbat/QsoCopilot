@@ -27,16 +27,16 @@ public class GetAllQsoAggregatesQueryHandler : IQueryHandler<GetAllQsoAggregates
         {
             _logger.LogInformation("Récupération de tous les QSO Aggregates");
 
-            var result = await _projectionRepository.GetAllAsync(cancellationToken);
-
-            return result.Map(projections => 
-                projections.Select(p => new QsoAggregateDto(
+            var result = await _projectionRepository.GetAllAsync(cancellationToken);            return result.Map(projections =>                projections.Select(p => new QsoAggregateDto(
                     p.Id,
                     p.Name,
                     p.Description,
                     p.ModeratorId,
+                    p.Frequency,
                     p.Participants?.Select(part => new ParticipantDto(part.CallSign, part.Order))
-                        .ToList().AsReadOnly() ?? new List<ParticipantDto>().AsReadOnly()
+                        .ToList().AsReadOnly() ?? new List<ParticipantDto>().AsReadOnly(),
+                    p.StartDateTime,
+                    p.CreatedAt
                 )).AsEnumerable()
             );
         }

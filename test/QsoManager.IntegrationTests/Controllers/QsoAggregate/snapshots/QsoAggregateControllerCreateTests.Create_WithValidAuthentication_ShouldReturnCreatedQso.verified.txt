@@ -9,8 +9,9 @@
       name: QSO avec utilisateur authentifié,
       description: QSO créé avec un utilisateur authentifié,
       moderatorId: Guid_2,
-      startDateTime: null,
-      createdDate: null
+      frequency: 145.5,
+      startDateTime: DateTimeOffset_1,
+      createdDate: DateTimeOffset_1
     }
   }
 }

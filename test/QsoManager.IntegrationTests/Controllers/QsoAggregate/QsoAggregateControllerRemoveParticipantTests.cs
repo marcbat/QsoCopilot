@@ -18,12 +18,12 @@ public class QsoAggregateControllerRemoveParticipantTests : BaseIntegrationTest
     {
         // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST1");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Remove Participant",
-            Description = "QSO pour test de suppression de participant"
+            Description = "QSO pour test de suppression de participant",
+            Frequency = 7.040m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
@@ -45,12 +45,12 @@ public class QsoAggregateControllerRemoveParticipantTests : BaseIntegrationTest
     public async Task RemoveParticipant_WhenParticipantNotFound_ShouldReturnBadRequest()
     {        // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST2");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Remove Non-Existent Participant",
-            Description = "QSO pour test de suppression de participant inexistant"
+            Description = "QSO pour test de suppression de participant inexistant",
+            Frequency = 21.205m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);

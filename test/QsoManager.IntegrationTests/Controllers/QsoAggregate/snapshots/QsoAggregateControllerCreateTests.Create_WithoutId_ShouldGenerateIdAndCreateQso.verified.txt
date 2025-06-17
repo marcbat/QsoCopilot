@@ -9,8 +9,9 @@
       name: QSO Sans ID,
       description: QSO créé sans ID spécifique,
       moderatorId: Guid_2,
-      startDateTime: null,
-      createdDate: null
+      frequency: 7.144,
+      startDateTime: DateTimeOffset_1,
+      createdDate: DateTimeOffset_1
     }
   }
 }

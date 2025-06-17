@@ -45,11 +45,10 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
 
             var nameValidation = await _domainService.ValidateUniqueNameAsync(request.Name);
             var moderatorValidation = await ValidateModeratorExistsAsync(moderatorId);
-            
-            var aggregateResult = 
+              var aggregateResult = 
                 from _ in nameValidation
                 from __ in moderatorValidation
-                from aggregate in Domain.Aggregates.QsoAggregate.Create(request.Id, request.Name, request.Description, moderatorId)
+                from aggregate in Domain.Aggregates.QsoAggregate.Create(request.Id, request.Name, request.Description, moderatorId, request.Frequency)
                 select aggregate;
 
             return await aggregateResult.MatchAsync(
@@ -76,9 +75,17 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
                                         .ToArray();
 
                                     _logger.LogInformation("CreateQsoAggregateCommand exécutée avec succès pour l'agrégat {AggregateId}", aggregate.Id);
-                                    
-                                    return Validation<Error, QsoAggregateDto>.Success(
-                                        new QsoAggregateDto(aggregate.Id, aggregate.Name, aggregate.Description, aggregate.ModeratorId, participantDtos));
+                                      return Validation<Error, QsoAggregateDto>.Success(
+                                        new QsoAggregateDto(
+                                            aggregate.Id, 
+                                            aggregate.Name, 
+                                            aggregate.Description, 
+                                            aggregate.ModeratorId, 
+                                            aggregate.Frequency,
+                                            participantDtos,
+                                            aggregate.StartDateTime,
+                                            aggregate.CreatedDate
+                                        ));
                                 },
                                 errors => 
                                 {

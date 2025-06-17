@@ -9,6 +9,7 @@
       name: QSO Test Participants,
       description: QSO pour test des participants,
       moderatorId: Guid_2,
+      frequency: 145.5,
       participants: [
         {
           callSign: F4ABC,
@@ -17,8 +18,8 @@
           name: null
         }
       ],
-      startDateTime: null,
-      createdDate: null
+      startDateTime: DateTimeOffset_1,
+      createdDate: DateTimeOffset_1
     }
   }
 }

@@ -62,12 +62,11 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
       </div>
 
       <table className="table">
-        <thead>
-          <tr>
+        <thead>          <tr>
             <th>Nom</th>
             <th>Description</th>
+            <th>Fréquence</th>
             <th>Participants</th>
-            <th>Date de création</th>
             <th>Date de début</th>
             {isAuthenticated && <th>Actions</th>}
           </tr>
@@ -79,10 +78,14 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
                 <div className="qso-name" style={{ fontWeight: '600', color: 'var(--primary-color)' }}>
                   {qso.name}
                 </div>
+              </td>              <td>
+                <div className="qso-description" style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {qso.description || 'Aucune description'}
+                </div>
               </td>
               <td>
-                <div className="qso-description" style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {qso.description}
+                <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>
+                  {qso.frequency ? `${qso.frequency} MHz` : 'Non définie'}
                 </div>
               </td>
               <td>
@@ -101,13 +104,7 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
                     <span style={{ color: 'var(--text-secondary)' }}>0 participant</span>
                   )}
                 </div>
-              </td>
-              <td>
-                <div style={{ fontSize: '0.875rem' }}>
-                  {formatDate(qso.createdDate)}
-                </div>
-              </td>
-              <td>
+              </td>              <td>
                 <div style={{ fontSize: '0.875rem' }}>
                   {formatDate(qso.startDateTime)}
                 </div>

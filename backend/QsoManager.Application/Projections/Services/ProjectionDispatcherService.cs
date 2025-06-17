@@ -52,13 +52,14 @@ public class ProjectionDispatcherService
             return Error.New($"Failed to dispatch event: {ex.Message}");
         }
     }    private async Task<Validation<Error, Event>> HandleQsoAggregateCreated(QsoAggregate.Events.Created e, CancellationToken cancellationToken)
-    {
-        var projection = new QsoAggregateProjectionDto
+    {        var projection = new QsoAggregateProjectionDto
         {
             Id = e.AggregateId,
             Name = e.Name,
             Description = e.Description,
             ModeratorId = e.ModeratorId,
+            Frequency = e.Frequency,
+            StartDateTime = e.StartDateTime,
             Participants = new List<ParticipantProjectionDto>(),
             CreatedAt = e.DateEvent,
             UpdatedAt = e.DateEvent

@@ -402,12 +402,12 @@ public class AddParticipantCommandHandlerTests
     }
 
     private static Domain.Aggregates.QsoAggregate CreateQsoAggregate(Guid aggregateId, Guid moderatorId)
-    {
-        var aggregate = Domain.Aggregates.QsoAggregate.Create(
+    {        var aggregate = Domain.Aggregates.QsoAggregate.Create(
             aggregateId, 
             "Test QSO", 
             "Test Description", 
-            moderatorId);
+            moderatorId,
+            14.230m); // Add frequency parameter
 
         return aggregate.Match(
             success => success,

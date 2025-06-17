@@ -27,15 +27,16 @@ public class GetQsoAggregateByIdQueryHandler : IQueryHandler<GetQsoAggregateById
         {
             _logger.LogInformation("Récupération du QSO Aggregate avec l'ID {Id}", request.Id);
 
-            var result = await _projectionRepository.GetByIdAsync(request.Id, cancellationToken);
-
-            return result.Map(projection => new QsoAggregateDto(
+            var result = await _projectionRepository.GetByIdAsync(request.Id, cancellationToken);            return result.Map(projection => new QsoAggregateDto(
                 projection.Id,
                 projection.Name,
                 projection.Description,
                 projection.ModeratorId,
+                projection.Frequency,
                 projection.Participants?.Select(p => new ParticipantDto(p.CallSign, p.Order))
-                    .ToList().AsReadOnly() ?? new List<ParticipantDto>().AsReadOnly()
+                    .ToList().AsReadOnly() ?? new List<ParticipantDto>().AsReadOnly(),
+                projection.StartDateTime,
+                projection.CreatedAt
             ));
         }
         catch (Exception ex)

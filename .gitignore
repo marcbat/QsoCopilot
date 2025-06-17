@@ -135,3 +135,6 @@ node_modules/
 # TernJS port file
 .tern-port
 /backend/.vs
+
+# Test files that should not be committed
+*.received.txt

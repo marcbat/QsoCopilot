@@ -18,12 +18,12 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
     {
         // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST1");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Participants",
-            Description = "QSO pour test des participants"
+            Description = "QSO pour test des participants",
+            Frequency = 145.5m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
@@ -46,12 +46,12 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
     {
         // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST_PROJECTION");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Projection",
-            Description = "QSO pour test de la projection"
+            Description = "QSO pour test de la projection",
+            Frequency = 14.205m
         };
 
         // Créer le QSO
@@ -101,12 +101,12 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
     {
         // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST_MULTIPLE");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Multiple Participants",
-            Description = "QSO pour test de plusieurs participants"
+            Description = "QSO pour test de plusieurs participants",
+            Frequency = 7.040m
         };
 
         // Créer le QSO
@@ -165,12 +165,12 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
     {
         // Arrange - Créer un QSO avec un premier utilisateur
         var (moderatorId, moderatorToken) = await CreateAndAuthenticateUserAsync("F4MODERATOR");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Unauthorized",
-            Description = "QSO pour test d'autorisation"
+            Description = "QSO pour test d'autorisation",
+            Frequency = 28.400m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
@@ -196,12 +196,12 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
     {
         // Arrange - Créer un QSO avec un utilisateur authentifié
         var (moderatorId, moderatorToken) = await CreateAndAuthenticateUserAsync("F4MODERATOR2");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test No Auth",
-            Description = "QSO pour test sans authentification"
+            Description = "QSO pour test sans authentification",
+            Frequency = 21.205m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);

@@ -9,8 +9,9 @@
       name: QSO Test Integration,
       description: QSO créé pour les tests d'intégration,
       moderatorId: Guid_2,
-      startDateTime: null,
-      createdDate: null
+      frequency: 14.23,
+      startDateTime: DateTimeOffset_1,
+      createdDate: DateTimeOffset_1
     }
   }
 }

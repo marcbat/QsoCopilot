@@ -99,15 +99,14 @@ const QsoDetailPage: React.FC = () => {
           <div className="detail-card">
             <h2>{qso.name}</h2>
             
-            <div className="detail-grid">
-              <div className="detail-item">
+            <div className="detail-grid">              <div className="detail-item">
                 <label>Description :</label>
                 <p>{qso.description || 'Aucune description'}</p>
               </div>
 
               <div className="detail-item">
-                <label>Date de création :</label>
-                <p>{formatDate(qso.createdDate)}</p>
+                <label>Fréquence :</label>
+                <p>{qso.frequency ? `${qso.frequency} MHz` : 'Non définie'}</p>
               </div>
 
               <div className="detail-item">
@@ -145,11 +144,9 @@ const QsoDetailPage: React.FC = () => {
                 {qso.participants.map((participant: ParticipantDto, index: number) => (
                   <div key={index} className="participant-card">
                     <div className="participant-info">
-                      <h4>{participant.callSign}</h4>
-                      <div className="participant-details">
+                      <h4>{participant.callSign}</h4>                      <div className="participant-details">
                         {participant.name && <p><strong>Nom :</strong> {participant.name}</p>}
                         {participant.location && <p><strong>Localisation :</strong> {participant.location}</p>}
-                        {participant.frequency && <p><strong>Fréquence :</strong> {participant.frequency} MHz</p>}
                         {participant.signalReport && <p><strong>Rapport signal :</strong> {participant.signalReport}</p>}
                         {participant.notes && <p><strong>Notes :</strong> {participant.notes}</p>}
                       </div>
