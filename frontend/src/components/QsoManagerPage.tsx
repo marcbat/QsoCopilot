@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { QsoAggregateDto } from '../types';
 import { qsoApiService } from '../api';
 import { useAuth } from '../contexts/AuthContext';
+import { useMessages } from '../hooks/useMessages';
 import CreateQsoForm from './CreateQsoForm';
 import QsoList from './QsoList';
 import { extractErrorMessage } from '../utils/errorUtils';
@@ -10,18 +11,19 @@ const QsoManagerPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [qsos, setQsos] = useState<QsoAggregateDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-
+  
+  // Utiliser le hook de messages avec auto-hide
+  const { errorMessage, setErrorMessage } = useMessages();
   // Charger la liste des QSO
   const loadQsos = async () => {
     try {
       setIsLoading(true);
-      setError(null);
+      setErrorMessage(null);
       const data = await qsoApiService.getAllQsoAggregates();
       setQsos(data);    } catch (err: any) {
       console.error('Erreur lors du chargement des QSO:', err);
-      setError(extractErrorMessage(err, 'Erreur lors du chargement de la liste des QSO'));
+      setErrorMessage(extractErrorMessage(err, 'Erreur lors du chargement de la liste des QSO'));
     } finally {
       setIsLoading(false);
     }
@@ -32,16 +34,14 @@ const QsoManagerPage: React.FC = () => {
     if (!term.trim()) {
       loadQsos();
       return;
-    }
-
-    try {
+    }    try {
       setIsLoading(true);
-      setError(null);
+      setErrorMessage(null);
       const data = await qsoApiService.searchQsoByName(term);
       setQsos(data);    } catch (err: any) {
       console.error('Erreur lors de la recherche:', err);
-      setError(extractErrorMessage(err, 'Erreur lors de la recherche'));
-    } finally {
+      setErrorMessage(extractErrorMessage(err, 'Erreur lors de la recherche'));
+    }finally {
       setIsLoading(false);
     }
   };
@@ -104,7 +104,7 @@ const QsoManagerPage: React.FC = () => {
           </div>
         </form>
 
-        {error && <div className="alert alert-error">{error}</div>}
+        {errorMessage && <div className="alert alert-error">{errorMessage}</div>}
 
         {/* Liste des QSO */}
         <QsoList 

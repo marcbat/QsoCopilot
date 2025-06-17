@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AddParticipantRequest } from '../types';
 import { qsoApiService } from '../api';
+import { useMessages } from '../hooks/useMessages';
 import { extractErrorMessage } from '../utils/errorUtils';
 
 interface AddParticipantFormProps {
@@ -13,32 +14,31 @@ const AddParticipantForm: React.FC<AddParticipantFormProps> = ({
   qsoId, 
   qsoName, 
   onParticipantAdded 
-}) => {
-  const [participant, setParticipant] = useState<AddParticipantRequest>({
+}) => {  const [participant, setParticipant] = useState<AddParticipantRequest>({
     callSign: '',
     name: ''
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  
+  // Utiliser le hook de messages avec auto-hide
+  const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setParticipant(prev => ({ ...prev, [name]: value }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!participant.callSign) return;
 
     setIsLoading(true);
-    setError(null);
-    setSuccess(null);
+    setErrorMessage(null);
+    setSuccessMessage(null);
 
     try {
       await qsoApiService.addParticipant(qsoId, participant);
-      setSuccess(`Participant ${participant.callSign} ajouté avec succès!`);
+      setSuccessMessage(`Participant ${participant.callSign} ajouté avec succès!`);
       
       // Réinitialiser le formulaire
       setParticipant({
@@ -48,11 +48,8 @@ const AddParticipantForm: React.FC<AddParticipantFormProps> = ({
       
       // Notifier le parent pour rafraîchir les données
       onParticipantAdded();
-      
-      // Effacer le message de succès après 3 secondes
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(extractErrorMessage(err, 'Erreur lors de l\'ajout du participant'));
+      setErrorMessage(extractErrorMessage(err, 'Erreur lors de l\'ajout du participant'));
     } finally {
       setIsLoading(false);
     }
@@ -62,10 +59,9 @@ const AddParticipantForm: React.FC<AddParticipantFormProps> = ({
     <div className="add-participant-form">
       <div className="card-header">
         <h3 className="card-title">Ajouter un participant au QSO: {qsoName}</h3>
-      </div>
-      
-      {error && <div className="alert alert-error">{error}</div>}
-      {success && <div className="alert alert-success">{success}</div>}
+      </div>      
+      {errorMessage && <div className="alert alert-error">{errorMessage}</div>}
+      {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
       <form onSubmit={handleSubmit} className="qso-form-horizontal">
         <div className="form-group">

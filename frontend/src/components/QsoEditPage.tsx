@@ -3,17 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { QsoAggregateDto, ParticipantDto, UpdateQsoRequest } from '../types';
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
+import { useMessages } from '../hooks/useMessages';
 import { extractErrorMessage } from '../utils/errorUtils';
 
 const QsoEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
+  const { isAuthenticated } = useAuth();  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
+  // Utiliser le hook de messages avec auto-hide
+  const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
+  
   // États pour le formulaire QSO
   const [formData, setFormData] = useState({
     name: '',
@@ -38,11 +40,10 @@ const QsoEditPage: React.FC = () => {
 
     loadQso();
   }, [id, isAuthenticated]);
-
   const loadQso = async () => {
     try {
       setIsLoading(true);
-      setError(null);
+      setErrorMessage(null);
       const response = await qsoApiService.getQso(id!);
       setQso(response);
         // Remplir le formulaire avec les données existantes
@@ -55,7 +56,7 @@ const QsoEditPage: React.FC = () => {
         mode: response.mode || ''
       });    } catch (err: any) {
       console.error('Erreur lors du chargement du QSO:', err);
-      setError(extractErrorMessage(err, 'Impossible de charger les détails du QSO'));
+      setErrorMessage(extractErrorMessage(err, 'Impossible de charger les détails du QSO'));
     } finally {
       setIsLoading(false);
     }
@@ -75,11 +76,9 @@ const QsoEditPage: React.FC = () => {
 
   const handleSaveQso = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!qso) return;
-
-    try {
+    if (!qso) return;    try {
       setIsSaving(true);
-      setError(null);      const updateData: UpdateQsoRequest = {
+      setErrorMessage(null);      const updateData: UpdateQsoRequest = {
         name: formData.name,
         description: formData.description,
         startDateTime: formData.startDateTime ? new Date(formData.startDateTime).toISOString() : undefined,
@@ -94,8 +93,8 @@ const QsoEditPage: React.FC = () => {
       // Recharger les données
       await loadQso();    } catch (err: any) {
       console.error('Erreur lors de la mise à jour:', err);
-      setError(extractErrorMessage(err, 'Impossible de mettre à jour le QSO'));
-    } finally {
+      setErrorMessage(extractErrorMessage(err, 'Impossible de mettre à jour le QSO'));
+    }finally {
       setIsSaving(false);
     }
   };  const handleBack = () => {
@@ -116,13 +115,12 @@ const QsoEditPage: React.FC = () => {
       </div>
     );
   }
-
-  if (error && !qso) {
+  if (errorMessage && !qso) {
     return (
       <div className="page-container">
         <div className="error-message">
           <h2>Erreur</h2>
-          <p>{error}</p>
+          <p>{errorMessage}</p>
           <button onClick={() => navigate('/')} className="btn btn-secondary">
             Retour à la liste
           </button>
@@ -141,11 +139,9 @@ const QsoEditPage: React.FC = () => {
         <button onClick={handleViewDetails} className="btn btn-outline">
           Voir les détails
         </button>
-      </div>
-
-      {error && (
+      </div>      {errorMessage && (
         <div className="error-message" style={{ marginBottom: '1rem' }}>
-          {error}
+          {errorMessage}
         </div>
       )}
 

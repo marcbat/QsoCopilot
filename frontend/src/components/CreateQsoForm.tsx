@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import { CreateQsoRequest } from '../types';
 import { qsoApiService } from '../api';
+import { useMessages } from '../hooks/useMessages';
 import { extractErrorMessage } from '../utils/errorUtils';
 
 interface CreateQsoFormProps {
   onQsoCreated: (qsoId: string) => void;
 }
 
-const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {
-  const [formData, setFormData] = useState<CreateQsoRequest>({
+const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  const [formData, setFormData] = useState<CreateQsoRequest>({
     name: '',
     description: '',
     frequency: 0
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  
+  // Utiliser le hook de messages avec auto-hide
+  const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -25,16 +26,15 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {
       [name]: name === 'frequency' ? (value ? parseFloat(value) : 0) : value 
     }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
-    setSuccess(null);
+    setErrorMessage(null);
+    setSuccessMessage(null);
 
     try {
       const qsoData = await qsoApiService.createQsoAggregate(formData);
-      setSuccess(`QSO créé avec succès: ${qsoData.name}`);
+      setSuccessMessage(`QSO créé avec succès: ${qsoData.name}`);
       
       // Réinitialiser le formulaire
       setFormData({
@@ -45,11 +45,8 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {
       
       // Notifier le parent
       onQsoCreated(qsoData.id);
-      
-      // Effacer le message de succès après 3 secondes
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(extractErrorMessage(err, 'Erreur lors de la création du QSO'));
+      setErrorMessage(extractErrorMessage(err, 'Erreur lors de la création du QSO'));
     } finally {
       setIsLoading(false);
     }
@@ -58,10 +55,9 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {
   return (
     <div className="create-qso-form">      <div className="card-header">
         <h2 className="card-title">🚀 Créer un nouveau QSO</h2>
-      </div>
-      
-      {error && <div className="alert alert-error">{error}</div>}
-      {success && <div className="alert alert-success">{success}</div>}
+      </div>      
+      {errorMessage && <div className="alert alert-error">{errorMessage}</div>}
+      {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
       <form onSubmit={handleSubmit} className="qso-form-horizontal">
         <div className="form-group">

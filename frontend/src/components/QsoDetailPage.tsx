@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { QsoAggregateDto, ParticipantDto, CreateParticipantRequest } from '../types';
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
+import { useMessages } from '../hooks/useMessages';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -11,31 +12,30 @@ const QsoDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [newParticipant, setNewParticipant] = useState({
     callSign: ''
   });
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
-
+  
+  // Utiliser le hook de messages avec auto-hide
+  const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
   useEffect(() => {
     if (!id) {
-      setError('ID du QSO manquant');
+      setErrorMessage('ID du QSO manquant');
       setIsLoading(false);
       return;
     }
 
     loadQso();
   }, [id]);
-
   const loadQso = async () => {
     try {
       setIsLoading(true);
-      setError(null);
+      setErrorMessage(null);
       const response = await qsoApiService.getQso(id!);
       setQso(response);    } catch (err: any) {
       console.error('Erreur lors du chargement du QSO:', err);
-      setError(extractErrorMessage(err, 'Impossible de charger les détails du QSO'));
+      setErrorMessage(extractErrorMessage(err, 'Impossible de charger les détails du QSO'));
     } finally {
       setIsLoading(false);
     }
@@ -58,11 +58,9 @@ const QsoDetailPage: React.FC = () => {
 
   const handleAddParticipant = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!qso || !newParticipant.callSign.trim()) return;
-
-    try {
+    if (!qso || !newParticipant.callSign.trim()) return;    try {
       setIsAddingParticipant(true);
-      setError(null);
+      setErrorMessage(null);
       setSuccessMessage(null);
 
       const participantData: CreateParticipantRequest = {
@@ -78,8 +76,8 @@ const QsoDetailPage: React.FC = () => {
       // Recharger les données
       await loadQso();    } catch (err: any) {
       console.error('Erreur lors de l\'ajout du participant:', err);
-      setError(extractErrorMessage(err, 'Impossible d\'ajouter le participant'));
-    } finally {
+      setErrorMessage(extractErrorMessage(err, 'Impossible d\'ajouter le participant'));
+    }finally {
       setIsAddingParticipant(false);
     }
   };
@@ -102,13 +100,12 @@ const QsoDetailPage: React.FC = () => {
       </div>
     );
   }
-
-  if (error || !qso) {
+  if (errorMessage || !qso) {
     return (
       <div className="page-container">
         <div className="error-message">
           <h2>Erreur</h2>
-          <p>{error || 'QSO introuvable'}</p>
+          <p>{errorMessage || 'QSO introuvable'}</p>
           <button onClick={handleBack} className="btn btn-secondary">
             Retour à la liste
           </button>
@@ -128,11 +125,9 @@ const QsoDetailPage: React.FC = () => {
           <button onClick={handleEdit} className="btn btn-primary">
             Éditer
           </button>        )}
-      </div>
-
-      {error && (
+      </div>      {errorMessage && (
         <div className="error-message" style={{ marginBottom: '1rem' }}>
-          {error}
+          {errorMessage}
         </div>
       )}
 
