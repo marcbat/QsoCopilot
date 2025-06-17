@@ -156,10 +156,9 @@ const QsoDetailPage: React.FC = () => {
               flexWrap: 'wrap',
               alignItems: 'baseline',
               marginTop: '1rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+            }}>              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                 <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Fréquence :</label>
-                <span>{qso.frequency ? `${qso.frequency} MHz` : 'Non définie'}</span>
+                <span>{qso.frequency ? `${qso.frequency.toFixed(3)} MHz` : 'Non définie'}</span>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
@@ -184,20 +183,15 @@ const QsoDetailPage: React.FC = () => {
             {isAuthenticated && (
               <div className="quick-add-participant" style={{ marginBottom: '1rem' }}>
                 <form onSubmit={handleAddParticipant} className="quick-participant-form">
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <input
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>                    <input
                       type="text"
                       name="callSign"
                       value={newParticipant.callSign}
                       onChange={handleParticipantChange}
                       placeholder="Indicatif (ex: F1ABC)"
                       required
-                      style={{ 
-                        flex: 1, 
-                        padding: '0.5rem', 
-                        border: '1px solid #ddd', 
-                        borderRadius: '4px' 
-                      }}
+                      className="form-input"
+                      style={{ flex: 1 }}
                     />
                     <button 
                       type="submit" 

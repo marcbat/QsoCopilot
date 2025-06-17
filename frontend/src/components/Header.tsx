@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import ThemeToggle from './ThemeToggle';
 
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -28,6 +29,7 @@ const Header: React.FC = () => {
               <button onClick={handleLogout} className="btn btn-secondary">
                 Déconnexion
               </button>
+              <ThemeToggle />
             </>
           ) : (
             <>
@@ -37,6 +39,7 @@ const Header: React.FC = () => {
               <Link to="/login" className="btn btn-primary">
                 Se connecter
               </Link>
+              <ThemeToggle />
             </>
           )}
         </nav>
