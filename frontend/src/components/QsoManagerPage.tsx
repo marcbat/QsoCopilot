@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { QsoAggregateDto } from '../types';
 import { qsoApiService } from '../api';
 import { useAuth } from '../contexts/AuthContext';
-import NewQsoForm from './NewQsoForm';
+import CreateQsoForm from './CreateQsoForm';
 import QsoList from './QsoList';
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -66,7 +66,7 @@ const QsoManagerPage: React.FC = () => {
     <div className="qso-manager-page">      {/* Formulaire de création QSO pour utilisateurs connectés */}
       {isAuthenticated && (
         <div className="qso-creation-section">
-          <NewQsoForm onQsoCreated={handleQsoCreated} />
+          <CreateQsoForm onQsoCreated={handleQsoCreated} />
         </div>
       )}
 
