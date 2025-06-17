@@ -72,15 +72,14 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
           </tr>
         </thead>
         <tbody>          {qsos.map((qso) => (
-            <tr key={qso.id}>
-              <td>
+            <tr key={qso.id}>              <td>
                 <div 
                   className="qso-name" 
                   style={{ 
                     fontWeight: '600', 
                     color: 'var(--primary-color)', 
                     cursor: 'pointer',
-                    textDecoration: 'underline'
+                    textDecoration: 'none'
                   }}
                   onClick={() => handleViewDetails(qso.id)}
                   title="Cliquez pour voir les détails"
