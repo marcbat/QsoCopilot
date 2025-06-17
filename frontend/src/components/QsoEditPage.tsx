@@ -21,13 +21,10 @@ const QsoEditPage: React.FC = () => {
     endDateTime: '',
     frequency: '',
     mode: ''
-  });// État pour le nouveau participant
+  });  // État pour le nouveau participant
   const [newParticipant, setNewParticipant] = useState({
     callSign: '',
-    name: '',
-    location: '',
-    signalReport: '',
-    notes: ''
+    name: ''
   });
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
 
@@ -126,21 +123,14 @@ const QsoEditPage: React.FC = () => {
       setIsAddingParticipant(true);
       setError(null);      const participantData: CreateParticipantRequest = {
         callSign: newParticipant.callSign,
-        name: newParticipant.name || undefined,
-        location: newParticipant.location || undefined,
-        signalReport: newParticipant.signalReport || undefined,
-        notes: newParticipant.notes || undefined
+        name: newParticipant.name || undefined
       };
 
       await qsoApiService.addParticipant(qso.id, participantData);
-      setSuccessMessage('Participant ajouté avec succès');
-        // Réinitialiser le formulaire de participant
+      setSuccessMessage('Participant ajouté avec succès');        // Réinitialiser le formulaire de participant
       setNewParticipant({
         callSign: '',
-        name: '',
-        location: '',
-        signalReport: '',
-        notes: ''
+        name: ''
       });
 
       // Recharger les données
@@ -344,44 +334,7 @@ const QsoEditPage: React.FC = () => {
                     onChange={handleParticipantChange}
                     placeholder="Nom du radioamateur"
                   />
-                </div>
-              </div>              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="participant-location">Localisation</label>
-                  <input
-                    type="text"
-                    id="participant-location"
-                    name="location"
-                    value={newParticipant.location}
-                    onChange={handleParticipantChange}
-                    placeholder="ex: JN23ab, Paris..."
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="participant-signalReport">Rapport signal</label>
-                  <input
-                    type="text"
-                    id="participant-signalReport"
-                    name="signalReport"
-                    value={newParticipant.signalReport}
-                    onChange={handleParticipantChange}
-                    placeholder="ex: 59, 5/9..."
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="participant-notes">Notes</label>
-                <input
-                  type="text"
-                  id="participant-notes"
-                  name="notes"
-                  value={newParticipant.notes}
-                  onChange={handleParticipantChange}
-                  placeholder="Notes supplémentaires"
-                />
-              </div>
+                </div>              </div>
 
               <button type="submit" className="btn btn-secondary" disabled={isAddingParticipant}>
                 {isAddingParticipant ? 'Ajout...' : 'Ajouter le participant'}

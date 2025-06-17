@@ -12,13 +12,9 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
     frequency: 0,
     startDateTime: '',
     mode: ''
-  });
-  const [participant, setParticipant] = useState<CreateParticipantRequest>({
+  });  const [participant, setParticipant] = useState<CreateParticipantRequest>({
     callSign: '',
-    name: '',
-    location: '',
-    signalReport: '59',
-    notes: ''
+    name: ''
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -73,14 +69,10 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
 
     try {
       await qsoApiService.addParticipant(formData.id || '', participant);
-      setSuccess(`Participant ${participant.callSign} ajouté avec succès`);
-        // Réinitialiser le formulaire participant
+      setSuccess(`Participant ${participant.callSign} ajouté avec succès`);        // Réinitialiser le formulaire participant
       setParticipant({
         callSign: '',
-        name: '',
-        location: '',
-        signalReport: '59',
-        notes: ''
+        name: ''
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'ajout du participant');
@@ -204,20 +196,7 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
                     value={participant.name}
                     onChange={handleParticipantChange}
                     placeholder="Nom du radioamateur"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="participant-signalReport">Rapport</label>
-                  <input
-                    type="text"
-                    id="participant-signalReport"
-                    name="signalReport"
-                    value={participant.signalReport}
-                    onChange={handleParticipantChange}
-                    placeholder="59"
-                  />
-                </div>
+                  />                </div>
 
                 <div className="form-group">
                   <button 

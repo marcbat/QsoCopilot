@@ -11,13 +11,9 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
     description: '',
     frequency: 0
   });
-  
-  const [participant, setParticipant] = useState<AddParticipantRequest>({
+    const [participant, setParticipant] = useState<AddParticipantRequest>({
     callSign: '',
-    name: '',
-    qth: '',
-    rstSent: '59',
-    rstReceived: '59'
+    name: ''
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -68,14 +64,10 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
     try {
       await qsoApiService.addParticipant(createdQsoId, participant);
       setSuccess(`Participant ${participant.callSign} ajouté avec succès!`);
-      
-      // Réinitialiser le formulaire participant
+        // Réinitialiser le formulaire participant
       setParticipant({
         callSign: '',
-        name: '',
-        qth: '',
-        rstSent: '59',
-        rstReceived: '59'
+        name: ''
       });
       
     } catch (err: any) {
@@ -89,13 +81,9 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
       name: '',
       description: '',
       frequency: 0
-    });
-    setParticipant({
+    });    setParticipant({
       callSign: '',
-      name: '',
-      qth: '',
-      rstSent: '59',
-      rstReceived: '59'
+      name: ''
     });
     setQsoCreated(false);
     setCreatedQsoId(null);
@@ -177,9 +165,7 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
                 placeholder="Ex: F1ABC"
                 required
               />
-            </div>
-
-            <div className="form-group">
+            </div>            <div className="form-group">
               <label htmlFor="name" className="form-label">Nom</label>
               <input
                 type="text"
@@ -189,45 +175,6 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
                 value={participant.name}
                 onChange={handleParticipantChange}
                 placeholder="Nom du participant"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="qth" className="form-label">QTH</label>
-              <input
-                type="text"
-                id="qth"
-                name="qth"
-                className="form-input"
-                value={participant.qth}
-                onChange={handleParticipantChange}
-                placeholder="Localisation"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="rstSent" className="form-label">RST Envoyé</label>
-              <input
-                type="text"
-                id="rstSent"
-                name="rstSent"
-                className="form-input"
-                value={participant.rstSent}
-                onChange={handleParticipantChange}
-                placeholder="59"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="rstReceived" className="form-label">RST Reçu</label>
-              <input
-                type="text"
-                id="rstReceived"
-                name="rstReceived"
-                className="form-input"
-                value={participant.rstReceived}
-                onChange={handleParticipantChange}
-                placeholder="59"
               />
             </div>
 
