@@ -117,15 +117,9 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
                 <div style={{ fontSize: '0.875rem' }}>
                   {formatDate(qso.startDateTime)}
                 </div>
-              </td>
-              {isAuthenticated && (
+              </td>              {isAuthenticated && (
                 <td>
-                  <div className="table-actions">                    <button 
-                      className="btn btn-sm btn-primary"
-                      onClick={() => handleViewDetails(qso.id)}
-                    >
-                      Détails
-                    </button>
+                  <div className="table-actions">
                     <button 
                       className="btn btn-sm btn-secondary"
                       onClick={() => handleEdit(qso.id)}
