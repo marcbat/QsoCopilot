@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { QsoAggregateDto, ParticipantDto, UpdateQsoRequest, CreateParticipantRequest } from '../types';
+import { QsoAggregateDto, ParticipantDto, UpdateQsoRequest } from '../types';
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -21,11 +21,7 @@ const QsoEditPage: React.FC = () => {
     endDateTime: '',
     frequency: '',
     mode: ''
-  });  // État pour le nouveau participant
-  const [newParticipant, setNewParticipant] = useState({
-    callSign: ''
   });
-  const [isAddingParticipant, setIsAddingParticipant] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -69,17 +65,12 @@ const QsoEditPage: React.FC = () => {
     const date = new Date(dateString);
     return date.toISOString().slice(0, 16); // Format YYYY-MM-DDTHH:mm
   };
-
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-  };
-  const handleParticipantChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { value } = e.target;
-    setNewParticipant({ callSign: value });
   };
 
   const handleSaveQso = async (e: React.FormEvent) => {
@@ -108,32 +99,7 @@ const QsoEditPage: React.FC = () => {
     } finally {
       setIsSaving(false);
     }
-  };
-  const handleAddParticipant = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!qso || !newParticipant.callSign.trim()) return;
-
-    try {
-      setIsAddingParticipant(true);
-      setError(null);      const participantData: CreateParticipantRequest = {
-        callSign: newParticipant.callSign
-      };
-
-      await qsoApiService.addParticipant(qso.id, participantData);
-      setSuccessMessage('Participant ajouté avec succès');        // Réinitialiser le formulaire de participant
-      setNewParticipant({ callSign: '' });
-
-      // Recharger les données
-      await loadQso();
-    } catch (err) {
-      console.error('Erreur lors de l\'ajout du participant:', err);
-      setError('Impossible d\'ajouter le participant');
-    } finally {
-      setIsAddingParticipant(false);
-    }
-  };
-
-  const handleBack = () => {
+  };  const handleBack = () => {
     navigate(`/qso/${id}`);
   };
 
@@ -276,26 +242,6 @@ const QsoEditPage: React.FC = () => {
         </div>        {/* Section participants */}
         <div className="edit-section">
           <h2>Participants ({qso?.participants?.length || 0})</h2>
-          
-          {/* Formulaire rapide d'ajout de participant */}
-          <div className="quick-add-participant">
-            <form onSubmit={handleAddParticipant} className="quick-participant-form">
-              <div className="form-row-inline">
-                <input
-                  type="text"
-                  name="callSign"
-                  value={newParticipant.callSign}
-                  onChange={handleParticipantChange}
-                  placeholder="Indicatif (ex: F1ABC)"
-                  required
-                  className="form-input-inline"
-                />
-                <button type="submit" className="btn btn-primary btn-inline" disabled={isAddingParticipant}>
-                  {isAddingParticipant ? 'Ajout...' : 'Ajouter'}
-                </button>
-              </div>
-            </form>
-          </div>
           
           {/* Liste des participants existants */}
           {qso?.participants && qso.participants.length > 0 && (
