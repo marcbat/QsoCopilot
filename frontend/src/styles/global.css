@@ -598,10 +598,30 @@ body {
   }
   
   .participants-grid {
-    grid-template-columns: 1fr;
+  grid-template-columns: 1fr;
   }
   
   .participant-details {
     grid-template-columns: 1fr;
   }
+}
+
+/* Styles compacts pour le formulaire d'édition QSO */
+.qso-form-compact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md); /* Réduit de --spacing-lg à --spacing-md */
+}
+
+.qso-form-compact .form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md); /* Réduit de --spacing-lg à --spacing-md */
+}
+
+.qso-form-compact .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0; /* Supprime la marge bottom supplémentaire */
 }

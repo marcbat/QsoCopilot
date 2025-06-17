@@ -156,10 +156,9 @@ const QsoEditPage: React.FC = () => {
       )}
 
       <div className="edit-content">
-        {/* Formulaire d'édition QSO */}
-        <div className="edit-section">
+        {/* Formulaire d'édition QSO */}        <div className="edit-section">
           <h2>Informations du QSO</h2>
-          <form onSubmit={handleSaveQso} className="qso-form">
+          <form onSubmit={handleSaveQso} className="qso-form-compact">
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="name">Nom du QSO *</label>
