@@ -154,22 +154,24 @@ const QsoDetailPage: React.FC = () => {
             }}>              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                 <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Fréquence :</label>
                 <span>{qso.frequency ? `${qso.frequency.toFixed(3)} MHz` : 'Non définie'}</span>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+              </div>              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                 <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Date de début :</label>
                 <span>{formatDate(qso.startDateTime)}</span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Date de fin :</label>
-                <span>{formatDate(qso.endDateTime)}</span>
-              </div>
+              {qso.endDateTime && (
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                  <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Date de fin :</label>
+                  <span>{formatDate(qso.endDateTime)}</span>
+                </div>
+              )}
 
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Mode :</label>
-                <span>{qso.mode || 'Non défini'}</span>
-              </div>
+              {qso.mode && (
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                  <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Mode :</label>
+                  <span>{qso.mode}</span>
+                </div>
+              )}
             </div>
           </div>          <div className="detail-card">
             <h3>Participants ({qso.participants?.length || 0})</h3>

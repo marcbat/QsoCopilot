@@ -11,10 +11,9 @@ interface UseMessagesResult {
 export const useMessages = (autoHideDelay: number = 5000): UseMessagesResult => {
   const [successMessage, setSuccessMessageState] = useState<string | null>(null);
   const [errorMessage, setErrorMessageState] = useState<string | null>(null);
-  
-  // Références pour pouvoir annuler les timeouts précédents
-  const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    // Références pour pouvoir annuler les timeouts précédents
+  const successTimeoutRef = useRef<number | null>(null);
+  const errorTimeoutRef = useRef<number | null>(null);
 
   const setSuccessMessage = useCallback((message: string | null) => {
     // Annuler le timeout précédent s'il existe

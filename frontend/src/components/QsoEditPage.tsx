@@ -30,10 +30,8 @@ const QsoEditPage: React.FC = () => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
-    }
-
-    if (!id) {
-      setError('ID du QSO manquant');
+    }    if (!id) {
+      setErrorMessage('ID du QSO manquant');
       setIsLoading(false);
       return;
     }
