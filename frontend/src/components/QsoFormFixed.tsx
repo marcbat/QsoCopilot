@@ -11,8 +11,7 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
     description: '',
     frequency: 0,
     startDateTime: '',
-    mode: '',
-    location: ''
+    mode: ''
   });
   const [participant, setParticipant] = useState<CreateParticipantRequest>({
     callSign: '',
@@ -50,15 +49,13 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
       const qsoData = await qsoApiService.createQso(formData);
       setSuccess(`QSO créé avec succès: ${qsoData.name}`);
       setQsoCreated(true);
-      onQsoCreated(qsoData.id);
-        // Réinitialiser le formulaire QSO
+      onQsoCreated(qsoData.id);      // Réinitialiser le formulaire QSO
       setFormData({
         name: '',
         description: '',
         frequency: 0,
         startDateTime: '',
-        mode: '',
-        location: ''
+        mode: ''
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de la création du QSO');
@@ -165,23 +162,10 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData
                 name="startDateTime"
                 value={formData.startDateTime}
                 onChange={handleInputChange}
-              />
-            </div>
+              />            </div>
 
             <div className="form-group">
-              <label htmlFor="location">Localisation</label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                placeholder="JN23ab, Paris..."
-              />
-            </div>
-
-            <div className="form-group">
-              <button 
+              <button
                 type="submit" 
                 className="btn btn-primary"
                 disabled={isLoading || !formData.name}

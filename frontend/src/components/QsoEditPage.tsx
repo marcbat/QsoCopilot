@@ -13,7 +13,6 @@ const QsoEditPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
   // États pour le formulaire QSO
   const [formData, setFormData] = useState({
     name: '',
@@ -21,9 +20,8 @@ const QsoEditPage: React.FC = () => {
     startDateTime: '',
     endDateTime: '',
     frequency: '',
-    mode: '',
-    location: ''
-  });  // État pour le nouveau participant
+    mode: ''
+  });// État pour le nouveau participant
   const [newParticipant, setNewParticipant] = useState({
     callSign: '',
     name: '',
@@ -54,16 +52,14 @@ const QsoEditPage: React.FC = () => {
       setError(null);
       const response = await qsoApiService.getQso(id!);
       setQso(response);
-      
-      // Remplir le formulaire avec les données existantes
+        // Remplir le formulaire avec les données existantes
       setFormData({
         name: response.name || '',
         description: response.description || '',
         startDateTime: response.startDateTime ? formatDateForInput(response.startDateTime) : '',
         endDateTime: response.endDateTime ? formatDateForInput(response.endDateTime) : '',
         frequency: response.frequency?.toString() || '',
-        mode: response.mode || '',
-        location: response.location || ''
+        mode: response.mode || ''
       });
     } catch (err) {
       console.error('Erreur lors du chargement du QSO:', err);
@@ -100,16 +96,13 @@ const QsoEditPage: React.FC = () => {
 
     try {
       setIsSaving(true);
-      setError(null);
-
-      const updateData: UpdateQsoRequest = {
+      setError(null);      const updateData: UpdateQsoRequest = {
         name: formData.name,
         description: formData.description,
         startDateTime: formData.startDateTime ? new Date(formData.startDateTime).toISOString() : undefined,
         endDateTime: formData.endDateTime ? new Date(formData.endDateTime).toISOString() : undefined,
         frequency: formData.frequency ? parseFloat(formData.frequency) : undefined,
-        mode: formData.mode || undefined,
-        location: formData.location || undefined
+        mode: formData.mode || undefined
       };
 
       await qsoApiService.updateQso(qso.id, updateData);
@@ -293,20 +286,7 @@ const QsoEditPage: React.FC = () => {
                   value={formData.mode}
                   onChange={handleFormChange}
                   placeholder="ex: SSB, CW, FT8..."
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="location">Localisation</label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleFormChange}
-                  placeholder="ex: JN23ab, Paris..."
-                />
-              </div>
+                />              </div>
             </div>
 
             <button type="submit" className="btn btn-primary" disabled={isSaving}>

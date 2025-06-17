@@ -10,7 +10,6 @@ export interface QsoAggregateDto {
   endDateTime?: string;
   createdDate?: string;
   mode?: string;
-  location?: string;
   participants?: ParticipantDto[];
 }
 
@@ -33,7 +32,6 @@ export interface CreateQsoRequest {
   frequency: number;
   startDateTime?: string;
   mode?: string;
-  location?: string;
 }
 
 export interface UpdateQsoRequest {
@@ -43,7 +41,6 @@ export interface UpdateQsoRequest {
   startDateTime?: string;
   endDateTime?: string;
   mode?: string;
-  location?: string;
 }
 
 export interface CreateParticipantRequest {
