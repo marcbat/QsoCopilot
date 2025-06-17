@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { QsoAggregateDto, ParticipantDto } from '../types';
+import { QsoAggregateDto, ParticipantDto, CreateParticipantRequest } from '../types';
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 
 const QsoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
+  const { isAuthenticated } = useAuth();  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [newParticipant, setNewParticipant] = useState({
+    callSign: ''
+  });
+  const [isAddingParticipant, setIsAddingParticipant] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -35,7 +39,6 @@ const QsoDetailPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Non définie';
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -45,6 +48,40 @@ const QsoDetailPage: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleParticipantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setNewParticipant({ callSign: value });
+  };
+
+  const handleAddParticipant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!qso || !newParticipant.callSign.trim()) return;
+
+    try {
+      setIsAddingParticipant(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      const participantData: CreateParticipantRequest = {
+        callSign: newParticipant.callSign
+      };
+
+      await qsoApiService.addParticipant(qso.id, participantData);
+      setSuccessMessage('Participant ajouté avec succès');
+
+      // Réinitialiser le formulaire de participant
+      setNewParticipant({ callSign: '' });
+
+      // Recharger les données
+      await loadQso();
+    } catch (err) {
+      console.error('Erreur lors de l\'ajout du participant:', err);
+      setError('Impossible d\'ajouter le participant');
+    } finally {
+      setIsAddingParticipant(false);
+    }
   };
 
   const handleEdit = () => {
@@ -90,9 +127,20 @@ const QsoDetailPage: React.FC = () => {
         {isAuthenticated && (
           <button onClick={handleEdit} className="btn btn-primary">
             Éditer
-          </button>
-        )}
+          </button>        )}
       </div>
+
+      {error && (
+        <div className="error-message" style={{ marginBottom: '1rem' }}>
+          {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="success-message" style={{ marginBottom: '1rem' }}>
+          {successMessage}
+        </div>
+      )}
 
       <div className="qso-detail-content">
         <div className="detail-section">
@@ -120,10 +168,40 @@ const QsoDetailPage: React.FC = () => {
                 <p>{qso.mode || 'Non défini'}</p>
               </div>
             </div>
-          </div>
-
-          <div className="detail-card">
+          </div>          <div className="detail-card">
             <h3>Participants ({qso.participants?.length || 0})</h3>
+            
+            {/* Formulaire rapide d'ajout de participant */}
+            {isAuthenticated && (
+              <div className="quick-add-participant" style={{ marginBottom: '1rem' }}>
+                <form onSubmit={handleAddParticipant} className="quick-participant-form">
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      name="callSign"
+                      value={newParticipant.callSign}
+                      onChange={handleParticipantChange}
+                      placeholder="Indicatif (ex: F1ABC)"
+                      required
+                      style={{ 
+                        flex: 1, 
+                        padding: '0.5rem', 
+                        border: '1px solid #ddd', 
+                        borderRadius: '4px' 
+                      }}
+                    />
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary" 
+                      disabled={isAddingParticipant}
+                      style={{ whiteSpace: 'nowrap' }}
+                    >
+                      {isAddingParticipant ? 'Ajout...' : 'Ajouter participant'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
             
             {qso.participants && qso.participants.length > 0 ? (
               <div className="participants-list">

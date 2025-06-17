@@ -23,8 +23,7 @@ const QsoEditPage: React.FC = () => {
     mode: ''
   });  // État pour le nouveau participant
   const [newParticipant, setNewParticipant] = useState({
-    callSign: '',
-    name: ''
+    callSign: ''
   });
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
 
@@ -78,13 +77,9 @@ const QsoEditPage: React.FC = () => {
       [name]: value
     }));
   };
-
   const handleParticipantChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setNewParticipant(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    const { value } = e.target;
+    setNewParticipant({ callSign: value });
   };
 
   const handleSaveQso = async (e: React.FormEvent) => {
@@ -114,7 +109,6 @@ const QsoEditPage: React.FC = () => {
       setIsSaving(false);
     }
   };
-
   const handleAddParticipant = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qso || !newParticipant.callSign.trim()) return;
@@ -122,16 +116,12 @@ const QsoEditPage: React.FC = () => {
     try {
       setIsAddingParticipant(true);
       setError(null);      const participantData: CreateParticipantRequest = {
-        callSign: newParticipant.callSign,
-        name: newParticipant.name || undefined
+        callSign: newParticipant.callSign
       };
 
       await qsoApiService.addParticipant(qso.id, participantData);
       setSuccessMessage('Participant ajouté avec succès');        // Réinitialiser le formulaire de participant
-      setNewParticipant({
-        callSign: '',
-        name: ''
-      });
+      setNewParticipant({ callSign: '' });
 
       // Recharger les données
       await loadQso();
@@ -283,11 +273,29 @@ const QsoEditPage: React.FC = () => {
               {isSaving ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
             </button>
           </form>
-        </div>
-
-        {/* Section participants */}
+        </div>        {/* Section participants */}
         <div className="edit-section">
           <h2>Participants ({qso?.participants?.length || 0})</h2>
+          
+          {/* Formulaire rapide d'ajout de participant */}
+          <div className="quick-add-participant">
+            <form onSubmit={handleAddParticipant} className="quick-participant-form">
+              <div className="form-row-inline">
+                <input
+                  type="text"
+                  name="callSign"
+                  value={newParticipant.callSign}
+                  onChange={handleParticipantChange}
+                  placeholder="Indicatif (ex: F1ABC)"
+                  required
+                  className="form-input-inline"
+                />
+                <button type="submit" className="btn btn-primary btn-inline" disabled={isAddingParticipant}>
+                  {isAddingParticipant ? 'Ajout...' : 'Ajouter'}
+                </button>
+              </div>
+            </form>
+          </div>
           
           {/* Liste des participants existants */}
           {qso?.participants && qso.participants.length > 0 && (
@@ -303,44 +311,7 @@ const QsoEditPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Formulaire d'ajout de participant */}
-          <div className="add-participant-section">
-            <h3>Ajouter un participant</h3>
-            <form onSubmit={handleAddParticipant} className="participant-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="participant-callSign">Indicatif *</label>
-                  <input
-                    type="text"
-                    id="participant-callSign"
-                    name="callSign"
-                    value={newParticipant.callSign}
-                    onChange={handleParticipantChange}
-                    required
-                    placeholder="ex: F1ABC"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="participant-name">Nom</label>
-                  <input
-                    type="text"
-                    id="participant-name"
-                    name="name"
-                    value={newParticipant.name}
-                    onChange={handleParticipantChange}
-                    placeholder="Nom du radioamateur"
-                  />
-                </div>              </div>
-
-              <button type="submit" className="btn btn-secondary" disabled={isAddingParticipant}>
-                {isAddingParticipant ? 'Ajout...' : 'Ajouter le participant'}
-              </button>
-            </form>
-          </div>
+            </div>          )}
         </div>
       </div>
     </div>
