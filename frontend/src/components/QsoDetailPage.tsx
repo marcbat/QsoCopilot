@@ -150,32 +150,31 @@ const QsoDetailPage: React.FC = () => {
                 </span>
               )}
             </h2>
-            
-            <div style={{ 
+              <div style={{ 
               display: 'flex', 
               gap: '2rem', 
               flexWrap: 'wrap',
               alignItems: 'baseline',
               marginTop: '1rem'
             }}>
-              <div className="detail-item">
-                <label>Fréquence :</label>
-                <p>{qso.frequency ? `${qso.frequency} MHz` : 'Non définie'}</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Fréquence :</label>
+                <span>{qso.frequency ? `${qso.frequency} MHz` : 'Non définie'}</span>
               </div>
 
-              <div className="detail-item">
-                <label>Date de début :</label>
-                <p>{formatDate(qso.startDateTime)}</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Date de début :</label>
+                <span>{formatDate(qso.startDateTime)}</span>
               </div>
 
-              <div className="detail-item">
-                <label>Date de fin :</label>
-                <p>{formatDate(qso.endDateTime)}</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Date de fin :</label>
+                <span>{formatDate(qso.endDateTime)}</span>
               </div>
 
-              <div className="detail-item">
-                <label>Mode :</label>
-                <p>{qso.mode || 'Non défini'}</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Mode :</label>
+                <span>{qso.mode || 'Non défini'}</span>
               </div>
             </div>
           </div>          <div className="detail-card">
