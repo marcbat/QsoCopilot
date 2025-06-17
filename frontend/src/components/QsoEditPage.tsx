@@ -128,16 +128,15 @@ const QsoEditPage: React.FC = () => {
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="page-container">      <div className="page-header">
         <button onClick={handleBack} className="btn btn-secondary">
           ← Retour aux détails
         </button>
         <h1>Éditer le QSO</h1>
-        <button onClick={handleViewDetails} className="btn btn-outline">
+        <button onClick={handleViewDetails} className="btn btn-secondary">
           Voir les détails
         </button>
-      </div>      {errorMessage && (
+      </div>{errorMessage && (
         <div className="error-message" style={{ marginBottom: '1rem' }}>
           {errorMessage}
         </div>
