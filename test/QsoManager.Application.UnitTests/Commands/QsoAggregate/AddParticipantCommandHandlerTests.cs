@@ -307,7 +307,9 @@ public class AddParticipantCommandHandlerTests
         Assert.Equal(1, participantAddedEvent.Order);
         Assert.True(participantAddedEvent.DateEvent <= DateTime.Now);
         Assert.True(participantAddedEvent.DateEvent >= DateTime.Now.AddMinutes(-1));
-    }    [Fact]
+    }    
+    
+    [Fact]
     public async Task Handle_WhenValidRequestWithExistingParticipants_ShouldDispatchEventWithCorrectOrder()
     {
         // Arrange

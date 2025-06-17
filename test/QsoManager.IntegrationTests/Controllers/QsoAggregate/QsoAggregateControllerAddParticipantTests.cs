@@ -42,6 +42,108 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task AddParticipant_ShouldUpdateProjectionWithParticipant()
+    {
+        // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST_PROJECTION");
+        var qsoId = Guid.NewGuid();
+        var createRequest = new
+        {
+            Id = qsoId,
+            Name = "QSO Test Projection",
+            Description = "QSO pour test de la projection"
+        };
+
+        // Créer le QSO
+        var createResponse = await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
+        Assert.True(createResponse.IsSuccessStatusCode, "QSO creation should succeed");
+        
+        // Attendre que la projection initiale soit créée
+        await Task.Delay(200);
+
+        // Vérifier l'état initial du QSO (aucun participant)
+        var initialGetResponse = await _client.GetAsync($"/api/QsoAggregate/{qsoId}");
+        Assert.True(initialGetResponse.IsSuccessStatusCode, "Initial GET should succeed");
+        
+        var initialContent = await initialGetResponse.Content.ReadAsStringAsync();
+        var initialQso = JsonSerializer.Deserialize<JsonElement>(initialContent);
+        var initialParticipants = initialQso.GetProperty("participants");
+        Assert.Equal(0, initialParticipants.GetArrayLength());
+
+        // Ajouter un participant
+        var addParticipantRequest = new
+        {
+            CallSign = "F4PARTICIPANT1"
+        };
+
+        var addResponse = await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", addParticipantRequest);
+        Assert.True(addResponse.IsSuccessStatusCode, "Add participant should succeed");
+
+        // Attendre que la projection soit mise à jour
+        await Task.Delay(300);
+
+        // Vérifier que le participant est bien dans la projection
+        var updatedGetResponse = await _client.GetAsync($"/api/QsoAggregate/{qsoId}");
+        Assert.True(updatedGetResponse.IsSuccessStatusCode, "Updated GET should succeed");
+        
+        var updatedContent = await updatedGetResponse.Content.ReadAsStringAsync();
+        var updatedQso = JsonSerializer.Deserialize<JsonElement>(updatedContent);
+        var updatedParticipants = updatedQso.GetProperty("participants");
+        
+        // Assert - Le participant doit être présent dans la projection
+        Assert.Equal(1, updatedParticipants.GetArrayLength());
+        var participant = updatedParticipants[0];
+        Assert.Equal("F4PARTICIPANT1", participant.GetProperty("callSign").GetString());        Assert.Equal(1, participant.GetProperty("order").GetInt32());
+    }
+
+    [Fact]
+    public async Task AddMultipleParticipants_ShouldMaintainCorrectOrder()
+    {
+        // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST_MULTIPLE");
+        var qsoId = Guid.NewGuid();
+        var createRequest = new
+        {
+            Id = qsoId,
+            Name = "QSO Test Multiple Participants",
+            Description = "QSO pour test de plusieurs participants"
+        };
+
+        // Créer le QSO
+        await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
+        await Task.Delay(200);
+
+        // Ajouter le premier participant
+        var addParticipant1 = new { CallSign = "F4FIRST" };
+        var response1 = await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", addParticipant1);
+        Assert.True(response1.IsSuccessStatusCode);
+        await Task.Delay(300);
+
+        // Ajouter le deuxième participant
+        var addParticipant2 = new { CallSign = "F4SECOND" };
+        var response2 = await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", addParticipant2);
+        Assert.True(response2.IsSuccessStatusCode);
+        await Task.Delay(300);
+
+        // Vérifier l'état final
+        var getResponse = await _client.GetAsync($"/api/QsoAggregate/{qsoId}");
+        Assert.True(getResponse.IsSuccessStatusCode);
+        
+        var content = await getResponse.Content.ReadAsStringAsync();
+        var qso = JsonSerializer.Deserialize<JsonElement>(content);
+        var participants = qso.GetProperty("participants");
+        
+        // Assert - Deux participants avec les bons ordres
+        Assert.Equal(2, participants.GetArrayLength());
+        
+        var firstParticipant = participants.EnumerateArray().First(p => p.GetProperty("callSign").GetString() == "F4FIRST");
+        var secondParticipant = participants.EnumerateArray().First(p => p.GetProperty("callSign").GetString() == "F4SECOND");
+        
+        Assert.Equal(1, firstParticipant.GetProperty("order").GetInt32());
+        Assert.Equal(2, secondParticipant.GetProperty("order").GetInt32());
+    }
+
+    [Fact]
     public async Task AddParticipant_WhenQsoNotFound_ShouldReturnBadRequest()
     {
         // Arrange

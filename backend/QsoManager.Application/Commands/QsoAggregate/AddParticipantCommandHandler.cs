@@ -38,21 +38,21 @@ public class AddParticipantCommandHandler : BaseCommandHandler<AddParticipantCom
                 from aggregate in aggregateResult
                 from _ in ValidateUserIsModerator(aggregate, userId)
                 from updatedAggregate in aggregate.AddParticipant(request.CallSign)
-                select updatedAggregate;            return await authorizationAndUpdateResult.MatchAsync(
-                async updatedAggregate =>
+                select updatedAggregate;            return await authorizationAndUpdateResult.MatchAsync(                async updatedAggregate =>
                 {
                     _logger.LogDebug("Participant '{CallSign}' ajouté avec succès à l'agrégat {AggregateId}", request.CallSign, request.AggregateId);
                     
                     var eventsResult = updatedAggregate.GetUncommittedChanges();
                     return await eventsResult.MatchAsync(
                         async events =>
-                        {
+                        {                            // Créer une copie des événements avant la sauvegarde car ClearChanges() va les effacer
+                            var eventsCopy = events.ToList();
                             var saveResult = await _repository.SaveAsync(updatedAggregate);
                             return saveResult.Match(
                                 _ => 
                                 {
-                                    // Dispatcher les événements pour les projections
-                                    DispatchEventsAsync(events, cancellationToken);
+                                    // Dispatcher les événements pour les projections (utiliser la copie)
+                                    DispatchEventsAsync(eventsCopy, cancellationToken);
                                     
                                     _logger.LogInformation("Participant '{CallSign}' ajouté avec succès et agrégat {AggregateId} sauvegardé", request.CallSign, request.AggregateId);
                                     
