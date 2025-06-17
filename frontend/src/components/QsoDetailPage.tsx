@@ -82,6 +82,28 @@ const QsoDetailPage: React.FC = () => {
     }
   };
 
+  const handleRemoveParticipant = async (callSign: string) => {
+    if (!qso) return;
+    
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${callSign} du QSO ?`)) {
+      return;
+    }
+
+    try {
+      setErrorMessage(null);
+      setSuccessMessage(null);
+
+      await qsoApiService.removeParticipant(qso.id, callSign);
+      setSuccessMessage(`Participant ${callSign} supprimé avec succès`);
+
+      // Recharger les données
+      await loadQso();
+    } catch (err: any) {
+      console.error('Erreur lors de la suppression du participant:', err);
+      setErrorMessage(extractErrorMessage(err, 'Impossible de supprimer le participant'));
+    }
+  };
+
   const handleEdit = () => {
     navigate(`/qso/${id}/edit`);
   };
@@ -202,11 +224,44 @@ const QsoDetailPage: React.FC = () => {
                 </form>
               </div>
             )}
-            
-            {qso.participants && qso.participants.length > 0 ? (
+              {qso.participants && qso.participants.length > 0 ? (
               <div className="participants-list">
                 {qso.participants.map((participant: ParticipantDto, index: number) => (
-                  <div key={index} className="participant-card">
+                  <div key={index} className="participant-card" style={{ position: 'relative' }}>
+                    {isAuthenticated && (
+                      <button
+                        className="remove-participant-btn"
+                        onClick={() => handleRemoveParticipant(participant.callSign)}
+                        title={`Supprimer ${participant.callSign}`}                        style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          background: 'transparent',
+                          color: 'var(--text-secondary)',
+                          border: 'none',
+                          width: '20px',
+                          height: '20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          transition: 'all 0.2s ease',
+                          opacity: '0.7'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#ef4444';
+                          e.currentTarget.style.opacity = '1';
+                          e.currentTarget.style.transform = 'scale(1.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = 'var(--text-secondary)';
+                          e.currentTarget.style.opacity = '0.7';
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}>
+                        🗑️
+                      </button>
+                    )}
                     <div className="participant-info">
                       <h4>{participant.callSign}</h4>                      <div className="participant-details">
                         {participant.name && <p><strong>Nom :</strong> {participant.name}</p>}
