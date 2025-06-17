@@ -27,9 +27,12 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
         Channel<IEvent> channel,
         ILogger<CreateQsoAggregateCommandHandler> logger) : base(channel, logger)
     {
-        _eventRepository = eventRepository;        _domainService = domainService;
+        _eventRepository = eventRepository;
+        _domainService = domainService;
         _moderatorRepository = moderatorRepository;
-    }    public async Task<Validation<Error, QsoAggregateDto>> Handle(CreateQsoAggregateCommand request, CancellationToken cancellationToken)
+    }
+
+    public async Task<Validation<Error, QsoAggregateDto>> Handle(CreateQsoAggregateCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -49,59 +52,89 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
                 from _ in nameValidation
                 from __ in moderatorValidation
                 from aggregate in Domain.Aggregates.QsoAggregate.Create(request.Id, request.Name, request.Description, moderatorId, request.Frequency)
-                select aggregate;
-
-            return await aggregateResult.MatchAsync(
+                select aggregate;            return await aggregateResult.MatchAsync(
                 async aggregate =>
                 {
                     _logger.LogDebug("Agrégat QSO créé avec succès, ID: {AggregateId}", aggregate.Id);
                     
-                    var eventsResult = aggregate.GetUncommittedChanges();
+                    // Ajouter automatiquement le modérateur comme premier participant
+                    var moderatorResult = await _moderatorRepository.GetByIdAsync(moderatorId);
+                    var finalAggregate = moderatorResult.Match(
+                        moderator =>
+                        {
+                            _logger.LogDebug("Ajout automatique du modérateur {CallSign} comme participant", moderator.CallSign);
+                            
+                            var addModeratorResult = aggregate.AddParticipant(moderator.CallSign);
+                            return addModeratorResult.Match(
+                                updatedAggregate =>
+                                {
+                                    _logger.LogDebug("Modérateur {CallSign} ajouté automatiquement comme participant", moderator.CallSign);
+                                    return updatedAggregate;
+                                },
+                                errors =>
+                                {
+                                    _logger.LogWarning("Impossible d'ajouter automatiquement le modérateur {CallSign} comme participant: {Errors}", 
+                                        moderator.CallSign, string.Join(", ", errors.Select(e => e.Message)));
+                                    // Continuer sans le modérateur comme participant (pas bloquant)
+                                    return aggregate;
+                                }
+                            );
+                        },
+                        errors =>
+                        {
+                            _logger.LogWarning("Impossible de récupérer le modérateur pour l'ajout automatique: {Errors}", 
+                                string.Join(", ", errors.Select(e => e.Message)));
+                            // Continuer sans le modérateur comme participant (pas bloquant)
+                            return aggregate;
+                        }
+                    );
+
+                    var eventsResult = finalAggregate.GetUncommittedChanges();
                     return await eventsResult.MatchAsync(
                         async events =>
                         {
-                            _logger.LogDebug("Sauvegarde de {EventCount} événement(s) pour l'agrégat {AggregateId}", events.Count(), aggregate.Id);
+                            _logger.LogDebug("Sauvegarde de {EventCount} événement(s) pour l'agrégat {AggregateId}", events.Count(), finalAggregate.Id);
                             
                             var saveResult = await _eventRepository.SaveEventsAsync(events, cancellationToken);
                             return saveResult.Match(
                                 _ =>
                                 {
-                                    _logger.LogDebug("Événements sauvegardés avec succès pour l'agrégat {AggregateId}", aggregate.Id);
+                                    _logger.LogDebug("Événements sauvegardés avec succès pour l'agrégat {AggregateId}", finalAggregate.Id);
                                     
                                     DispatchEventsAsync(events, cancellationToken);
                                     
-                                    var participantDtos = aggregate.Participants
+                                    var participantDtos = finalAggregate.Participants
                                         .Select(p => new ParticipantDto(p.CallSign, p.Order))
                                         .ToArray();
 
-                                    _logger.LogInformation("CreateQsoAggregateCommand exécutée avec succès pour l'agrégat {AggregateId}", aggregate.Id);
+                                    _logger.LogInformation("CreateQsoAggregateCommand exécutée avec succès pour l'agrégat {AggregateId} avec {ParticipantCount} participants", 
+                                        finalAggregate.Id, participantDtos.Length);
                                       return Validation<Error, QsoAggregateDto>.Success(
                                         new QsoAggregateDto(
-                                            aggregate.Id, 
-                                            aggregate.Name, 
-                                            aggregate.Description, 
-                                            aggregate.ModeratorId, 
-                                            aggregate.Frequency,
+                                            finalAggregate.Id, 
+                                            finalAggregate.Name, 
+                                            finalAggregate.Description, 
+                                            finalAggregate.ModeratorId, 
+                                            finalAggregate.Frequency,
                                             participantDtos,
-                                            aggregate.StartDateTime,
-                                            aggregate.CreatedDate
+                                            finalAggregate.StartDateTime,
+                                            finalAggregate.CreatedDate
                                         ));
                                 },
                                 errors => 
                                 {
-                                    _logger.LogError("Erreur lors de la sauvegarde des événements pour l'agrégat {AggregateId}: {Errors}", aggregate.Id, string.Join(", ", errors.Select(e => e.Message)));
+                                    _logger.LogError("Erreur lors de la sauvegarde des événements pour l'agrégat {AggregateId}: {Errors}", finalAggregate.Id, string.Join(", ", errors.Select(e => e.Message)));
                                     return Validation<Error, QsoAggregateDto>.Fail(errors);
                                 }
                             );
                         },
                         errors => 
                         {
-                            _logger.LogError("Erreur lors de la récupération des événements non commitées pour l'agrégat {AggregateId}: {Errors}", aggregate.Id, string.Join(", ", errors.Select(e => e.Message)));
+                            _logger.LogError("Erreur lors de la récupération des événements non commitées pour l'agrégat {AggregateId}: {Errors}", finalAggregate.Id, string.Join(", ", errors.Select(e => e.Message)));
                             return Task.FromResult(Validation<Error, QsoAggregateDto>.Fail(errors));
                         }
                     );
-                },
-                errors => 
+                },errors => 
                 {
                     _logger.LogError("Erreur lors de la création de l'agrégat QSO avec le nom '{Name}': {Errors}", request.Name, string.Join(", ", errors.Select(e => e.Message)));
                     return Task.FromResult(Validation<Error, QsoAggregateDto>.Fail(errors));
@@ -111,8 +144,11 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
         catch (Exception ex)
         {
             _logger.LogError(ex, "Une erreur inattendue s'est produite lors de l'exécution de CreateQsoAggregateCommand pour l'agrégat {AggregateId}", request.Id);
-            return Error.New("Impossible de créer l'agrégat QSO.");        }
-    }    private async Task<Validation<Error, Unit>> ValidateModeratorExistsAsync(Guid moderatorId)
+            return Error.New("Impossible de créer l'agrégat QSO.");
+        }
+    }
+
+    private async Task<Validation<Error, Unit>> ValidateModeratorExistsAsync(Guid moderatorId)
     {
         _logger.LogDebug("Validation de l'existence du modérateur {ModeratorId}", moderatorId);
         
