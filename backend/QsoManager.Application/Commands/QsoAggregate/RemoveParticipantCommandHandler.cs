@@ -32,17 +32,18 @@ public class RemoveParticipantCommandHandler : BaseCommandHandler<RemoveParticip
             return await result.MatchAsync(                async aggregate =>
                 {
                     _logger.LogDebug("Participant '{CallSign}' supprimé avec succès de l'agrégat {AggregateId}", request.CallSign, request.AggregateId);
-                    
-                    var eventsResult = aggregate.GetUncommittedChanges();
+                      var eventsResult = aggregate.GetUncommittedChanges();
                     return await eventsResult.MatchAsync(
                         async events =>
                         {
+                            // Créer une copie des événements avant la sauvegarde car ClearChanges() va les effacer
+                            var eventsCopy = events.ToList();
                             var saveResult = await _repository.SaveAsync(aggregate);
                             return saveResult.Match(
                                 _ => 
                                 {
-                                    // Dispatcher les événements pour les projections
-                                    DispatchEventsAsync(events, cancellationToken);
+                                    // Dispatcher les événements pour les projections (utiliser la copie)
+                                    DispatchEventsAsync(eventsCopy, cancellationToken);
                                     
                                     _logger.LogInformation("Participant '{CallSign}' supprimé avec succès et agrégat {AggregateId} sauvegardé", request.CallSign, request.AggregateId);
                                     return Validation<Error, LanguageExt.Unit>.Success(LanguageExt.Unit.Default);
