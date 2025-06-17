@@ -140,18 +140,19 @@ const QsoDetailPage: React.FC = () => {
         <div className="success-message" style={{ marginBottom: '1rem' }}>
           {successMessage}
         </div>
-      )}
-
-      <div className="qso-detail-content">
+      )}      <div className="qso-detail-content">
         <div className="detail-section">
           <div className="detail-card">
-            <h2>{qso.name}</h2>
+            <h2>
+              {qso.name}
+              {qso.description && (
+                <span style={{ fontWeight: 'normal', color: 'var(--text-secondary)', fontSize: '0.9em' }}>
+                  {' '}({qso.description})
+                </span>
+              )}
+            </h2>
             
-            <div className="detail-grid">              <div className="detail-item">
-                <label>Description :</label>
-                <p>{qso.description || 'Aucune description'}</p>
-              </div>
-
+            <div className="detail-grid">
               <div className="detail-item">
                 <label>Fréquence :</label>
                 <p>{qso.frequency ? `${qso.frequency} MHz` : 'Non définie'}</p>
