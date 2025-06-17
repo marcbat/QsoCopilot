@@ -11,6 +11,7 @@ using QsoManager.Domain.Repositories;
 using System.Security.Claims;
 using System.Threading.Channels;
 using Xunit;
+using FluentAssertions;
 
 namespace QsoManager.Application.UnitTests.Commands.QsoAggregate;
 
@@ -47,14 +48,12 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>()).Returns(LanguageExt.Unit.Default);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsSuccess.Should().BeTrue();
         var dto = result.Match(success => success, errors => throw new Exception("Should not fail"));
-        Assert.Equal(aggregateId, dto.Id);
-        Assert.Equal(callSign, dto.Participants.First().CallSign);
-        Assert.Equal(1, dto.Participants.First().Order);
+        dto.Id.Should().Be(aggregateId);
+        dto.Participants.First().CallSign.Should().Be(callSign);
+        dto.Participants.First().Order.Should().Be(1);
 
         await _mockRepository.Received(1).GetByIdAsync(aggregateId);
         await _mockRepository.Received(1).SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>());
@@ -76,12 +75,10 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.GetByIdAsync(aggregateId).Returns(aggregate);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         var errors = result.Match(success => throw new Exception("Should fail"), errors => errors);
-        Assert.Contains("Vous n'êtes pas autorisé à modifier ce QSO", errors.First().Message);
+        errors.First().Message.Should().Contain("Vous n'êtes pas autorisé à modifier ce QSO");
 
         await _mockRepository.Received(1).GetByIdAsync(aggregateId);
         await _mockRepository.DidNotReceive().SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>());
@@ -98,12 +95,10 @@ public class AddParticipantCommandHandlerTests
         var command = new AddParticipantCommand(aggregateId, callSign, user);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         var errors = result.Match(success => throw new Exception("Should fail"), errors => errors);
-        Assert.Contains("Utilisateur non authentifié", errors.First().Message);
+        errors.First().Message.Should().Contain("Utilisateur non authentifié");
 
         await _mockRepository.DidNotReceive().GetByIdAsync(Arg.Any<Guid>());
         await _mockRepository.DidNotReceive().SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>());
@@ -121,12 +116,10 @@ public class AddParticipantCommandHandlerTests
         var command = new AddParticipantCommand(aggregateId, callSign, user);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         var errors = result.Match(success => throw new Exception("Should fail"), errors => errors);
-        Assert.Contains("ID utilisateur invalide", errors.First().Message);
+        errors.First().Message.Should().Contain("ID utilisateur invalide");
 
         await _mockRepository.DidNotReceive().GetByIdAsync(Arg.Any<Guid>());
         await _mockRepository.DidNotReceive().SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>());
@@ -146,12 +139,10 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.GetByIdAsync(aggregateId).Returns(Error.New("Aggregate not found"));
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         var errors = result.Match(success => throw new Exception("Should fail"), errors => errors);
-        Assert.Contains("Aggregate not found", errors.First().Message);
+        errors.First().Message.Should().Contain("Aggregate not found");
 
         await _mockRepository.Received(1).GetByIdAsync(aggregateId);
         await _mockRepository.DidNotReceive().SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>());
@@ -172,12 +163,10 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.GetByIdAsync(aggregateId).Returns(aggregate);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         var errors = result.Match(success => throw new Exception("Should fail"), errors => errors);
-        Assert.Contains("L'indicatif ne peut pas être vide", errors.First().Message);
+        errors.First().Message.Should().Contain("L'indicatif ne peut pas être vide");
 
         await _mockRepository.Received(1).GetByIdAsync(aggregateId);
         await _mockRepository.DidNotReceive().SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>());
@@ -199,12 +188,10 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>()).Returns(Error.New("Save failed"));
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         var errors = result.Match(success => throw new Exception("Should fail"), errors => errors);
-        Assert.Contains("Save failed", errors.First().Message);
+        errors.First().Message.Should().Contain("Save failed");
 
         await _mockRepository.Received(1).GetByIdAsync(aggregateId);
         await _mockRepository.Received(1).SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>());
@@ -224,12 +211,12 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.GetByIdAsync(aggregateId).Returns(Task.FromException<Validation<Error, Domain.Aggregates.QsoAggregate>>(new Exception("Unexpected error")));
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         var errors = result.Match(success => throw new Exception("Should fail"), errors => errors);
-        Assert.Contains("Impossible d'ajouter le participant", errors.First().Message);        await _mockRepository.Received(1).GetByIdAsync(aggregateId);
+        errors.First().Message.Should().Contain("Impossible d'ajouter le participant");
+        
+        await _mockRepository.Received(1).GetByIdAsync(aggregateId);
         await _mockRepository.DidNotReceive().SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>());
     }    [Fact]
     public async Task Handle_WhenValidRequest_ShouldDispatchParticipantAddedEvent()
@@ -248,22 +235,20 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>()).Returns(LanguageExt.Unit.Default);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsSuccess.Should().BeTrue();
 
         // Verify that a ParticipantAdded event was dispatched to the channel
         var reader = _mockChannel.Reader;
-        Assert.True(reader.TryRead(out var dispatchedEvent));
+        reader.TryRead(out var dispatchedEvent).Should().BeTrue();
         
-        var participantAddedEvent = Assert.IsType<Domain.Aggregates.QsoAggregate.Events.ParticipantAdded>(dispatchedEvent);
-        Assert.Equal(aggregateId, participantAddedEvent.AggregateId);
-        Assert.Equal(callSign, participantAddedEvent.CallSign);
-        Assert.Equal(1, participantAddedEvent.Order);
+        var participantAddedEvent = dispatchedEvent.Should().BeOfType<Domain.Aggregates.QsoAggregate.Events.ParticipantAdded>().Subject;
+        participantAddedEvent.AggregateId.Should().Be(aggregateId);
+        participantAddedEvent.CallSign.Should().Be(callSign);
+        participantAddedEvent.Order.Should().Be(1);
         
         // Verify that no more events are in the channel for this test
-        Assert.False(reader.TryRead(out _));
+        reader.TryRead(out _).Should().BeFalse();
     }    [Fact]
     public async Task Handle_WhenValidRequest_ShouldDispatchEventsInCorrectOrder()
     {
@@ -281,10 +266,8 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>()).Returns(LanguageExt.Unit.Default);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsSuccess.Should().BeTrue();
 
         // Verify that events are dispatched in the correct order and with correct details
         var reader = _mockChannel.Reader;
@@ -296,17 +279,16 @@ public class AddParticipantCommandHandlerTests
         }
 
         // Should have exactly one ParticipantAdded event
-        Assert.Single(dispatchedEvents);
+        dispatchedEvents.Should().HaveCount(1);
         
         var participantAddedEvent = dispatchedEvents.OfType<Domain.Aggregates.QsoAggregate.Events.ParticipantAdded>()
             .FirstOrDefault();
         
-        Assert.NotNull(participantAddedEvent);
-        Assert.Equal(aggregateId, participantAddedEvent.AggregateId);
-        Assert.Equal(callSign, participantAddedEvent.CallSign);
-        Assert.Equal(1, participantAddedEvent.Order);
-        Assert.True(participantAddedEvent.DateEvent <= DateTime.Now);
-        Assert.True(participantAddedEvent.DateEvent >= DateTime.Now.AddMinutes(-1));
+        participantAddedEvent.Should().NotBeNull();
+        participantAddedEvent.AggregateId.Should().Be(aggregateId);
+        participantAddedEvent.CallSign.Should().Be(callSign);
+        participantAddedEvent.Order.Should().Be(1);
+        participantAddedEvent.DateEvent.Should().BeCloseTo(DateTime.Now, TimeSpan.FromMinutes(1));
     }    
     
     [Fact]
@@ -321,10 +303,9 @@ public class AddParticipantCommandHandlerTests
         var command = new AddParticipantCommand(aggregateId, callSign, user);
 
         var aggregate = CreateQsoAggregate(aggregateId, userId);
-        
-        // Add an existing participant to test order increment
+          // Add an existing participant to test order increment
         var existingParticipantResult = aggregate.AddParticipant("F4EXISTING");
-        Assert.True(existingParticipantResult.IsSuccess); // Verify the existing participant was added successfully
+        existingParticipantResult.IsSuccess.Should().BeTrue(); // Verify the existing participant was added successfully
         
         aggregate.ClearChanges(); // Clear events from the setup
         
@@ -332,19 +313,17 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>()).Returns(LanguageExt.Unit.Default);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsSuccess.Should().BeTrue();
 
         // Verify that the new participant gets order 2
         var reader = _mockChannel.Reader;
-        Assert.True(reader.TryRead(out var dispatchedEvent));
+        reader.TryRead(out var dispatchedEvent).Should().BeTrue();
         
-        var participantAddedEvent = Assert.IsType<Domain.Aggregates.QsoAggregate.Events.ParticipantAdded>(dispatchedEvent);
-        Assert.Equal(aggregateId, participantAddedEvent.AggregateId);
-        Assert.Equal(callSign, participantAddedEvent.CallSign);
-        Assert.Equal(2, participantAddedEvent.Order); // Should be order 2 since there's already one participant
+        var participantAddedEvent = dispatchedEvent.Should().BeOfType<Domain.Aggregates.QsoAggregate.Events.ParticipantAdded>().Subject;
+        participantAddedEvent.AggregateId.Should().Be(aggregateId);
+        participantAddedEvent.CallSign.Should().Be(callSign);
+        participantAddedEvent.Order.Should().Be(2); // Should be order 2 since there's already one participant
     }
 
     [Fact]
@@ -362,14 +341,12 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.GetByIdAsync(aggregateId).Returns(aggregate);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         
         // Verify that no events were dispatched to the channel
         var reader = _mockChannel.Reader;
-        Assert.False(reader.TryRead(out _), "No events should be dispatched when domain error occurs");
+        reader.TryRead(out _).Should().BeFalse("No events should be dispatched when domain error occurs");
     }
 
     [Fact]
@@ -386,14 +363,12 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.GetByIdAsync(aggregateId).Returns(Error.New("Aggregate not found"));
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         
         // Verify that no events were dispatched to the channel
         var reader = _mockChannel.Reader;
-        Assert.False(reader.TryRead(out _), "No events should be dispatched when repository error occurs");
+        reader.TryRead(out _).Should().BeFalse("No events should be dispatched when repository error occurs");
     }
 
     [Fact]
@@ -412,14 +387,12 @@ public class AddParticipantCommandHandlerTests
         _mockRepository.SaveAsync(Arg.Any<Domain.Aggregates.QsoAggregate>()).Returns(Error.New("Save failed"));
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsFail);
+        var result = await _handler.Handle(command, CancellationToken.None);        // Assert
+        result.IsFail.Should().BeTrue();
         
         // Verify that no events were dispatched to the channel even though the participant was added to the aggregate
         var reader = _mockChannel.Reader;
-        Assert.False(reader.TryRead(out _), "No events should be dispatched when save operation fails");
+        reader.TryRead(out _).Should().BeFalse("No events should be dispatched when save operation fails");
     }
 
     private static ClaimsPrincipal CreateClaimsPrincipal(Guid userId)
