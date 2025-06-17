@@ -142,8 +142,7 @@ const QsoDetailPage: React.FC = () => {
         </div>
       )}      <div className="qso-detail-content">
         <div className="detail-section">
-          <div className="detail-card">
-            <h2>
+          <div className="detail-card">            <h2>
               {qso.name}
               {qso.description && (
                 <span style={{ fontWeight: 'normal', color: 'var(--text-secondary)', fontSize: '0.9em' }}>
@@ -152,7 +151,13 @@ const QsoDetailPage: React.FC = () => {
               )}
             </h2>
             
-            <div className="detail-grid">
+            <div style={{ 
+              display: 'flex', 
+              gap: '2rem', 
+              flexWrap: 'wrap',
+              alignItems: 'baseline',
+              marginTop: '1rem'
+            }}>
               <div className="detail-item">
                 <label>Fréquence :</label>
                 <p>{qso.frequency ? `${qso.frequency} MHz` : 'Non définie'}</p>
@@ -161,10 +166,14 @@ const QsoDetailPage: React.FC = () => {
               <div className="detail-item">
                 <label>Date de début :</label>
                 <p>{formatDate(qso.startDateTime)}</p>
-              </div>              <div className="detail-item">
+              </div>
+
+              <div className="detail-item">
                 <label>Date de fin :</label>
                 <p>{formatDate(qso.endDateTime)}</p>
-              </div>              <div className="detail-item">
+              </div>
+
+              <div className="detail-item">
                 <label>Mode :</label>
                 <p>{qso.mode || 'Non défini'}</p>
               </div>
