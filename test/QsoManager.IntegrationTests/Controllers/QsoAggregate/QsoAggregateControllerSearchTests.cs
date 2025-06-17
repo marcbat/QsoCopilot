@@ -18,26 +18,28 @@ public class QsoAggregateControllerSearchTests : BaseIntegrationTest
     {
         // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST1");
-        var searchTerm = "Recherche Test";
-        var qso1 = new
+        var searchTerm = "Recherche Test";        var qso1 = new
         {
             Id = Guid.NewGuid(),
             Name = $"{searchTerm} QSO 1",
-            Description = "Premier QSO pour recherche"
+            Description = "Premier QSO pour recherche",
+            Frequency = 14.205m
         };
 
         var qso2 = new
         {
             Id = Guid.NewGuid(),
             Name = $"{searchTerm} QSO 2",
-            Description = "Deuxième QSO pour recherche"
+            Description = "Deuxième QSO pour recherche",
+            Frequency = 7.040m
         };
 
         var qso3 = new
         {
             Id = Guid.NewGuid(),
             Name = "Autre QSO",
-            Description = "QSO qui ne correspond pas à la recherche"
+            Description = "QSO qui ne correspond pas à la recherche",
+            Frequency = 21.205m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", qso1);

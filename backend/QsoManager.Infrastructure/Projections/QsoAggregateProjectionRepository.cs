@@ -180,9 +180,7 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             _logger.LogError(ex, "Error checking if QsoAggregate projection exists with name {Name}", name);
             return Error.New($"Failed to check existence of QsoAggregate projection with name '{name}': {ex.Message}");
         }
-    }
-
-    private ApplicationModels.QsoAggregateProjectionDto MapToDto(InfrastructureModels.QsoAggregateProjection model)
+    }    private ApplicationModels.QsoAggregateProjectionDto MapToDto(InfrastructureModels.QsoAggregateProjection model)
     {
         return new ApplicationModels.QsoAggregateProjectionDto
         {
@@ -190,6 +188,8 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             Name = model.Name,
             Description = model.Description,
             ModeratorId = model.ModeratorId,
+            Frequency = model.Frequency,
+            StartDateTime = model.StartDateTime,
             Participants = model.Participants.Select(MapParticipantToDto).ToList(),
             CreatedAt = model.CreatedAt,
             UpdatedAt = model.UpdatedAt
@@ -204,9 +204,7 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             Order = model.Order,
             AddedAt = model.AddedAt
         };
-    }
-
-    private InfrastructureModels.QsoAggregateProjection MapToModel(ApplicationModels.QsoAggregateProjectionDto dto)
+    }    private InfrastructureModels.QsoAggregateProjection MapToModel(ApplicationModels.QsoAggregateProjectionDto dto)
     {
         return new InfrastructureModels.QsoAggregateProjection
         {
@@ -214,6 +212,8 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             Name = dto.Name,
             Description = dto.Description,
             ModeratorId = dto.ModeratorId,
+            Frequency = dto.Frequency,
+            StartDateTime = dto.StartDateTime,
             Participants = dto.Participants.Select(MapParticipantToModel).ToList(),
             CreatedAt = dto.CreatedAt,
             UpdatedAt = dto.UpdatedAt

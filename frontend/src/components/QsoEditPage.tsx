@@ -23,14 +23,11 @@ const QsoEditPage: React.FC = () => {
     frequency: '',
     mode: '',
     location: ''
-  });
-
-  // État pour le nouveau participant
+  });  // État pour le nouveau participant
   const [newParticipant, setNewParticipant] = useState({
     callSign: '',
     name: '',
     location: '',
-    frequency: '',
     signalReport: '',
     notes: ''
   });
@@ -134,26 +131,21 @@ const QsoEditPage: React.FC = () => {
 
     try {
       setIsAddingParticipant(true);
-      setError(null);
-
-      const participantData: CreateParticipantRequest = {
+      setError(null);      const participantData: CreateParticipantRequest = {
         callSign: newParticipant.callSign,
         name: newParticipant.name || undefined,
         location: newParticipant.location || undefined,
-        frequency: newParticipant.frequency ? parseFloat(newParticipant.frequency) : undefined,
         signalReport: newParticipant.signalReport || undefined,
         notes: newParticipant.notes || undefined
       };
 
       await qsoApiService.addParticipant(qso.id, participantData);
       setSuccessMessage('Participant ajouté avec succès');
-      
-      // Réinitialiser le formulaire de participant
+        // Réinitialiser le formulaire de participant
       setNewParticipant({
         callSign: '',
         name: '',
         location: '',
-        frequency: '',
         signalReport: '',
         notes: ''
       });
@@ -241,10 +233,8 @@ const QsoEditPage: React.FC = () => {
                   onChange={handleFormChange}
                   required
                 />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="frequency">Fréquence (MHz)</label>
+              </div>              <div className="form-group">
+                <label htmlFor="frequency">Fréquence (MHz) *</label>
                 <input
                   type="number"
                   id="frequency"
@@ -252,7 +242,8 @@ const QsoEditPage: React.FC = () => {
                   value={formData.frequency}
                   onChange={handleFormChange}
                   step="0.001"
-                  min="0"
+                  min="0.001"
+                  required
                 />
               </div>
             </div>
@@ -333,12 +324,10 @@ const QsoEditPage: React.FC = () => {
             <div className="existing-participants">
               <h3>Participants actuels</h3>
               <div className="participants-grid">
-                {qso.participants.map((participant: ParticipantDto, index: number) => (
-                  <div key={index} className="participant-card">
+                {qso.participants.map((participant: ParticipantDto, index: number) => (                  <div key={index} className="participant-card">
                     <h4>{participant.callSign}</h4>
                     {participant.name && <p><strong>Nom :</strong> {participant.name}</p>}
                     {participant.location && <p><strong>Localisation :</strong> {participant.location}</p>}
-                    {participant.frequency && <p><strong>Fréquence :</strong> {participant.frequency} MHz</p>}
                     {participant.signalReport && <p><strong>Rapport :</strong> {participant.signalReport}</p>}
                     {participant.notes && <p><strong>Notes :</strong> {participant.notes}</p>}
                   </div>
@@ -376,9 +365,7 @@ const QsoEditPage: React.FC = () => {
                     placeholder="Nom du radioamateur"
                   />
                 </div>
-              </div>
-
-              <div className="form-row">
+              </div>              <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="participant-location">Localisation</label>
                   <input
@@ -392,21 +379,6 @@ const QsoEditPage: React.FC = () => {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="participant-frequency">Fréquence (MHz)</label>
-                  <input
-                    type="number"
-                    id="participant-frequency"
-                    name="frequency"
-                    value={newParticipant.frequency}
-                    onChange={handleParticipantChange}
-                    step="0.001"
-                    min="0"
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
                   <label htmlFor="participant-signalReport">Rapport signal</label>
                   <input
                     type="text"
@@ -417,18 +389,18 @@ const QsoEditPage: React.FC = () => {
                     placeholder="ex: 59, 5/9..."
                   />
                 </div>
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="participant-notes">Notes</label>
-                  <input
-                    type="text"
-                    id="participant-notes"
-                    name="notes"
-                    value={newParticipant.notes}
-                    onChange={handleParticipantChange}
-                    placeholder="Notes supplémentaires"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="participant-notes">Notes</label>
+                <input
+                  type="text"
+                  id="participant-notes"
+                  name="notes"
+                  value={newParticipant.notes}
+                  onChange={handleParticipantChange}
+                  placeholder="Notes supplémentaires"
+                />
               </div>
 
               <button type="submit" className="btn btn-secondary" disabled={isAddingParticipant}>

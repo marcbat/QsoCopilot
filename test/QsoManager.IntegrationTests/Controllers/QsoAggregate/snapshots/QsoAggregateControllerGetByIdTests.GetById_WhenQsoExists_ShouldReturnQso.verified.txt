@@ -9,8 +9,9 @@
       name: QSO Test GetById,
       description: QSO pour test GetById,
       moderatorId: Guid_2,
-      startDateTime: null,
-      createdDate: null
+      frequency: 145.8,
+      startDateTime: DateTimeOffset_1,
+      createdDate: DateTimeOffset_1
     }
   }
 }

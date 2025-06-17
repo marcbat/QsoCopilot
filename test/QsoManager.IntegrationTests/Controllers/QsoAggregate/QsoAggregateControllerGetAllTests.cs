@@ -27,12 +27,12 @@ public class QsoAggregateControllerGetAllTests : BaseIntegrationTest
     public async Task GetAll_WhenQsoAggregatesExist_ShouldReturnAllQsos()
     {
         // Arrange - Créer plusieurs QSO avec utilisateurs authentifiés
-        var (userId1, token1) = await CreateAndAuthenticateUserAsync("F4TEST1");
-        var qso1 = new
+        var (userId1, token1) = await CreateAndAuthenticateUserAsync("F4TEST1");        var qso1 = new
         {
             Id = Guid.NewGuid(),
             Name = "QSO Test 1",
-            Description = "Premier QSO pour test GetAll"
+            Description = "Premier QSO pour test GetAll",
+            Frequency = 14.205m
         };
         await _client.PostAsJsonAsync("/api/QsoAggregate", qso1);
 
@@ -42,7 +42,8 @@ public class QsoAggregateControllerGetAllTests : BaseIntegrationTest
         {
             Id = Guid.NewGuid(),
             Name = "QSO Test 2",
-            Description = "Deuxième QSO pour test GetAll"
+            Description = "Deuxième QSO pour test GetAll",
+            Frequency = 7.040m
         };
         await _client.PostAsJsonAsync("/api/QsoAggregate", qso2);
 

@@ -12,6 +12,7 @@ public static class QsoAggregateMapper
             aggregate.Name,
             aggregate.Description,
             aggregate.ModeratorId,
+            aggregate.Frequency,
             aggregate.Participants.Select(p => p.ToDto()).ToList().AsReadOnly(),
             aggregate.StartDateTime,
             aggregate.CreatedDate

@@ -6,10 +6,10 @@ interface QsoFormProps {
   onQsoCreated: (qsoId: string) => void;
 }
 
-const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {
-  const [formData, setFormData] = useState<CreateQsoRequest>({
+const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData, setFormData] = useState<CreateQsoRequest>({
     name: '',
-    description: ''
+    description: '',
+    frequency: 0
   });
   
   const [participant, setParticipant] = useState<AddParticipantRequest>({
@@ -25,10 +25,12 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {
   const [success, setSuccess] = useState<string | null>(null);
   const [qsoCreated, setQsoCreated] = useState(false);
   const [createdQsoId, setCreatedQsoId] = useState<string | null>(null);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: name === 'frequency' ? (value ? parseFloat(value) : 0) : value 
+    }));
   };
 
   const handleParticipantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,10 +85,10 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
+  const resetForm = () => {    setFormData({
       name: '',
-      description: ''
+      description: '',
+      frequency: 0
     });
     setParticipant({
       callSign: '',
@@ -125,9 +127,7 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {
               placeholder="Ex: QSO Dimanche Matin"
               required
             />
-          </div>
-
-          <div className="form-group">
+          </div>          <div className="form-group">
             <label htmlFor="description" className="form-label">Description</label>
             <input
               type="text"
@@ -141,7 +141,21 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {
           </div>
 
           <div className="form-group">
-            <button type="submit" className="btn btn-primary" disabled={isLoading || !formData.name}>
+            <label htmlFor="frequency" className="form-label">Fréquence (MHz) *</label>
+            <input
+              type="number"
+              id="frequency"
+              name="frequency"
+              className="form-input"
+              value={formData.frequency || ''}
+              onChange={handleInputChange}
+              placeholder="14.200"
+              step="0.001"
+              min="0.001"
+              required
+            />
+          </div>          <div className="form-group">
+            <button type="submit" className="btn btn-primary" disabled={isLoading || !formData.name || !formData.frequency}>
               {isLoading ? 'Création...' : 'Créer le QSO'}
             </button>
           </div>

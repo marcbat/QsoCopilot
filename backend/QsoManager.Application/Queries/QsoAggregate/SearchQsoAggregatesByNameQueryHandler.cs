@@ -27,16 +27,17 @@ public class SearchQsoAggregatesByNameQueryHandler : IQueryHandler<SearchQsoAggr
         {
             _logger.LogInformation("Recherche des QSO Aggregates avec le nom '{Name}'", request.Name);
 
-            var result = await _projectionRepository.SearchByNameAsync(request.Name, cancellationToken);
-
-            return result.Map(projections => 
+            var result = await _projectionRepository.SearchByNameAsync(request.Name, cancellationToken);            return result.Map(projections => 
                 projections.Select(p => new QsoAggregateDto(
                     p.Id,
                     p.Name,
                     p.Description,
                     p.ModeratorId,
+                    p.Frequency,
                     p.Participants?.Select(part => new ParticipantDto(part.CallSign, part.Order))
-                        .ToList().AsReadOnly() ?? new List<ParticipantDto>().AsReadOnly()
+                        .ToList().AsReadOnly() ?? new List<ParticipantDto>().AsReadOnly(),
+                    p.StartDateTime,
+                    p.CreatedAt
                 )).AsEnumerable()
             );
         }

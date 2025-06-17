@@ -6,21 +6,18 @@ interface QsoFormProps {
   onQsoCreated: (qsoId: string) => void;
 }
 
-const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {
-  const [formData, setFormData] = useState<CreateQsoRequest>({
+const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {  const [formData, setFormData] = useState<CreateQsoRequest>({
     name: '',
     description: '',
+    frequency: 0,
     startDateTime: '',
-    frequency: undefined,
     mode: '',
     location: ''
   });
-  
   const [participant, setParticipant] = useState<CreateParticipantRequest>({
     callSign: '',
     name: '',
     location: '',
-    frequency: undefined,
     signalReport: '59',
     notes: ''
   });
@@ -29,20 +26,17 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [qsoCreated, setQsoCreated] = useState(false);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ 
       ...prev, 
-      [name]: name === 'frequency' ? (value ? parseFloat(value) : undefined) : value 
+      [name]: name === 'frequency' ? (value ? parseFloat(value) : 0) : value 
     }));
-  };
-
-  const handleParticipantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  };  const handleParticipantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setParticipant(prev => ({ 
       ...prev, 
-      [name]: name === 'frequency' ? (value ? parseFloat(value) : undefined) : value 
+      [name]: value 
     }));
   };
 
@@ -57,13 +51,12 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {
       setSuccess(`QSO créé avec succès: ${qsoData.name}`);
       setQsoCreated(true);
       onQsoCreated(qsoData.id);
-      
-      // Réinitialiser le formulaire QSO
+        // Réinitialiser le formulaire QSO
       setFormData({
         name: '',
         description: '',
+        frequency: 0,
         startDateTime: '',
-        frequency: undefined,
         mode: '',
         location: ''
       });
@@ -84,13 +77,11 @@ const QsoForm: React.FC<QsoFormProps> = ({ onQsoCreated }) => {
     try {
       await qsoApiService.addParticipant(formData.id || '', participant);
       setSuccess(`Participant ${participant.callSign} ajouté avec succès`);
-      
-      // Réinitialiser le formulaire participant
+        // Réinitialiser le formulaire participant
       setParticipant({
         callSign: '',
         name: '',
         location: '',
-        frequency: undefined,
         signalReport: '59',
         notes: ''
       });

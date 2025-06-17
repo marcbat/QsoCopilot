@@ -10,16 +10,18 @@
         name: QSO Test 1,
         description: Premier QSO pour test GetAll,
         moderatorId: Guid_2,
-        startDateTime: null,
-        createdDate: null
+        frequency: 14.205,
+        startDateTime: DateTimeOffset_1,
+        createdDate: DateTimeOffset_1
       },
       {
         id: Guid_3,
         name: QSO Test 2,
         description: Deuxième QSO pour test GetAll,
         moderatorId: Guid_4,
-        startDateTime: null,
-        createdDate: null
+        frequency: 7.04,
+        startDateTime: DateTimeOffset_2,
+        createdDate: DateTimeOffset_2
       }
     ]
   }

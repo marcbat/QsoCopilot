@@ -9,6 +9,7 @@ namespace QsoManager.Application.Commands.QsoAggregate;
 public record CreateQsoAggregateCommand(
     Guid Id,
     string Name,
-    string Description,
+    string? Description,
+    decimal Frequency,
     ClaimsPrincipal User
 ) : ICommand<QsoAggregateDto>;

@@ -11,12 +11,17 @@ public class QsoAggregateProjection
     
     [BsonElement("name")]
     public string Name { get; set; } = string.Empty;
-    
-    [BsonElement("description")]
-    public string Description { get; set; } = string.Empty;
+      [BsonElement("description")]
+    public string? Description { get; set; }
       [BsonElement("moderatorId")]
     [BsonRepresentation(BsonType.String)]
     public Guid ModeratorId { get; set; }
+    
+    [BsonElement("frequency")]
+    public decimal Frequency { get; set; }
+    
+    [BsonElement("startDateTime")]
+    public DateTime? StartDateTime { get; set; }
     
     [BsonElement("participants")]
     public List<ParticipantProjection> Participants { get; set; } = new();

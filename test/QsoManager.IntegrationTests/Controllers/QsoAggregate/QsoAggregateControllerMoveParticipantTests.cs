@@ -19,12 +19,12 @@ public class QsoAggregateControllerMoveParticipantTests : BaseIntegrationTest
     public async Task MoveParticipant_WhenValidRequest_ShouldMoveParticipant()
     {        // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST1");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Move Participant",
-            Description = "QSO pour test de déplacement de participant"
+            Description = "QSO pour test de déplacement de participant",
+            Frequency = 28.400m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
@@ -52,12 +52,12 @@ public class QsoAggregateControllerMoveParticipantTests : BaseIntegrationTest
     public async Task MoveParticipant_WhenParticipantNotFound_ShouldReturnBadRequest()
     {        // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST2");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Move Non-Existent Participant",
-            Description = "QSO pour test de déplacement de participant inexistant"
+            Description = "QSO pour test de déplacement de participant inexistant",
+            Frequency = 14.205m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);

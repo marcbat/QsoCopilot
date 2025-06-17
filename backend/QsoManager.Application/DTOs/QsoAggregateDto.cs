@@ -10,8 +10,9 @@ public record ParticipantDto(
 public record QsoAggregateDto(
     Guid Id,
     string Name,
-    string Description,
+    string? Description,
     Guid ModeratorId,
+    decimal Frequency,
     IReadOnlyList<ParticipantDto> Participants,
     DateTime? StartDateTime = null,
     DateTime? CreatedDate = null

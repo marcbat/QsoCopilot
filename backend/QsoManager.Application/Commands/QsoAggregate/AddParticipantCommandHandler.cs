@@ -59,34 +59,32 @@ public class AddParticipantCommandHandler : BaseCommandHandler<AddParticipantCom
                                     // Créer le DTO avec l'agrégat mis à jour
                                     var participantDtos = updatedAggregate.Participants
                                         .Select(p => new ParticipantDto(p.CallSign, p.Order))
-                                        .ToArray();
-
-                                    var qsoDto = new QsoAggregateDto(
+                                        .ToArray();                                    var qsoDto = new QsoAggregateDto(
                                         updatedAggregate.Id, 
                                         updatedAggregate.Name, 
                                         updatedAggregate.Description, 
                                         updatedAggregate.ModeratorId, 
-                                        participantDtos);
+                                        updatedAggregate.Frequency,
+                                        participantDtos,
+                                        updatedAggregate.StartDateTime,
+                                        updatedAggregate.CreatedDate);
 
                                     return Validation<Error, QsoAggregateDto>.Success(qsoDto);
-                                },
-                                errors =>
+                                },                                errors =>
                                 {
-                                    _logger.LogError("Erreur lors de la sauvegarde de l'agrégat {AggregateId} après ajout du participant '{CallSign}': {Errors}", request.AggregateId, request.CallSign, string.Join(", ", errors.Select(e => e.Message)));
+                                    _logger.LogError("Erreur lors de la sauvegarde de l'agrégat {AggregateId} après ajout du participant '{CallSign}': {Errors}", request.AggregateId, request.CallSign, string.Join(", ", errors.Select(e => e.ToString())));
                                     return Validation<Error, QsoAggregateDto>.Fail(errors);
                                 }
                             );
-                        },
-                        errors => 
+                        },                        errors => 
                         {
-                            _logger.LogError("Erreur lors de la récupération des événements pour l'agrégat {AggregateId}: {Errors}", request.AggregateId, string.Join(", ", errors.Select(e => e.Message)));
+                            _logger.LogError("Erreur lors de la récupération des événements pour l'agrégat {AggregateId}: {Errors}", request.AggregateId, string.Join(", ", errors.Select(e => e.ToString())));
                             return Task.FromResult(Validation<Error, QsoAggregateDto>.Fail(errors));
                         }
                     );
-                },
-                errors => 
+                },                errors => 
                 {
-                    _logger.LogError("Erreur lors de l'ajout du participant '{CallSign}' à l'agrégat {AggregateId}: {Errors}", request.CallSign, request.AggregateId, string.Join(", ", errors.Select(e => e.Message)));
+                    _logger.LogError("Erreur lors de l'ajout du participant '{CallSign}' à l'agrégat {AggregateId}: {Errors}", request.CallSign, request.AggregateId, string.Join(", ", errors.Select(e => e.ToString())));
                     return Task.FromResult(Validation<Error, QsoAggregateDto>.Fail(errors));
                 }
             );

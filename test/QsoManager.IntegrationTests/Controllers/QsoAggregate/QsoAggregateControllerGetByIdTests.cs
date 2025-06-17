@@ -18,12 +18,12 @@ public class QsoAggregateControllerGetByIdTests : BaseIntegrationTest
     {
         // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST1");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test GetById",
-            Description = "QSO pour test GetById"
+            Description = "QSO pour test GetById",
+            Frequency = 145.800m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);

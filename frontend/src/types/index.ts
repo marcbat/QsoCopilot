@@ -3,12 +3,12 @@
 export interface QsoAggregateDto {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   moderatorId: string;
+  frequency: number;
   startDateTime?: string;
   endDateTime?: string;
   createdDate?: string;
-  frequency?: number;
   mode?: string;
   location?: string;
   participants?: ParticipantDto[];
@@ -18,7 +18,6 @@ export interface ParticipantDto {
   callSign: string;
   name?: string;
   location?: string;
-  frequency?: number;
   signalReport?: string;
   notes?: string;
   qth?: string;
@@ -30,9 +29,9 @@ export interface ParticipantDto {
 export interface CreateQsoRequest {
   id?: string;
   name: string;
-  description: string;
+  description?: string;
+  frequency: number;
   startDateTime?: string;
-  frequency?: number;
   mode?: string;
   location?: string;
 }
@@ -40,9 +39,9 @@ export interface CreateQsoRequest {
 export interface UpdateQsoRequest {
   name?: string;
   description?: string;
+  frequency?: number;
   startDateTime?: string;
   endDateTime?: string;
-  frequency?: number;
   mode?: string;
   location?: string;
 }
@@ -51,7 +50,6 @@ export interface CreateParticipantRequest {
   callSign: string;
   name?: string;
   location?: string;
-  frequency?: number;
   signalReport?: string;
   notes?: string;
 }

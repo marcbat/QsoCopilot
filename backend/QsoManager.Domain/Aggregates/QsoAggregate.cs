@@ -9,31 +9,36 @@ namespace QsoManager.Domain.Aggregates;
 public class QsoAggregate : AggregateRoot
 {    public static class Events
     {
-        public record Created(Guid AggregateId, DateTime DateEvent, string Name, string Description, Guid ModeratorId, DateTime? StartDateTime = null) : Event(AggregateId, DateEvent);
+        public record Created(Guid AggregateId, DateTime DateEvent, string Name, string? Description, Guid ModeratorId, decimal Frequency, DateTime? StartDateTime = null) : Event(AggregateId, DateEvent);
         public record ParticipantAdded(Guid AggregateId, DateTime DateEvent, string CallSign, int Order) : Event(AggregateId, DateEvent);
         public record ParticipantRemoved(Guid AggregateId, DateTime DateEvent, string CallSign) : Event(AggregateId, DateEvent);
         public record ParticipantsReordered(Guid AggregateId, DateTime DateEvent, Dictionary<string, int> NewOrders) : Event(AggregateId, DateEvent);
         public record StartDateTimeUpdated(Guid AggregateId, DateTime DateEvent, DateTime? StartDateTime) : Event(AggregateId, DateEvent);
+        public record FrequencyUpdated(Guid AggregateId, DateTime DateEvent, decimal Frequency) : Event(AggregateId, DateEvent);
     }
 
     internal readonly List<Participant> _participants = [];
 
     protected QsoAggregate()
     {
-    }    internal QsoAggregate(Guid id, string name, string description, Guid moderatorId, DateTime? startDateTime = null) : base(id)
+    }    internal QsoAggregate(Guid id, string name, string? description, Guid moderatorId, decimal frequency, DateTime? startDateTime = null) : base(id)
     {
         Name = name;
         Description = description;
         ModeratorId = moderatorId;
-        StartDateTime = startDateTime;
+        Frequency = frequency;
+        StartDateTime = startDateTime ?? DateTime.Now; // Si pas de date de début spécifiée, utiliser maintenant
         CreatedDate = DateTime.Now;
     }
 
-    protected static Validation<Error, QsoAggregate> Create() => new QsoAggregate();    public static Validation<Error, QsoAggregate> Create(Guid id, string name, string description, Guid moderatorId, DateTime? startDateTime = null)
+    protected static Validation<Error, QsoAggregate> Create() => new QsoAggregate();    public static Validation<Error, QsoAggregate> Create(Guid id, string name, string? description, Guid moderatorId, decimal frequency, DateTime? startDateTime = null)
     {
-        return (ValidateId(id), ValidateName(name), ValidateDescription(description), ValidateId(moderatorId))
-            .Apply((vid, vname, vdesc, vModeratorId) => new QsoAggregate(vid, vname, vdesc, vModeratorId, startDateTime))
-            .Bind(aggregate => aggregate.Apply(new Events.Created(id, DateTime.Now, name, description, moderatorId, startDateTime))
+        var createdAt = DateTime.Now;
+        var actualStartDateTime = startDateTime ?? createdAt; // Date de début = date de création si pas spécifiée
+        
+        return (ValidateId(id), ValidateName(name), ValidateDescription(description), ValidateId(moderatorId), ValidateFrequency(frequency))
+            .Apply((vid, vname, vdesc, vModeratorId, vfrequency) => new QsoAggregate(vid, vname, vdesc, vModeratorId, vfrequency, actualStartDateTime))
+            .Bind(aggregate => aggregate.Apply(new Events.Created(id, createdAt, name, description, moderatorId, frequency, actualStartDateTime))
                 .Map(_ => aggregate));
     }
 
@@ -43,8 +48,9 @@ public class QsoAggregate : AggregateRoot
             .Bind(aggregate => aggregate.Load(history)
                 .Map(_ => aggregate));
     }    public string Name { get; protected set; } = string.Empty;
-    public string Description { get; protected set; } = string.Empty;
+    public string? Description { get; protected set; } = string.Empty;
     public Guid ModeratorId { get; protected set; }
+    public decimal Frequency { get; protected set; }
     public DateTime? StartDateTime { get; protected set; }
     public DateTime CreatedDate { get; protected set; }
     public IReadOnlyList<Participant> Participants => _participants.AsReadOnly();
@@ -54,13 +60,17 @@ public class QsoAggregate : AggregateRoot
         if (string.IsNullOrWhiteSpace(name))
             return Error.New("Le nom ne peut pas être vide");
         return name;
+    }    protected static Validation<Error, string> ValidateDescription(string? description)
+    {
+        // La description est maintenant facultative
+        return description ?? string.Empty;
     }
 
-    protected static Validation<Error, string> ValidateDescription(string description)
+    protected static Validation<Error, decimal> ValidateFrequency(decimal frequency)
     {
-        if (string.IsNullOrWhiteSpace(description))
-            return Error.New("La description ne peut pas être vide");
-        return description;
+        if (frequency <= 0)
+            return Error.New("La fréquence doit être supérieure à 0");
+        return frequency;
     }
 
     protected static Validation<Error, string> ValidateCallSign(string callSign)
@@ -170,6 +180,14 @@ public class QsoAggregate : AggregateRoot
             .Map(x => this);
     }
 
+    // Mettre à jour la fréquence
+    public Validation<Error, QsoAggregate> UpdateFrequency(decimal frequency)
+    {
+        return ValidateFrequency(frequency)
+            .Bind(vfrequency => Apply(new Events.FrequencyUpdated(Id, DateTime.Now, vfrequency)))
+            .Map(x => this);
+    }
+
     // Mettre à jour le pays d'un participant
     public Validation<Error, QsoAggregate> UpdateParticipantCountry(string callSign, string? country)
     {
@@ -237,6 +255,7 @@ public class QsoAggregate : AggregateRoot
             Events.ParticipantRemoved e => ParticipantRemovedEventHandler(e),
             Events.ParticipantsReordered e => ParticipantsReorderedEventHandler(e),
             Events.StartDateTimeUpdated e => StartDateTimeUpdatedEventHandler(e),
+            Events.FrequencyUpdated e => FrequencyUpdatedEventHandler(e),
             Participant.Events.CountryUpdated e => ParticipantCountryUpdatedEventHandler(e),
             Participant.Events.NameUpdated e => ParticipantNameUpdatedEventHandler(e),
             _ => Error.New($"Event type {@event.GetType().Name} is not supported")
@@ -247,6 +266,7 @@ public class QsoAggregate : AggregateRoot
         Name = e.Name;
         Description = e.Description;
         ModeratorId = e.ModeratorId;
+        Frequency = e.Frequency;
         StartDateTime = e.StartDateTime;
         CreatedDate = e.DateEvent;
         return Success<Error, Event>(e);
@@ -310,6 +330,12 @@ public class QsoAggregate : AggregateRoot
     private Validation<Error, Event> StartDateTimeUpdatedEventHandler(Events.StartDateTimeUpdated e)
     {
         StartDateTime = e.StartDateTime;
+        return Success<Error, Event>(e);
+    }
+
+    private Validation<Error, Event> FrequencyUpdatedEventHandler(Events.FrequencyUpdated e)
+    {
+        Frequency = e.Frequency;
         return Success<Error, Event>(e);
     }
 }

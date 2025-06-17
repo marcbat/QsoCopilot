@@ -19,12 +19,12 @@ public class QsoAggregateControllerReorderParticipantsTests : BaseIntegrationTes
     public async Task ReorderParticipants_WhenValidRequest_ShouldReorderParticipants()
     {        // Arrange
         var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST1");
-        var qsoId = Guid.NewGuid();
-        var createRequest = new
+        var qsoId = Guid.NewGuid();        var createRequest = new
         {
             Id = qsoId,
             Name = "QSO Test Reorder",
-            Description = "QSO pour test de réorganisation"
+            Description = "QSO pour test de réorganisation",
+            Frequency = 145.5m
         };
 
         await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
