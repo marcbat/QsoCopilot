@@ -71,14 +71,23 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
             {isAuthenticated && <th>Actions</th>}
           </tr>
         </thead>
-        <tbody>
-          {qsos.map((qso) => (
+        <tbody>          {qsos.map((qso) => (
             <tr key={qso.id}>
               <td>
-                <div className="qso-name" style={{ fontWeight: '600', color: 'var(--primary-color)' }}>
+                <div 
+                  className="qso-name" 
+                  style={{ 
+                    fontWeight: '600', 
+                    color: 'var(--primary-color)', 
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                  onClick={() => handleViewDetails(qso.id)}
+                  title="Cliquez pour voir les détails"
+                >
                   {qso.name}
                 </div>
-              </td>              <td>
+              </td><td>
                 <div className="qso-description" style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {qso.description || 'Aucune description'}
                 </div>

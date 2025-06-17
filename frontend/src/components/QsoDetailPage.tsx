@@ -112,16 +112,9 @@ const QsoDetailPage: React.FC = () => {
               <div className="detail-item">
                 <label>Date de début :</label>
                 <p>{formatDate(qso.startDateTime)}</p>
-              </div>
-
-              <div className="detail-item">
+              </div>              <div className="detail-item">
                 <label>Date de fin :</label>
                 <p>{formatDate(qso.endDateTime)}</p>
-              </div>
-
-              <div className="detail-item">
-                <label>Fréquence :</label>
-                <p>{qso.frequency ? `${qso.frequency} MHz` : 'Non définie'}</p>
               </div>
 
               <div className="detail-item">
