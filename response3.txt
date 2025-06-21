@@ -1,1 +1,0 @@
-{"errors":["Le nom ne peut pas être vide"]}
