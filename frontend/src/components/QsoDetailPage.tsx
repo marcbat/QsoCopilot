@@ -5,6 +5,7 @@ import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
 import ParticipantCard from './ParticipantCard';
+import ParticipantTable from './ParticipantTable';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -197,7 +198,23 @@ const QsoDetailPage: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>          <div className="detail-card">
+          </div>
+        </div>
+
+        {/* Section participants - mise en pleine largeur en mode table */}
+        <div 
+          className={showParticipantDetails ? "detail-section" : ""}
+          style={{
+            width: showParticipantDetails ? 'auto' : '100%',
+            marginTop: showParticipantDetails ? '0' : 'var(--spacing-lg)'
+          }}
+        ><div 
+            className="detail-card"
+            style={{
+              width: showParticipantDetails ? 'auto' : '100%',
+              maxWidth: showParticipantDetails ? 'none' : '100%'
+            }}
+          >
             <div style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -287,88 +304,19 @@ const QsoDetailPage: React.FC = () => {
                       showRemoveButton={isAuthenticated}
                     />
                   ))                ) : (
-                  // Affichage simple - seulement les call signs
-                  <div style={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: '0.75rem',
-                    alignItems: 'center',
-                    width: '100%'
-                  }}>
-                    {qso.participants.map((participant: ParticipantDto, index: number) => (
-                      <div 
-                        key={index} 
-                        style={{ 
-                          position: 'relative',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          flexShrink: 0
-                        }}
-                      >
-                        <span
-                          style={{
-                            background: 'var(--primary-color)',
-                            color: 'white',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '1.25rem',
-                            fontSize: '0.875rem',
-                            fontWeight: '600',
-                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                            paddingRight: isAuthenticated ? '2.25rem' : '1rem',
-                            whiteSpace: 'nowrap',
-                            minWidth: 'fit-content'
-                          }}
-                        >
-                          {participant.callSign}
-                        </span>
-                        {isAuthenticated && (
-                          <button
-                            onClick={() => handleRemoveParticipant(participant.callSign)}
-                            title={`Supprimer ${participant.callSign}`}
-                            style={{
-                              position: 'absolute',
-                              right: '6px',
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              background: 'rgba(255, 255, 255, 0.2)',
-                              color: 'white',
-                              border: 'none',
-                              width: '18px',
-                              height: '18px',
-                              borderRadius: '50%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: 'pointer',
-                              fontSize: '11px',
-                              opacity: '0.8',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = '1';
-                              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.8)';
-                              e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = '0.8';
-                              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-                            }}
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  // Affichage en table compacte
+                  <ParticipantTable
+                    participants={qso.participants}
+                    onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
+                    showRemoveButton={isAuthenticated}
+                  />
                 )}
               </div>
             ) : (
               <div className="no-participants">
                 <p>Aucun participant ajouté pour ce QSO</p>
               </div>
-            )}
-          </div>
+            )}          </div>
         </div>
       </div>
     </div>
