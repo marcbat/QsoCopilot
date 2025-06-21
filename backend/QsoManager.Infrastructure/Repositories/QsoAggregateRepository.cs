@@ -71,12 +71,33 @@ public class QsoAggregateRepository : IQsoAggregateRepository
             return allEventsResult.Match(
                 events =>
                 {
-                    // Chercher tous les événements "Created" avec le même nom
-                    var existingQsoWithName = events
-                        .OfType<Domain.Aggregates.QsoAggregate.Events.Created>()
-                        .Any(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    // Grouper les événements par AggregateId pour reconstituer l'état de chaque QSO
+                    var qsoEvents = events.GroupBy(e => e.AggregateId);
                     
-                    return Validation<Error, bool>.Success(existingQsoWithName);
+                    foreach (var qsoEventGroup in qsoEvents)
+                    {
+                        // Chercher l'événement Created avec le même nom
+                        var createdEvent = qsoEventGroup
+                            .OfType<Domain.Aggregates.QsoAggregate.Events.Created>()
+                            .FirstOrDefault(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                        
+                        if (createdEvent != null)
+                        {
+                            // Vérifier si ce QSO a été supprimé
+                            var deletedEvent = qsoEventGroup
+                                .OfType<Domain.Aggregates.QsoAggregate.Events.Deleted>()
+                                .FirstOrDefault();
+                            
+                            // Si le QSO n'a pas été supprimé, alors il existe avec ce nom
+                            if (deletedEvent == null)
+                            {
+                                return Validation<Error, bool>.Success(true);
+                            }
+                        }
+                    }
+                    
+                    // Aucun QSO actif trouvé avec ce nom
+                    return Validation<Error, bool>.Success(false);
                 },
                 errors => Validation<Error, bool>.Fail(errors)
             );

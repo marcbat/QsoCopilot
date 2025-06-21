@@ -164,12 +164,100 @@ public class QsoAggregateControllerCreateTests : BaseIntegrationTest
             Name = "QSO Fréquence Négative",
             Description = "QSO avec fréquence négative",
             Frequency = -14.230m
-        };
-
-        // Act
+        };        // Act
         var response = await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
 
         // Assert
         await Verify(response, _verifySettings);
+    }
+
+    [Fact]
+    public async Task Create_WithSameNameAfterDelete_ShouldAllowCreation()
+    {
+        // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST7");
+        var qsoName = "QSO Test Same Name After Delete";
+        
+        // Créer le premier QSO
+        var createRequest1 = new
+        {
+            Id = Guid.NewGuid(),
+            Name = qsoName,
+            Description = "Premier QSO qui sera supprimé",
+            Frequency = 145.500m
+        };
+
+        var firstCreateResponse = await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest1);
+        firstCreateResponse.EnsureSuccessStatusCode();
+
+        // Attendre que les projections soient mises à jour
+        await Task.Delay(200);
+
+        // Supprimer le premier QSO
+        var deleteResponse = await _client.DeleteAsync($"/api/QsoAggregate/{createRequest1.Id}");
+        deleteResponse.EnsureSuccessStatusCode();
+
+        // Attendre que les événements de suppression soient traités
+        await Task.Delay(200);
+
+        // Créer un nouveau QSO avec le même nom
+        var createRequest2 = new
+        {
+            Id = Guid.NewGuid(),
+            Name = qsoName, // Même nom que le QSO supprimé
+            Description = "Nouveau QSO avec le même nom",
+            Frequency = 145.600m
+        };
+
+        // Act
+        var secondCreateResponse = await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest2);
+
+        // Assert - Doit réussir car le premier QSO a été supprimé
+        await Verify(secondCreateResponse, _verifySettings);
+    }
+    
+    [Fact]
+    public async Task Create_WithNameOfDeletedQso_ShouldSucceed()
+    {
+        // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4TEST7");
+        var qsoName = "QSO Test Réutilisation Nom";
+        
+        // Créer le premier QSO
+        var createRequest1 = new
+        {
+            Id = Guid.NewGuid(),
+            Name = qsoName,
+            Description = "Premier QSO qui sera supprimé",
+            Frequency = 145.500m
+        };
+
+        var firstCreateResponse = await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest1);
+        firstCreateResponse.EnsureSuccessStatusCode();
+
+        // Attendre que les projections soient mises à jour
+        await Task.Delay(200);
+
+        // Supprimer le premier QSO
+        var deleteResponse = await _client.DeleteAsync($"/api/QsoAggregate/{createRequest1.Id}");
+        deleteResponse.EnsureSuccessStatusCode();
+
+        // Attendre que les événements de suppression soient traités
+        await Task.Delay(300);
+
+        // Créer un nouveau QSO avec le même nom
+        var createRequest2 = new
+        {
+            Id = Guid.NewGuid(),
+            Name = qsoName, // Même nom que le QSO supprimé
+            Description = "Nouveau QSO avec le même nom",
+            Frequency = 145.600m
+        };
+
+        // Act
+        var secondCreateResponse = await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest2);
+
+        // Assert - Doit réussir car le premier QSO a été supprimé
+        await Verify(secondCreateResponse, _verifySettings);
     }
 }
