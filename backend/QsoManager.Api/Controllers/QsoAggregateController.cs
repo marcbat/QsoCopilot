@@ -201,6 +201,27 @@ public class QsoAggregateController : ControllerBase
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
     }
+
+    [HttpDelete("{aggregateId:guid}")]
+    [Authorize]
+    public async Task<ActionResult> Delete(Guid aggregateId)
+    {
+        try
+        {
+            var command = new DeleteQsoAggregateCommand(aggregateId, User);
+            var result = await _mediator.Send(command);
+
+            return result.Match<ActionResult>(
+                _ => NoContent(),
+                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la suppression du QSO Aggregate {AggregateId}", aggregateId);
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });
+        }
+    }
 }
 
 // Health Check Controller

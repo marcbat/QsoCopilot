@@ -30,11 +30,10 @@ public class ProjectionDispatcherService
     {
         try
         {
-            _logger.LogInformation("Dispatching event {EventName} with content {@Event}", @event.GetType().Name, @event);
-
-            var result = @event switch
+            _logger.LogInformation("Dispatching event {EventName} with content {@Event}", @event.GetType().Name, @event);            var result = @event switch
             {
                 QsoAggregate.Events.Created e => await HandleQsoAggregateCreated(e, cancellationToken),
+                QsoAggregate.Events.Deleted e => await HandleQsoAggregateDeleted(e, cancellationToken),
                 QsoAggregate.Events.ParticipantAdded e => await HandleParticipantAdded(e, cancellationToken),
                 QsoAggregate.Events.ParticipantRemoved e => await HandleParticipantRemoved(e, cancellationToken),
                 QsoAggregate.Events.ParticipantsReordered e => await HandleParticipantsReordered(e, cancellationToken),
@@ -67,7 +66,15 @@ public class ProjectionDispatcherService
 
         return await _qsoProjectionRepository.SaveAsync(projection, cancellationToken)
             .Map(_ => (Event)e);
-    }private async Task<Validation<Error, Event>> HandleParticipantAdded(QsoAggregate.Events.ParticipantAdded e, CancellationToken cancellationToken)
+    }    private async Task<Validation<Error, Event>> HandleQsoAggregateDeleted(QsoAggregate.Events.Deleted e, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Deleting QSO projection {AggregateId}", e.AggregateId);
+        
+        return await _qsoProjectionRepository.DeleteAsync(e.AggregateId, cancellationToken)
+            .Map(_ => (Event)e);
+    }
+
+    private async Task<Validation<Error, Event>> HandleParticipantAdded(QsoAggregate.Events.ParticipantAdded e, CancellationToken cancellationToken)
     {
         var projectionResult = await _qsoProjectionRepository.GetByIdAsync(e.AggregateId, cancellationToken);
         

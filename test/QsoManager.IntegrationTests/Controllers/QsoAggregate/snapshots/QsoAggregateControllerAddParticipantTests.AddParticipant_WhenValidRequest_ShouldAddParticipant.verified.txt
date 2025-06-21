@@ -12,8 +12,14 @@
       frequency: 145.5,
       participants: [
         {
-          callSign: F4ABC,
+          callSign: F4TEST1,
           order: 1,
+          country: null,
+          name: null
+        },
+        {
+          callSign: F4ABC,
+          order: 2,
           country: null,
           name: null
         }

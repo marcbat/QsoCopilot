@@ -15,6 +15,7 @@ public class QsoAggregate : AggregateRoot
         public record ParticipantsReordered(Guid AggregateId, DateTime DateEvent, Dictionary<string, int> NewOrders) : Event(AggregateId, DateEvent);
         public record StartDateTimeUpdated(Guid AggregateId, DateTime DateEvent, DateTime? StartDateTime) : Event(AggregateId, DateEvent);
         public record FrequencyUpdated(Guid AggregateId, DateTime DateEvent, decimal Frequency) : Event(AggregateId, DateEvent);
+        public record Deleted(Guid AggregateId, DateTime DateEvent, Guid DeletedBy) : Event(AggregateId, DateEvent);
     }
 
     internal readonly List<Participant> _participants = [];
@@ -53,6 +54,9 @@ public class QsoAggregate : AggregateRoot
     public decimal Frequency { get; protected set; }
     public DateTime? StartDateTime { get; protected set; }
     public DateTime CreatedDate { get; protected set; }
+    public bool IsDeleted { get; protected set; }
+    public DateTime? DeletedDate { get; protected set; }
+    public Guid? DeletedBy { get; protected set; }
     public IReadOnlyList<Participant> Participants => _participants.AsReadOnly();
 
     protected static Validation<Error, string> ValidateName(string name)
@@ -230,9 +234,7 @@ public class QsoAggregate : AggregateRoot
                     evt => Apply(evt).Map(_ => this),
                     () => this
                 ));
-    }
-
-    // Mettre à jour le nom d'un participant par Id
+    }    // Mettre à jour le nom d'un participant par Id
     public Validation<Error, QsoAggregate> UpdateParticipantName(Guid participantId, string? name)
     {
         var participant = _participants.FirstOrDefault(p => p.Id == participantId);
@@ -246,6 +248,19 @@ public class QsoAggregate : AggregateRoot
             );
     }
 
+    // Supprimer le QSO (seul le modérateur peut le faire)
+    public Validation<Error, QsoAggregate> Delete(Guid deletedBy)
+    {
+        if (IsDeleted)
+            return Error.New("Le QSO est déjà supprimé");
+            
+        if (deletedBy != ModeratorId)
+            return Error.New("Seul le modérateur peut supprimer ce QSO");
+
+        return Apply(new Events.Deleted(Id, DateTime.Now, deletedBy))
+            .Map(_ => this);
+    }
+
     // Application des événements (méthode requise par AggregateRoot)
     protected override Validation<Error, Event> When(IEvent @event)
     {        return @event switch
@@ -256,6 +271,7 @@ public class QsoAggregate : AggregateRoot
             Events.ParticipantsReordered e => ParticipantsReorderedEventHandler(e),
             Events.StartDateTimeUpdated e => StartDateTimeUpdatedEventHandler(e),
             Events.FrequencyUpdated e => FrequencyUpdatedEventHandler(e),
+            Events.Deleted e => QsoAggregateDeletedEventHandler(e),
             Participant.Events.CountryUpdated e => ParticipantCountryUpdatedEventHandler(e),
             Participant.Events.NameUpdated e => ParticipantNameUpdatedEventHandler(e),
             _ => Error.New($"Event type {@event.GetType().Name} is not supported")
@@ -331,11 +347,17 @@ public class QsoAggregate : AggregateRoot
     {
         StartDateTime = e.StartDateTime;
         return Success<Error, Event>(e);
-    }
-
-    private Validation<Error, Event> FrequencyUpdatedEventHandler(Events.FrequencyUpdated e)
+    }    private Validation<Error, Event> FrequencyUpdatedEventHandler(Events.FrequencyUpdated e)
     {
         Frequency = e.Frequency;
+        return Success<Error, Event>(e);
+    }
+
+    private Validation<Error, Event> QsoAggregateDeletedEventHandler(Events.Deleted e)
+    {
+        IsDeleted = true;
+        DeletedDate = e.DateEvent;
+        DeletedBy = e.DeletedBy;
         return Success<Error, Event>(e);
     }
 }

@@ -10,6 +10,14 @@
       description: QSO créé avec un utilisateur authentifié,
       moderatorId: Guid_2,
       frequency: 145.5,
+      participants: [
+        {
+          callSign: F4ABC,
+          order: 1,
+          country: null,
+          name: null
+        }
+      ],
       startDateTime: DateTimeOffset_1,
       createdDate: DateTimeOffset_1
     }

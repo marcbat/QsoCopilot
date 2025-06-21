@@ -10,6 +10,14 @@
       description: QSO pour test GetById,
       moderatorId: Guid_2,
       frequency: 145.8,
+      participants: [
+        {
+          callSign: F4TEST1,
+          order: 1,
+          country: null,
+          name: null
+        }
+      ],
       startDateTime: DateTimeOffset_1,
       createdDate: DateTimeOffset_1
     }
