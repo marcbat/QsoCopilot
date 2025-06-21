@@ -65,13 +65,16 @@ public class UpdateModeratorCommandHandler : BaseCommandHandler<UpdateModeratorC
                         _logger.LogInformation("Mise à jour des credentials QRZ - Username: {QrzUsername}, Password fourni: {HasPassword}", 
                             request.QrzUsername, !string.IsNullOrEmpty(request.QrzPassword));
                         
-                        string? encryptedPassword = null;
+                        // Utiliser les valeurs existantes si les nouvelles ne sont pas fournies
+                        string? finalQrzUsername = !string.IsNullOrEmpty(request.QrzUsername) ? request.QrzUsername : moderator.QrzUsername;
+                        string? encryptedPassword = moderator.QrzPasswordEncrypted; // Conserver l'existant par défaut
+                        
                         if (!string.IsNullOrEmpty(request.QrzPassword))
                         {
                             encryptedPassword = _encryptionService.Encrypt(request.QrzPassword);
                         }
 
-                        var updateQrzResult = moderator.UpdateQrzCredentials(request.QrzUsername, encryptedPassword);
+                        var updateQrzResult = moderator.UpdateQrzCredentials(finalQrzUsername, encryptedPassword);
                         if (updateQrzResult.IsFail)
                         {
                             return updateQrzResult.Match(
@@ -80,7 +83,7 @@ public class UpdateModeratorCommandHandler : BaseCommandHandler<UpdateModeratorC
                             );
                         }
                         
-                        _logger.LogInformation("Credentials QRZ mis à jour avec succès - Username: {QrzUsername}", request.QrzUsername);
+                        _logger.LogInformation("Credentials QRZ mis à jour avec succès - Username: {QrzUsername}", finalQrzUsername);
                     }
 
                     // Sauvegarder les changements

@@ -115,9 +115,8 @@ export const authApiService = {
     const response = await apiClient.post('/Auth/register', data);
     return response.data;
   },
-
-  async updateProfile(data: UpdateProfileRequest): Promise<ModeratorDto> {
-    const response: AxiosResponse<ModeratorDto> = await apiClient.put('/Auth/profile', data);
+  async updateProfile(data: UpdateProfileRequest): Promise<{ profile: ModeratorDto; message: string }> {
+    const response: AxiosResponse<{ profile: ModeratorDto; message: string }> = await apiClient.put('/Auth/profile', data);
     return response.data;
   }
 };

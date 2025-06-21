@@ -107,9 +107,7 @@ public class AuthController : ControllerBase
             _logger.LogError(ex, "Error during password reset for user {UserId}", request.UserId);
             return BadRequest(new { message = "An error occurred while resetting your password" });
         }
-    }
-
-    [HttpPut("profile")]
+    }    [HttpPut("profile")]
     [Authorize]
     public async Task<ActionResult<ModeratorDto>> UpdateProfile([FromBody] UpdateProfileRequestDto request)
     {
@@ -123,14 +121,25 @@ public class AuthController : ControllerBase
             );
             
             var result = await _mediator.Send(command);
-            
-            if (result.IsSuccess)
+              if (result.IsSuccess)
             {
-                return Ok(result.Match(dto => dto, _ => throw new InvalidOperationException()));
+                var dto = result.Match(
+                    success => success,
+                    _ => throw new InvalidOperationException("This should not happen when IsSuccess is true")
+                );
+                _logger.LogInformation("Profile updated successfully for user {UserId}", User?.Identity?.Name);
+                return Ok(new { 
+                    profile = dto, 
+                    message = "Profil mis à jour avec succès !" 
+                });
             }
             else
             {
-                var errors = result.Match(_ => Array.Empty<string>(), errors => errors.Select(e => e.Message).ToArray());
+                var errors = result.Match(
+                    _ => Array.Empty<string>(),
+                    errors => errors.Select(e => e.Message).ToArray()
+                );
+                _logger.LogWarning("Profile update failed for user {UserId}: {Errors}", User?.Identity?.Name, string.Join(", ", errors));
                 return BadRequest(new { errors });
             }
         }

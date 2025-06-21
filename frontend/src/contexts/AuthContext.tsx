@@ -100,11 +100,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-  const updateProfile = async (data: UpdateProfileRequest): Promise<void> => {
+  };  const updateProfile = async (data: UpdateProfileRequest): Promise<string> => {
     try {
       setIsLoading(true);
-      await authApiService.updateProfile(data);
+      const response = await authApiService.updateProfile(data);
       
       // Mettre à jour les données utilisateur localement
       if (user) {
@@ -116,6 +115,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
       }
+      
+      // Retourner le message de confirmation
+      return response.message;
     } catch (error) {
       console.error('Erreur de mise à jour du profil:', error);
       throw error;

@@ -98,7 +98,7 @@ export interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   loginByEmail: (credentials: LoginByEmailRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
-  updateProfile: (data: UpdateProfileRequest) => Promise<void>;
+  updateProfile: (data: UpdateProfileRequest) => Promise<string>;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;

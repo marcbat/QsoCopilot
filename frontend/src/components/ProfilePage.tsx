@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { UpdateProfileRequest } from '../types';
+import { useMessages } from '../hooks/useMessages';
 
 const ProfilePage: React.FC = () => {
   const { user, updateProfile, isLoading } = useAuth();
@@ -10,9 +11,9 @@ const ProfilePage: React.FC = () => {
     qrzPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
-
+  
+  // Utiliser le hook de messages avec auto-hide
+  const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -20,14 +21,13 @@ const ProfilePage: React.FC = () => {
       [name]: value
     }));
     // Effacer les messages d'erreur/succès lors de la modification
-    if (error) setError('');
-    if (success) setSuccess('');
+    if (errorMessage) setErrorMessage(null);
+    if (successMessage) setSuccessMessage(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
+    e.preventDefault();    setErrorMessage(null);
+    setSuccessMessage(null);
 
     try {
       // Ne pas envoyer les champs vides
@@ -44,17 +44,15 @@ const ProfilePage: React.FC = () => {
 
       // Vérifier qu'il y a au moins un champ à mettre à jour
       if (Object.keys(updateData).length === 0) {
-        setError('Aucune modification détectée');
+        setErrorMessage('Aucune modification détectée');
         return;
-      }
-
-      await updateProfile(updateData);
-      setSuccess('Profil mis à jour avec succès !');
+      }      const confirmationMessage = await updateProfile(updateData);
+      setSuccessMessage(confirmationMessage);
       // Réinitialiser le mot de passe après mise à jour réussie
       setFormData(prev => ({ ...prev, qrzPassword: '' }));
     } catch (err) {
       console.error('Erreur lors de la mise à jour du profil:', err);
-      setError('Erreur lors de la mise à jour du profil. Veuillez réessayer.');
+      setErrorMessage('Erreur lors de la mise à jour du profil. Veuillez réessayer.');
     }
   };
 
@@ -127,10 +125,8 @@ const ProfilePage: React.FC = () => {
             <small className="form-help">
               Laissez vide pour ne pas modifier le mot de passe actuel
             </small>
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-          {success && <div className="success-message">{success}</div>}
+          </div>          {errorMessage && <div className="error-message">{errorMessage}</div>}
+          {successMessage && <div className="success-message">{successMessage}</div>}
 
           <button 
             type="submit" 
