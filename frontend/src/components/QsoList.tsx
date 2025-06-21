@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QsoAggregateDto } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { qsoApiService } from '../api/qsoApi';
+import { extractErrorMessage } from '../utils/errorUtils';
 
 interface QsoListProps {
   qsos: QsoAggregateDto[];
@@ -12,6 +14,8 @@ interface QsoListProps {
 const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [deletingQsoId, setDeletingQsoId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -52,6 +56,31 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
     navigate(`/qso/${qsoId}/edit`);
   };
 
+  const handleDeleteQso = async (qso: QsoAggregateDto) => {
+    // Confirmation avant suppression
+    const confirmMessage = `Êtes-vous sûr de vouloir supprimer le QSO "${qso.name}" ?
+    
+Cette action est irréversible et supprimera également tous les participants associés.`;
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    setDeletingQsoId(qso.id);
+    setDeleteError(null);
+
+    try {
+      await qsoApiService.deleteQso(qso.id);
+      // Recharger la liste après suppression
+      onRefresh();
+    } catch (error: any) {
+      console.error('Erreur lors de la suppression du QSO:', error);
+      setDeleteError(extractErrorMessage(error, 'Impossible de supprimer le QSO'));
+    } finally {
+      setDeletingQsoId(null);
+    }
+  };
+
   return (
     <div className="qso-list">
       <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -60,6 +89,12 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
           Actualiser
         </button>
       </div>
+
+      {deleteError && (
+        <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
+          {deleteError}
+        </div>
+      )}
 
       <table className="table">
         <thead>          <tr>
@@ -117,12 +152,21 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
                 </div>
               </td>              {isAuthenticated && (
                 <td>
-                  <div className="table-actions">
+                  <div className="table-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <button 
                       className="btn btn-sm btn-secondary"
                       onClick={() => handleEdit(qso.id)}
+                      title="Éditer ce QSO"
                     >
                       Éditer
+                    </button>
+                    <button 
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleDeleteQso(qso)}
+                      disabled={deletingQsoId === qso.id}
+                      title="Supprimer ce QSO"
+                    >
+                      {deletingQsoId === qso.id ? 'Suppression...' : 'Supprimer'}
                     </button>
                   </div>
                 </td>
