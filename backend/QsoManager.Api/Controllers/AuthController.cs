@@ -107,7 +107,9 @@ public class AuthController : ControllerBase
             _logger.LogError(ex, "Error during password reset for user {UserId}", request.UserId);
             return BadRequest(new { message = "An error occurred while resetting your password" });
         }
-    }    [HttpPut("profile")]
+    }
+
+    [HttpPut("profile")]
     [Authorize]
     public async Task<ActionResult<ModeratorDto>> UpdateProfile([FromBody] UpdateProfileRequestDto request)
     {

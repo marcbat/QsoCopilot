@@ -44,12 +44,11 @@ public class ParticipantEnrichmentService : IParticipantEnrichmentService
         try
         {
             string? qrzUsername = null;
-            string? qrzPassword = null;
-
-            // Si un utilisateur est connecté, récupérer ses credentials QRZ
+            string? qrzPassword = null;            // Si un utilisateur est connecté, récupérer ses credentials QRZ
             if (currentUser != null)
             {
                 var userIdClaim = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                
                 if (!string.IsNullOrEmpty(userIdClaim) && Guid.TryParse(userIdClaim, out var userId))
                 {
                     var moderatorResult = await _moderatorRepository.GetByIdAsync(userId);                    moderatorResult.IfSuccess(moderator =>
@@ -58,8 +57,7 @@ public class ParticipantEnrichmentService : IParticipantEnrichmentService
                         
                         // Déchiffrer le mot de passe QRZ pour pouvoir l'utiliser avec l'API
                         if (!string.IsNullOrEmpty(moderator.QrzPasswordEncrypted))
-                        {
-                            try
+                        {                            try
                             {
                                 qrzPassword = _encryptionService.Decrypt(moderator.QrzPasswordEncrypted);
                             }
@@ -67,19 +65,28 @@ public class ParticipantEnrichmentService : IParticipantEnrichmentService
                             {
                                 _logger.LogWarning(ex, "Impossible de déchiffrer le mot de passe QRZ pour l'utilisateur {UserId}", userId);
                                 qrzPassword = null;
-                            }
+                            }                        }
+                        else
+                        {
+                            _logger.LogDebug("Aucun mot de passe QRZ chiffré trouvé pour l'utilisateur {UserId}", userId);
                         }
                     });
+                    
+                    moderatorResult.IfFail(errors =>
+                    {
+                        _logger.LogWarning("Impossible de récupérer le modérateur pour l'utilisateur {UserId}: {Errors}", 
+                            userId, string.Join(", ", errors.Select(e => e.Message)));
+                    });
+                }                else
+                {
+                    _logger.LogDebug("ID utilisateur invalide ou manquant: {UserIdClaim}", userIdClaim);
                 }
             }
 
-            var enrichedParticipants = new List<ParticipantDto>();
-
-            foreach (var participant in participants)
+            var enrichedParticipants = new List<ParticipantDto>();            foreach (var participant in participants)
             {
                 try
                 {
-                    _logger.LogDebug("Enrichissement QRZ pour le participant {CallSign}", participant.CallSign);
 
                     // Lookup callsign
                     var qrzCallsignInfo = await _qrzService.LookupCallsignAsync(
@@ -96,21 +103,13 @@ public class ParticipantEnrichmentService : IParticipantEnrichmentService
                             qrzCallsignInfo.Dxcc.Value, 
                             qrzUsername, 
                             qrzPassword);
-                    }
-
-                    // Créer le participant enrichi
+                    }                    // Créer le participant enrichi
                     var enrichedParticipant = participant with
                     {
-                        QrzInfo = qrzCallsignInfo,
-                        QrzDxccInfo = qrzDxccInfo
-                    };
+                        QrzCallsignInfo = qrzCallsignInfo,
+                        QrzDxccInfo = qrzDxccInfo                    };
 
                     enrichedParticipants.Add(enrichedParticipant);
-
-                    _logger.LogDebug("Participant {CallSign} enrichi avec succès. QRZ trouvé: {QrzFound}, DXCC trouvé: {DxccFound}", 
-                        participant.CallSign, 
-                        qrzCallsignInfo != null, 
-                        qrzDxccInfo != null);
                 }
                 catch (Exception ex)
                 {

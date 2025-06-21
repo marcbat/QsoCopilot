@@ -16,7 +16,9 @@
             callSign: F4TEST1,
             order: 1,
             country: null,
-            name: null
+            name: null,
+            qrzCallsignInfo: null,
+            qrzDxccInfo: null
           }
         ],
         startDateTime: DateTimeOffset_1,
@@ -33,7 +35,9 @@
             callSign: F4TEST2,
             order: 1,
             country: null,
-            name: null
+            name: null,
+            qrzCallsignInfo: null,
+            qrzDxccInfo: null
           }
         ],
         startDateTime: DateTimeOffset_2,

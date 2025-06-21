@@ -7,8 +7,8 @@ public record ParticipantDto(
     int Order,
     string? Country = null,
     string? Name = null,
-    // Enrichissements QRZ (tous nullables)
-    QrzCallsignInfo? QrzInfo = null,
+    // Enrichissements QRZ - objets structurés (tous nullables)
+    QrzCallsignInfo? QrzCallsignInfo = null,
     QrzDxccInfo? QrzDxccInfo = null
 );
 

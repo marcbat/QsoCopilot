@@ -62,6 +62,9 @@ public class UpdateModeratorCommandHandler : BaseCommandHandler<UpdateModeratorC
                     }                    // Mettre à jour les credentials QRZ si fournis
                     if (!string.IsNullOrEmpty(request.QrzUsername) || !string.IsNullOrEmpty(request.QrzPassword))
                     {
+                        _logger.LogInformation("Mise à jour des credentials QRZ - Username: {QrzUsername}, Password fourni: {HasPassword}", 
+                            request.QrzUsername, !string.IsNullOrEmpty(request.QrzPassword));
+                        
                         string? encryptedPassword = null;
                         if (!string.IsNullOrEmpty(request.QrzPassword))
                         {
@@ -76,6 +79,8 @@ public class UpdateModeratorCommandHandler : BaseCommandHandler<UpdateModeratorC
                                 errors => Validation<Error, ModeratorDto>.Fail(errors)
                             );
                         }
+                        
+                        _logger.LogInformation("Credentials QRZ mis à jour avec succès - Username: {QrzUsername}", request.QrzUsername);
                     }
 
                     // Sauvegarder les changements
