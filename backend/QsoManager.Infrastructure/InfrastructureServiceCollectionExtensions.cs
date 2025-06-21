@@ -60,10 +60,9 @@ public static class InfrastructureServiceCollectionExtensions
             mongoConnectionString,
             mongoDatabaseName)
         .AddDefaultTokenProviders();        // Authentication Service
-        services.AddScoped<IAuthenticationService, AuthenticationService>();
-
-        // External Services
+        services.AddScoped<IAuthenticationService, AuthenticationService>();        // External Services
         services.AddHttpClient();
+        services.AddSingleton<IQrzSessionCacheService, QrzSessionCacheService>();
         services.AddScoped<IQrzService, QrzService>();
 
         // Services de chiffrement
