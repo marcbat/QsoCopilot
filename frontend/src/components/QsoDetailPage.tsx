@@ -4,6 +4,7 @@ import { QsoAggregateDto, ParticipantDto, CreateParticipantRequest } from '../ty
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
+import ParticipantCard from './ParticipantCard';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -223,54 +224,15 @@ const QsoDetailPage: React.FC = () => {
                   </div>
                 </form>
               </div>
-            )}
-              {qso.participants && qso.participants.length > 0 ? (
+            )}            {qso.participants && qso.participants.length > 0 ? (
               <div className="participants-list">
                 {qso.participants.map((participant: ParticipantDto, index: number) => (
-                  <div key={index} className="participant-card" style={{ position: 'relative' }}>
-                    {isAuthenticated && (
-                      <button
-                        className="remove-participant-btn"
-                        onClick={() => handleRemoveParticipant(participant.callSign)}
-                        title={`Supprimer ${participant.callSign}`}                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                          background: 'transparent',
-                          color: 'var(--text-secondary)',
-                          border: 'none',
-                          width: '20px',
-                          height: '20px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          transition: 'all 0.2s ease',
-                          opacity: '0.7'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = '#ef4444';
-                          e.currentTarget.style.opacity = '1';
-                          e.currentTarget.style.transform = 'scale(1.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = 'var(--text-secondary)';
-                          e.currentTarget.style.opacity = '0.7';
-                          e.currentTarget.style.transform = 'scale(1)';
-                        }}>
-                        🗑️
-                      </button>
-                    )}
-                    <div className="participant-info">
-                      <h4>{participant.callSign}</h4>                      <div className="participant-details">
-                        {participant.name && <p><strong>Nom :</strong> {participant.name}</p>}
-                        {participant.location && <p><strong>Localisation :</strong> {participant.location}</p>}
-                        {participant.signalReport && <p><strong>Rapport signal :</strong> {participant.signalReport}</p>}
-                        {participant.notes && <p><strong>Notes :</strong> {participant.notes}</p>}
-                      </div>
-                    </div>
-                  </div>
+                  <ParticipantCard
+                    key={index}
+                    participant={participant}
+                    onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
+                    showRemoveButton={isAuthenticated}
+                  />
                 ))}
               </div>
             ) : (
