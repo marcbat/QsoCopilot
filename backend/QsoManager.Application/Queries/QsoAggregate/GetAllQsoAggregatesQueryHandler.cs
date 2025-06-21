@@ -3,25 +3,21 @@ using LanguageExt.Common;
 using Microsoft.Extensions.Logging;
 using QsoManager.Application.DTOs;
 using QsoManager.Application.Projections.Interfaces;
-using QsoManager.Application.Services;
 
 namespace QsoManager.Application.Queries.QsoAggregate;
 
 public class GetAllQsoAggregatesQueryHandler : IQueryHandler<GetAllQsoAggregatesQuery, IEnumerable<QsoAggregateDto>>
 {
     private readonly IQsoAggregateProjectionRepository _projectionRepository;
-    private readonly IParticipantEnrichmentService _enrichmentService;
     private readonly ILogger<GetAllQsoAggregatesQueryHandler> _logger;
 
     public GetAllQsoAggregatesQueryHandler(
         IQsoAggregateProjectionRepository projectionRepository,
-        IParticipantEnrichmentService enrichmentService,
         ILogger<GetAllQsoAggregatesQueryHandler> logger)
     {
         _projectionRepository = projectionRepository;
-        _enrichmentService = enrichmentService;
         _logger = logger;
-    }    public async Task<Validation<Error, IEnumerable<QsoAggregateDto>>> Handle(
+    }public async Task<Validation<Error, IEnumerable<QsoAggregateDto>>> Handle(
         GetAllQsoAggregatesQuery request, 
         CancellationToken cancellationToken)
     {
@@ -31,35 +27,29 @@ public class GetAllQsoAggregatesQueryHandler : IQueryHandler<GetAllQsoAggregates
 
             var result = await _projectionRepository.GetAllAsync(cancellationToken);
 
-            return await result.Match(
-                async projections =>
+            return result.Match(                projections =>
                 {
-                    var enrichedDtos = new List<QsoAggregateDto>();
-                    
-                    foreach (var projection in projections)
+                    var dtos = projections.Select(projection =>
                     {
-                        // Créer les participants de base
-                        var baseParticipants = projection.Participants?.Select(p => new ParticipantDto(p.CallSign, p.Order))
-                            .ToList() ?? new List<ParticipantDto>();                        // Enrichir avec les données QRZ
-                        var enrichedParticipants = await _enrichmentService.EnrichParticipantsWithQrzDataAsync(
-                            baseParticipants, 
-                            request.CurrentUser);
+                        // Créer les participants de base sans enrichissement QRZ
+                        var participants = projection.Participants?.Select(p => new ParticipantDto(p.CallSign, p.Order))
+                            .ToList() ?? new List<ParticipantDto>();
 
-                        enrichedDtos.Add(new QsoAggregateDto(
+                        return new QsoAggregateDto(
                             projection.Id,
                             projection.Name,
                             projection.Description,
                             projection.ModeratorId,
                             projection.Frequency,
-                            enrichedParticipants.ToList().AsReadOnly(),
+                            participants.AsReadOnly(),
                             projection.StartDateTime,
                             projection.CreatedAt
-                        ));
-                    }
+                        );
+                    }).ToList();
 
-                    return Validation<Error, IEnumerable<QsoAggregateDto>>.Success(enrichedDtos.AsEnumerable());
+                    return Validation<Error, IEnumerable<QsoAggregateDto>>.Success(dtos.AsEnumerable());
                 },
-                errors => Task.FromResult(Validation<Error, IEnumerable<QsoAggregateDto>>.Fail(errors))
+                errors => Validation<Error, IEnumerable<QsoAggregateDto>>.Fail(errors)
             );
         }
         catch (Exception ex)
