@@ -13,6 +13,7 @@ const QsoDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showParticipantDetails, setShowParticipantDetails] = useState(true);
   const [newParticipant, setNewParticipant] = useState({
     callSign: ''
   });
@@ -197,7 +198,57 @@ const QsoDetailPage: React.FC = () => {
               )}
             </div>
           </div>          <div className="detail-card">
-            <h3>Participants ({qso.participants?.length || 0})</h3>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              marginBottom: '1rem' 
+            }}>
+              <h3>Participants ({qso.participants?.length || 0})</h3>
+              <button
+                onClick={() => setShowParticipantDetails(!showParticipantDetails)}
+                className="participants-toggle"
+                title={showParticipantDetails ? 'Masquer les détails' : 'Afficher les détails'}
+                style={{
+                  background: 'var(--surface-color)',
+                  border: '2px solid var(--border-color)',
+                  borderRadius: '2rem',
+                  padding: '0.25rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '3rem',
+                  height: '1.5rem',
+                  position: 'relative'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--primary-color)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
+                }}
+              >
+                <div 
+                  style={{
+                    position: 'absolute',
+                    width: '1rem',
+                    height: '1rem',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.75rem',
+                    transition: 'all 0.3s ease',
+                    left: '0.25rem',
+                    background: showParticipantDetails ? '#10b981' : '#64748b',
+                    transform: showParticipantDetails ? 'translateX(0)' : 'translateX(1.25rem)'
+                  }}
+                >
+                  {showParticipantDetails ? '📋' : '👤'}
+                </div>
+              </button>
+            </div>
             
             {/* Formulaire rapide d'ajout de participant */}
             {isAuthenticated && (
@@ -226,14 +277,84 @@ const QsoDetailPage: React.FC = () => {
               </div>
             )}            {qso.participants && qso.participants.length > 0 ? (
               <div className="participants-list">
-                {qso.participants.map((participant: ParticipantDto, index: number) => (
-                  <ParticipantCard
-                    key={index}
-                    participant={participant}
-                    onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
-                    showRemoveButton={isAuthenticated}
-                  />
-                ))}
+                {showParticipantDetails ? (
+                  // Affichage détaillé
+                  qso.participants.map((participant: ParticipantDto, index: number) => (
+                    <ParticipantCard
+                      key={index}
+                      participant={participant}
+                      onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
+                      showRemoveButton={isAuthenticated}
+                    />
+                  ))
+                ) : (
+                  // Affichage simple - seulement les call signs
+                  <div style={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: '0.5rem',
+                    alignItems: 'center'
+                  }}>
+                    {qso.participants.map((participant: ParticipantDto, index: number) => (
+                      <div 
+                        key={index} 
+                        style={{ 
+                          position: 'relative',
+                          display: 'inline-flex',
+                          alignItems: 'center'
+                        }}
+                      >
+                        <span
+                          style={{
+                            background: 'var(--primary-color)',
+                            color: 'white',
+                            padding: '0.375rem 0.75rem',
+                            borderRadius: '1rem',
+                            fontSize: '0.875rem',
+                            fontWeight: '600',
+                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                            paddingRight: isAuthenticated ? '2rem' : '0.75rem'
+                          }}
+                        >
+                          {participant.callSign}
+                        </span>
+                        {isAuthenticated && (
+                          <button
+                            onClick={() => handleRemoveParticipant(participant.callSign)}
+                            title={`Supprimer ${participant.callSign}`}
+                            style={{
+                              position: 'absolute',
+                              right: '4px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              background: 'transparent',
+                              color: 'white',
+                              border: 'none',
+                              width: '16px',
+                              height: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              fontSize: '10px',
+                              opacity: '0.8'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = '1';
+                              e.currentTarget.style.transform = 'translateY(-50%) scale(1.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = '0.8';
+                              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                            }}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="no-participants">

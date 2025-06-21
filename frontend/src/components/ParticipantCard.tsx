@@ -83,33 +83,70 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
           🗑️
         </button>
       )}
-      
-      <div className="participant-info">
-        <div style={{ marginBottom: '8px' }}>
-          <h4 style={{ margin: 0, marginBottom: '4px' }}>{participant.callSign}</h4>
-          {isLoadingQrz ? (
-            <div style={{ 
-              fontSize: '0.875rem', 
-              color: 'var(--text-secondary)',
-              fontStyle: 'italic'
-            }}>
-              Chargement des informations...
-            </div>
-          ) : qrzError ? (
-            <div style={{ 
-              fontSize: '0.875rem', 
-              color: 'var(--text-secondary)',
-              fontStyle: 'italic'
-            }}>
-              {getDisplayName() || 'Informations non disponibles'}
-            </div>
-          ) : (
-            <div style={{ 
-              fontSize: '0.875rem', 
-              color: 'var(--text-secondary)',
-              fontWeight: '500'
-            }}>
-              {getDisplayName() || 'Nom non disponible'}
+        <div className="participant-info">
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          gap: '12px', 
+          marginBottom: '8px' 
+        }}>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ margin: 0, marginBottom: '4px' }}>{participant.callSign}</h4>
+            {isLoadingQrz ? (
+              <div style={{ 
+                fontSize: '0.875rem', 
+                color: 'var(--text-secondary)',
+                fontStyle: 'italic'
+              }}>
+                Chargement des informations...
+              </div>
+            ) : qrzError ? (
+              <div style={{ 
+                fontSize: '0.875rem', 
+                color: 'var(--text-secondary)',
+                fontStyle: 'italic'
+              }}>
+                {getDisplayName() || 'Informations non disponibles'}
+              </div>
+            ) : (
+              <div style={{ 
+                fontSize: '0.875rem', 
+                color: 'var(--text-secondary)',
+                fontWeight: '500'
+              }}>
+                {getDisplayName() || 'Nom non disponible'}
+              </div>
+            )}
+          </div>
+            {/* Photo du participant */}
+          {qrzInfo?.qrzCallsignInfo?.image && (
+            <div style={{ flexShrink: 0 }}>
+              <img 
+                src={qrzInfo.qrzCallsignInfo.image} 
+                alt={`Photo de ${participant.callSign}`}
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '12px',
+                  objectFit: 'cover',
+                  border: '3px solid var(--border-color)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                }}
+                onError={(e) => {
+                  // Masquer l'image si elle ne peut pas être chargée
+                  e.currentTarget.style.display = 'none';
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+                }}
+              />
             </div>
           )}
         </div>
