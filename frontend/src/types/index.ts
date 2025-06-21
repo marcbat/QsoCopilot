@@ -88,6 +88,7 @@ export interface User {
   userName: string;
   email?: string;
   callSign?: string;
+  qrzUsername?: string;
 }
 
 // Types pour le contexte d'authentification
@@ -97,9 +98,22 @@ export interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   loginByEmail: (credentials: LoginByEmailRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
+  updateProfile: (data: UpdateProfileRequest) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+}
+
+export interface UpdateProfileRequest {
+  email?: string;
+  qrzUsername?: string;
+  qrzPassword?: string;
+}
+
+export interface ModeratorDto {
+  id: string;
+  callSign: string;
+  email?: string;
 }
 
 // Types d'erreur API

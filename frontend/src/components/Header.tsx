@@ -15,9 +15,7 @@ const Header: React.FC = () => {
       <div className="header-content">
         <Link to="/" className="logo">
           QSO Manager
-        </Link>
-
-        <nav className="nav-buttons">
+        </Link>        <nav className="nav-buttons">
           {isAuthenticated ? (
             <>
               <div className="user-info">
@@ -26,6 +24,9 @@ const Header: React.FC = () => {
                   <span>({user.callSign})</span>
                 )}
               </div>
+              <Link to="/profile" className="btn btn-secondary">
+                Profil
+              </Link>
               <button onClick={handleLogout} className="btn btn-secondary">
                 Déconnexion
               </button>
