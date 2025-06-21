@@ -130,13 +130,12 @@ public class QsoAggregateController : ControllerBase
     
     /// <summary>
     /// Récupère tous les QSO Aggregates
-    /// </summary>
-    [HttpGet]
+    /// </summary>    [HttpGet]
     public async Task<ActionResult<IEnumerable<QsoAggregateDto>>> GetAll()
     {
         try
         {
-            var query = new GetAllQsoAggregatesQuery();
+            var query = new GetAllQsoAggregatesQuery(User);
             var result = await _mediator.Send(query);
 
             return result.Match<ActionResult<IEnumerable<QsoAggregateDto>>>(
@@ -161,9 +160,7 @@ public class QsoAggregateController : ControllerBase
             if (!Guid.TryParse(id, out var guidId))
             {
                 return BadRequest(new { Message = $"Invalid GUID format: {id}" });
-            }
-
-            var query = new GetQsoAggregateByIdQuery(guidId);
+            }            var query = new GetQsoAggregateByIdQuery(guidId, User);
             var result = await _mediator.Send(query);
 
             return result.Match<ActionResult<QsoAggregateDto>>(
@@ -188,9 +185,7 @@ public class QsoAggregateController : ControllerBase
             if (string.IsNullOrWhiteSpace(name))
             {
                 return BadRequest(new { Message = "Name parameter is required" });
-            }
-
-            var query = new SearchQsoAggregatesByNameQuery(name);
+            }            var query = new SearchQsoAggregatesByNameQuery(name, User);
             var result = await _mediator.Send(query);
 
             return Ok(result);

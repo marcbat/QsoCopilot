@@ -5,12 +5,15 @@ using MongoDB.Driver;
 using AspNetCore.Identity.MongoDbCore.Extensions;
 using QsoManager.Application.Interfaces;
 using QsoManager.Application.Interfaces.Auth;
+using QsoManager.Application.Interfaces.Services;
 using QsoManager.Application.Projections.Interfaces;
 using QsoManager.Domain.Repositories;
 using QsoManager.Infrastructure.Authentication;
 using QsoManager.Infrastructure.Identity;
 using QsoManager.Infrastructure.Projections;
 using QsoManager.Infrastructure.Repositories;
+using QsoManager.Infrastructure.Services;
+using QsoManager.Infrastructure.Services.QRZ;
 
 namespace QsoManager.Infrastructure;
 
@@ -58,6 +61,13 @@ public static class InfrastructureServiceCollectionExtensions
             mongoDatabaseName)
         .AddDefaultTokenProviders();        // Authentication Service
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+        // External Services
+        services.AddHttpClient();
+        services.AddScoped<IQrzService, QrzService>();
+
+        // Services de chiffrement
+        services.AddSingleton<IEncryptionService, AesEncryptionService>();
 
         return services;
     }
