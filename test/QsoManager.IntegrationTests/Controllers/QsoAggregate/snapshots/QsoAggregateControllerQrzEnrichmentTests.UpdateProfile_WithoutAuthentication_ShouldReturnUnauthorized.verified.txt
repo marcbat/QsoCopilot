@@ -1,0 +1,18 @@
+﻿{
+  Version: 1.1,
+  Status: 401 Unauthorized,
+  Headers: {
+    WWW-Authenticate: Bearer
+  },
+  RequestMessage: {
+    Method: PUT,
+    Uri: http://localhost/api/auth/profile,
+    Content: {
+      Headers: {
+        Content-Length: 78,
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: 
+    }
+  }
+}

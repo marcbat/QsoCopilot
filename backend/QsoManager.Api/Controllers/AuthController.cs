@@ -1,6 +1,9 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QsoManager.Application.Commands.Authentication;
+using QsoManager.Application.Commands.ModeratorAggregate;
+using QsoManager.Application.DTOs;
 using QsoManager.Application.DTOs.Authentication;
 
 namespace QsoManager.Api.Controllers;
@@ -103,6 +106,38 @@ public class AuthController : ControllerBase
         {
             _logger.LogError(ex, "Error during password reset for user {UserId}", request.UserId);
             return BadRequest(new { message = "An error occurred while resetting your password" });
+        }
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<ActionResult<ModeratorDto>> UpdateProfile([FromBody] UpdateProfileRequestDto request)
+    {
+        try
+        {
+            var command = new UpdateModeratorCommand(
+                Email: request.Email,
+                QrzUsername: request.QrzUsername,
+                QrzPassword: request.QrzPassword,
+                User: User
+            );
+            
+            var result = await _mediator.Send(command);
+            
+            if (result.IsSuccess)
+            {
+                return Ok(result.Match(dto => dto, _ => throw new InvalidOperationException()));
+            }
+            else
+            {
+                var errors = result.Match(_ => Array.Empty<string>(), errors => errors.Select(e => e.Message).ToArray());
+                return BadRequest(new { errors });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during profile update for user {UserId}", User?.Identity?.Name);
+            return BadRequest(new { message = "An error occurred while updating your profile" });
         }
     }
 }

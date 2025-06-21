@@ -56,12 +56,23 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     public async Task InitializeAsync()
     {
         // Nettoyer la base de données avant chaque test
-        await _mongoFixture.CleanDatabaseAsync();
-
-        var host = _factory.WithWebHostBuilder(builder =>
+        await _mongoFixture.CleanDatabaseAsync();        var host = _factory.WithWebHostBuilder(builder =>
         {
             builder.UseSetting("ConnectionStrings:MongoDB", _mongoFixture.ConnectionString);
             builder.UseSetting("Mongo:Database", "QsoManagerIntegrationTests");
+            
+            // Configuration QRZ pour les tests - lire depuis les variables d'environnement ou configuration
+            var qrzUsername = Environment.GetEnvironmentVariable("QRZ_TEST_USERNAME");
+            var qrzPassword = Environment.GetEnvironmentVariable("QRZ_TEST_PASSWORD");
+            
+            if (!string.IsNullOrEmpty(qrzUsername))
+            {
+                builder.UseSetting("QRZ:TestCredentials:Username", qrzUsername);
+            }
+            if (!string.IsNullOrEmpty(qrzPassword))
+            {
+                builder.UseSetting("QRZ:TestCredentials:Password", qrzPassword);
+            }
         });
 
         _client = host.CreateClient();
@@ -155,5 +166,35 @@ public class BaseIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
         }
         
         return true;
+    }
+    
+    /// <summary>
+    /// Crée un utilisateur avec des credentials QRZ pour les tests
+    /// </summary>
+    /// <param name="callSign">L'indicatif à utiliser</param>
+    /// <param name="qrzUsername">Nom d'utilisateur QRZ</param>
+    /// <param name="qrzPassword">Mot de passe QRZ (sera stocké en clair pour les tests)</param>
+    /// <returns>L'ID de l'utilisateur/modérateur créé et le token JWT</returns>
+    protected async Task<(Guid userId, string token)> CreateAndAuthenticateUserWithQrzAsync(
+        string callSign = "F4TEST", 
+        string? qrzUsername = null, 
+        string? qrzPassword = null)
+    {
+        var (userId, token) = await CreateAndAuthenticateUserAsync(callSign);
+
+        // Mettre à jour les credentials QRZ si fournis
+        if (!string.IsNullOrEmpty(qrzUsername) || !string.IsNullOrEmpty(qrzPassword))
+        {
+            var updateRequest = new
+            {
+                QrzUsername = qrzUsername,
+                QrzPassword = qrzPassword
+            };
+
+            var updateResponse = await _client.PutAsJsonAsync("/api/auth/profile", updateRequest);
+            updateResponse.EnsureSuccessStatusCode();
+        }
+
+        return (userId, token);
     }
 }
