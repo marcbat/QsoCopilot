@@ -7,6 +7,8 @@ import QsoDetailPage from './components/QsoDetailPage';
 import QsoEditPage from './components/QsoEditPage';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
+import ProfilePage from './components/ProfilePage';
+import ProtectedRoute from './components/ProtectedRoute';
 import ErrorTestComponent from './components/ErrorTestComponent';
 import './styles/global.css';
 
@@ -22,6 +24,11 @@ const App: React.FC = () => {
               <Route path="/qso/:id/edit" element={<QsoEditPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
               <Route path="/test-errors" element={<ErrorTestComponent />} />
             </Routes>
           </main>

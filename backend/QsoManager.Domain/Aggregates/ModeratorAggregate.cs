@@ -81,18 +81,14 @@ public class ModeratorAggregate : AggregateRoot
         return ValidateQrzCredentials(qrzUsername, qrzPasswordEncrypted)
             .Bind(credentials => Apply(new Events.QrzCredentialsUpdated(Id, DateTime.Now, credentials.username, credentials.passwordEncrypted)))
             .Map(x => this);
-    }
-
-    protected static Validation<Error, (string? username, string? passwordEncrypted)> ValidateQrzCredentials(string? username, string? passwordEncrypted)
+    }    protected static Validation<Error, (string? username, string? passwordEncrypted)> ValidateQrzCredentials(string? username, string? passwordEncrypted)
     {
-        // Si username est fourni, password encrypté doit aussi être fourni
-        if (!string.IsNullOrWhiteSpace(username) && string.IsNullOrWhiteSpace(passwordEncrypted))
-            return Error.New("Le mot de passe QRZ est requis quand un nom d'utilisateur est fourni");
+        // Autoriser les deux champs vides (suppression des credentials)
+        if (string.IsNullOrWhiteSpace(username) && string.IsNullOrWhiteSpace(passwordEncrypted))
+            return (null, null);
         
-        // Si password encrypté est fourni, username doit aussi être fourni
-        if (!string.IsNullOrWhiteSpace(passwordEncrypted) && string.IsNullOrWhiteSpace(username))
-            return Error.New("Le nom d'utilisateur QRZ est requis quand un mot de passe est fourni");
-        
+        // Si on a au moins un champ non vide, on les accepte
+        // La logique métier peut décider de conserver les valeurs existantes pour les champs manquants
         return (username, passwordEncrypted);
     }// Application des événements (méthode requise par AggregateRoot)
     protected override Validation<Error, Event> When(IEvent @event)

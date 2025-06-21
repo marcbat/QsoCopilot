@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AuthContextType, User, LoginRequest, LoginByEmailRequest, RegisterRequest } from '../types';
+import { AuthContextType, User, LoginRequest, LoginByEmailRequest, RegisterRequest, UpdateProfileRequest } from '../types';
 import { authApiService } from '../api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -100,6 +100,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
+  };  const updateProfile = async (data: UpdateProfileRequest): Promise<string> => {
+    try {
+      setIsLoading(true);
+      const response = await authApiService.updateProfile(data);
+      
+      // Mettre à jour les données utilisateur localement
+      if (user) {
+        const updatedUser: User = {
+          ...user,
+          email: data.email || user.email,
+          qrzUsername: data.qrzUsername || user.qrzUsername,
+        };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+      
+      // Retourner le message de confirmation
+      return response.message;
+    } catch (error) {
+      console.error('Erreur de mise à jour du profil:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = (): void => {
@@ -110,13 +134,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const isAuthenticated = !!user && !!token;
-
   const value: AuthContextType = {
     user,
     token,
     login,
     loginByEmail,
     register,
+    updateProfile,
     logout,
     isAuthenticated,
     isLoading

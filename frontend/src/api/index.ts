@@ -7,7 +7,9 @@ import {
   LoginRequest,
   LoginByEmailRequest,
   RegisterRequest,
-  TokenDto
+  TokenDto,
+  UpdateProfileRequest,
+  ModeratorDto
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5041/api';
@@ -111,6 +113,10 @@ export const authApiService = {
 
   async register(data: RegisterRequest): Promise<{ userId: string; message: string }> {
     const response = await apiClient.post('/Auth/register', data);
+    return response.data;
+  },
+  async updateProfile(data: UpdateProfileRequest): Promise<{ profile: ModeratorDto; message: string }> {
+    const response: AxiosResponse<{ profile: ModeratorDto; message: string }> = await apiClient.put('/Auth/profile', data);
     return response.data;
   }
 };
