@@ -10,6 +10,14 @@
       description: QSO créé sans ID spécifique,
       moderatorId: Guid_2,
       frequency: 7.144,
+      participants: [
+        {
+          callSign: F4TEST2,
+          order: 1,
+          country: null,
+          name: null
+        }
+      ],
       startDateTime: DateTimeOffset_1,
       createdDate: DateTimeOffset_1
     }

@@ -10,6 +10,14 @@
       description: QSO créé pour les tests d'intégration,
       moderatorId: Guid_2,
       frequency: 14.23,
+      participants: [
+        {
+          callSign: F4TEST1,
+          order: 1,
+          country: null,
+          name: null
+        }
+      ],
       startDateTime: DateTimeOffset_1,
       createdDate: DateTimeOffset_1
     }

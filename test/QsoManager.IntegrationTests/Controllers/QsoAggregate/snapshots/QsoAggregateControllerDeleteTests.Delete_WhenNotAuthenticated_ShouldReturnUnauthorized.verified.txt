@@ -1,0 +1,11 @@
+﻿{
+  Version: 1.1,
+  Status: 401 Unauthorized,
+  Headers: {
+    WWW-Authenticate: Bearer
+  },
+  RequestMessage: {
+    Method: DELETE,
+    Uri: http://localhost/api/QsoAggregate/NORMALIZED_GUID
+  }
+}

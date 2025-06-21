@@ -68,6 +68,10 @@ export const qsoApiService = {
     return response.data;
   },
 
+  async deleteQso(id: string): Promise<void> {
+    await apiClient.delete(`/QsoAggregate/${id}`);
+  },
+
   async addParticipant(qsoId: string, participant: CreateParticipantRequest): Promise<QsoAggregateDto> {
     const response: AxiosResponse<QsoAggregateDto> = await apiClient.post(
       `/QsoAggregate/${qsoId}/participants`, 

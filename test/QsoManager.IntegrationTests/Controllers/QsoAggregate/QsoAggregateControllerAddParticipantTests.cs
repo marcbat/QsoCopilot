@@ -59,16 +59,15 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
         Assert.True(createResponse.IsSuccessStatusCode, "QSO creation should succeed");
         
         // Attendre que la projection initiale soit créée
-        await Task.Delay(200);
-
-        // Vérifier l'état initial du QSO (aucun participant)
+        await Task.Delay(200);        // Vérifier l'état initial du QSO (le modérateur est automatiquement ajouté comme participant)
         var initialGetResponse = await _client.GetAsync($"/api/QsoAggregate/{qsoId}");
         Assert.True(initialGetResponse.IsSuccessStatusCode, "Initial GET should succeed");
         
         var initialContent = await initialGetResponse.Content.ReadAsStringAsync();
         var initialQso = JsonSerializer.Deserialize<JsonElement>(initialContent);
         var initialParticipants = initialQso.GetProperty("participants");
-        Assert.Equal(0, initialParticipants.GetArrayLength());
+        Assert.Equal(1, initialParticipants.GetArrayLength()); // Le modérateur est automatiquement ajouté
+        Assert.Equal("F4TEST_PROJECTION", initialParticipants[0].GetProperty("callSign").GetString());
 
         // Ajouter un participant
         var addParticipantRequest = new
@@ -89,11 +88,20 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
         var updatedContent = await updatedGetResponse.Content.ReadAsStringAsync();
         var updatedQso = JsonSerializer.Deserialize<JsonElement>(updatedContent);
         var updatedParticipants = updatedQso.GetProperty("participants");
+          // Assert - Le participant doit être présent dans la projection (+ le modérateur)
+        Assert.Equal(2, updatedParticipants.GetArrayLength()); // Modérateur + nouveau participant
         
-        // Assert - Le participant doit être présent dans la projection
-        Assert.Equal(1, updatedParticipants.GetArrayLength());
-        var participant = updatedParticipants[0];
-        Assert.Equal("F4PARTICIPANT1", participant.GetProperty("callSign").GetString());        Assert.Equal(1, participant.GetProperty("order").GetInt32());
+        // Vérifier que le modérateur est toujours présent
+        var moderatorParticipant = updatedParticipants.EnumerateArray()
+            .FirstOrDefault(p => p.GetProperty("callSign").GetString() == "F4TEST_PROJECTION");
+        Assert.True(moderatorParticipant.ValueKind != JsonValueKind.Undefined, "Moderator should still be present");
+        Assert.Equal(1, moderatorParticipant.GetProperty("order").GetInt32());
+        
+        // Vérifier que le nouveau participant est présent
+        var newParticipant = updatedParticipants.EnumerateArray()
+            .FirstOrDefault(p => p.GetProperty("callSign").GetString() == "F4PARTICIPANT1");
+        Assert.True(newParticipant.ValueKind != JsonValueKind.Undefined, "New participant should be present");
+        Assert.Equal(2, newParticipant.GetProperty("order").GetInt32());
     }
 
     [Fact]
@@ -132,15 +140,25 @@ public class QsoAggregateControllerAddParticipantTests : BaseIntegrationTest
         var content = await getResponse.Content.ReadAsStringAsync();
         var qso = JsonSerializer.Deserialize<JsonElement>(content);
         var participants = qso.GetProperty("participants");
+          // Assert - Trois participants avec les bons ordres (modérateur + 2 ajoutés)
+        Assert.Equal(3, participants.GetArrayLength());
         
-        // Assert - Deux participants avec les bons ordres
-        Assert.Equal(2, participants.GetArrayLength());
+        // Vérifier le modérateur (premier participant automatique)
+        var moderatorParticipant = participants.EnumerateArray()
+            .FirstOrDefault(p => p.GetProperty("callSign").GetString() == "F4TEST_MULTIPLE");
+        Assert.True(moderatorParticipant.ValueKind != JsonValueKind.Undefined, "Moderator should be present");
+        Assert.Equal(1, moderatorParticipant.GetProperty("order").GetInt32());
         
-        var firstParticipant = participants.EnumerateArray().First(p => p.GetProperty("callSign").GetString() == "F4FIRST");
-        var secondParticipant = participants.EnumerateArray().First(p => p.GetProperty("callSign").GetString() == "F4SECOND");
+        // Vérifier les participants ajoutés manuellement
+        var firstParticipant = participants.EnumerateArray()
+            .FirstOrDefault(p => p.GetProperty("callSign").GetString() == "F4FIRST");
+        var secondParticipant = participants.EnumerateArray()
+            .FirstOrDefault(p => p.GetProperty("callSign").GetString() == "F4SECOND");
         
-        Assert.Equal(1, firstParticipant.GetProperty("order").GetInt32());
-        Assert.Equal(2, secondParticipant.GetProperty("order").GetInt32());
+        Assert.True(firstParticipant.ValueKind != JsonValueKind.Undefined, "F4FIRST should be present");
+        Assert.True(secondParticipant.ValueKind != JsonValueKind.Undefined, "F4SECOND should be present");
+        Assert.Equal(2, firstParticipant.GetProperty("order").GetInt32());
+        Assert.Equal(3, secondParticipant.GetProperty("order").GetInt32());
     }
 
     [Fact]

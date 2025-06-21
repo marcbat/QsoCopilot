@@ -1,1 +1,0 @@
-{"errors":["Un QSO Aggregate avec le nom 'Test QSO Session' existe déjà"]}

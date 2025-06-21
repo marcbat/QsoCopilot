@@ -1,0 +1,19 @@
+﻿{
+  DeleteResponse: {
+    Status: 204 No Content,
+    Content: {
+      Headers: {}
+    }
+  },
+  GetByIdAfterDelete: {
+    Status: 404 Not Found,
+    Content: {
+      Headers: {
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: {
+        message: QSO Aggregate with ID NORMALIZED_GUID not found
+      }
+    }
+  }
+}
