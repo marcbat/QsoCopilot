@@ -5,6 +5,7 @@ using QsoManager.Application.Commands;
 using QsoManager.Domain.Repositories;
 using System.Threading.Channels;
 using QsoManager.Domain.Common;
+using System.Security.Claims;
 using static LanguageExt.Prelude;
 
 namespace QsoManager.Application.Commands.QsoAggregate;
@@ -20,19 +21,29 @@ public class ReorderParticipantsCommandHandler : BaseCommandHandler<ReorderParti
     {
         try
         {
-            _logger.LogInformation("Début du réordonnancement des participants pour l'agrégat {AggregateId} avec {ParticipantCount} participants", request.AggregateId, request.NewOrders.Count);
+            // Extraire l'ID utilisateur du ClaimsPrincipal
+            var userIdClaim = request.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                _logger.LogWarning("ID utilisateur introuvable ou invalide dans les claims");
+                return Error.New("Utilisateur non authentifié ou ID utilisateur invalide.");
+            }
+
+            _logger.LogInformation("Début du réordonnancement des participants pour l'agrégat {AggregateId} avec {ParticipantCount} participants par l'utilisateur {UserId}", request.AggregateId, request.NewOrders.Count, userId);
             
             var aggregateResult = await _repository.GetByIdAsync(request.AggregateId);
             
             var result =
                 from aggregate in aggregateResult
-                from updatedAggregate in aggregate.ReorderParticipants(request.NewOrders)
+                from authorizedAggregate in ValidateModeratorAuthorization(aggregate, userId)
+                from updatedAggregate in authorizedAggregate.ReorderParticipants(request.NewOrders)
                 select updatedAggregate;
 
-            return await result.MatchAsync(                async aggregate =>
+            return await result.MatchAsync(
+                async aggregate =>
                 {
                     _logger.LogDebug("Participants réordonnés avec succès pour l'agrégat {AggregateId}", request.AggregateId);
-                      var eventsResult = aggregate.GetUncommittedChanges();
+                    var eventsResult = aggregate.GetUncommittedChanges();
                     return await eventsResult.MatchAsync(
                         async events =>
                         {
@@ -74,5 +85,12 @@ public class ReorderParticipantsCommandHandler : BaseCommandHandler<ReorderParti
             _logger.LogError(ex, "Une erreur inattendue s'est produite lors du réordonnancement des participants pour l'agrégat {AggregateId}", request.AggregateId);
             return Error.New("Impossible de réordonner les participants.");
         }
+    }private static Validation<Error, Domain.Aggregates.QsoAggregate> ValidateModeratorAuthorization(Domain.Aggregates.QsoAggregate aggregate, Guid userId)
+    {
+        if (aggregate.ModeratorId != userId)
+        {
+            return Error.New("Seul le modérateur du QSO peut réordonner les participants.");
+        }
+        return aggregate;
     }
 }

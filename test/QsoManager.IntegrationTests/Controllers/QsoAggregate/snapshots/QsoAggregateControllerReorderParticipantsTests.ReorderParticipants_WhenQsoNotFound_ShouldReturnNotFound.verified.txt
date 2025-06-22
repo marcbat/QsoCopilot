@@ -6,7 +6,7 @@
     },
     Value: {
       errors: [
-        Les participants suivants n'existent pas : F4AAA, F4BBB
+        Aucun QSO trouvé avec l'ID NORMALIZED_GUID.
       ]
     }
   }

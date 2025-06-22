@@ -6,14 +6,16 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
 import ParticipantTable from './ParticipantTable';
 import ParticipantMap from './ParticipantMap';
+import ParticipantCard from './ParticipantCard';
 import DraggableParticipantsList from './DraggableParticipantsList';
+import { canUserReorderParticipants, canUserModifyQso } from '../utils/authorizationUtils';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
 const QsoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
+  const { isAuthenticated, user } = useAuth();const [qso, setQso] = useState<QsoAggregateDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'details' | 'table' | 'map'>('details');
   const [newParticipant, setNewParticipant] = useState({
@@ -35,10 +37,9 @@ const QsoDetailPage: React.FC = () => {
   }, [id]);
   const loadQso = async () => {
     try {
-      setIsLoading(true);
-      setErrorMessage(null);
+      setIsLoading(true);      setErrorMessage(null);
       const response = await qsoApiService.getQso(id!);
-      setQso(response);    } catch (err: any) {
+      setQso(response);} catch (err: any) {
       console.error('Erreur lors du chargement du QSO:', err);
       setErrorMessage(extractErrorMessage(err, 'Impossible de charger les détails du QSO'));
     } finally {
@@ -106,9 +107,14 @@ const QsoDetailPage: React.FC = () => {
       console.error('Erreur lors de la suppression du participant:', err);
       setErrorMessage(extractErrorMessage(err, 'Impossible de supprimer le participant'));
     }
-  };
-  const handleReorderParticipants = async (reorderedParticipants: ParticipantDto[]) => {
+  };  const handleReorderParticipants = async (reorderedParticipants: ParticipantDto[]) => {
     if (!qso) return;
+
+    // Vérification d'autorisation côté client
+    if (!canUserReorderParticipants(user, qso)) {
+      setErrorMessage('Seul le modérateur du QSO peut réordonner les participants.');
+      return;
+    }
 
     try {
       setIsReordering(true);
@@ -137,7 +143,14 @@ const QsoDetailPage: React.FC = () => {
       // await loadQso();
     } catch (err: any) {
       console.error('Erreur lors du réordonnancement des participants:', err);
-      setErrorMessage(extractErrorMessage(err, 'Impossible de réorganiser les participants'));
+      
+      // Gérer spécifiquement l'erreur d'autorisation depuis le backend
+      const errorMessage = extractErrorMessage(err, 'Impossible de réorganiser les participants');
+      if (errorMessage.includes('modérateur')) {
+        setErrorMessage('Seul le modérateur du QSO peut réordonner les participants.');
+      } else {
+        setErrorMessage(errorMessage);
+      }
       
       // En cas d'erreur, recharger les données pour restaurer l'état précédent
       await loadQso();
@@ -249,9 +262,8 @@ const QsoDetailPage: React.FC = () => {
             }}>
               <h3>Participants ({qso.participants?.length || 0})</h3>
             </div>
-            
-            {/* Formulaire rapide d'ajout de participant */}
-            {isAuthenticated && (
+              {/* Formulaire rapide d'ajout de participant */}
+            {canUserModifyQso(user, qso) && (
               <div className="quick-add-participant" style={{ marginBottom: '1rem' }}>
                 <form onSubmit={handleAddParticipant} className="quick-participant-form">
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -275,6 +287,21 @@ const QsoDetailPage: React.FC = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            )}
+
+            {/* Message informatif pour les non-modérateurs */}
+            {isAuthenticated && !canUserModifyQso(user, qso) && (
+              <div className="info-message" style={{ 
+                marginBottom: '1rem', 
+                padding: '0.75rem',
+                backgroundColor: 'var(--alert-warning-bg)',
+                color: 'var(--alert-warning-color)',
+                border: '1px solid var(--alert-warning-border)',
+                borderRadius: 'var(--border-radius)',
+                fontSize: '0.875rem'
+              }}>
+                ℹ️ Seul le modérateur du QSO peut ajouter, supprimer ou réordonner les participants.
               </div>
             )}
 
@@ -343,20 +370,39 @@ const QsoDetailPage: React.FC = () => {
             {qso.participants && qso.participants.length > 0 ? (
               <div className="tab-content">
                 {activeTab === 'details' ? (
-                  /* Affichage détaillé avec cartes et drag and drop */
-                  <DraggableParticipantsList
-                    participants={qso.participants}
-                    onReorder={handleReorderParticipants}
-                    onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
-                    showRemoveButton={isAuthenticated}
-                    isReordering={isReordering}
-                  />
+                  canUserReorderParticipants(user, qso) ? (
+                    /* Affichage détaillé avec cartes et drag and drop pour le modérateur */
+                    <DraggableParticipantsList
+                      participants={qso.participants}
+                      onReorder={handleReorderParticipants}
+                      onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
+                      showRemoveButton={canUserModifyQso(user, qso)}
+                      isReordering={isReordering}
+                    />                  ) : (
+                    /* Affichage des cartes sans drag and drop pour les non-modérateurs */
+                    <div className="participants-grid" style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                      gap: '1rem',
+                      alignItems: 'stretch',
+                      width: '100%'
+                    }}>
+                      {qso.participants.map((participant) => (
+                        <ParticipantCard
+                          key={participant.callSign}
+                          participant={participant}
+                          onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
+                          showRemoveButton={canUserModifyQso(user, qso)}
+                        />
+                      ))}
+                    </div>
+                  )
                 ) : activeTab === 'table' ? (
                   /* Affichage en table */
                   <ParticipantTable
                     participants={qso.participants}
-                    onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
-                    showRemoveButton={isAuthenticated}
+                    onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
+                    showRemoveButton={canUserModifyQso(user, qso)}
                   />
                 ) : (
                   /* Affichage sur carte */

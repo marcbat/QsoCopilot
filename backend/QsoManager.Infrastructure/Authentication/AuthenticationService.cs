@@ -71,12 +71,12 @@ public class AuthenticationService : IAuthenticationService
             expires: DateTime.Now.AddHours(jwtExpiryHours),
             claims: additionalClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-        );
-
-        var tokenDto = new TokenDto 
+        );        var tokenDto = new TokenDto 
         { 
             Token = new JwtSecurityTokenHandler().WriteToken(token), 
-            Expiration = token.ValidTo 
+            Expiration = token.ValidTo,
+            UserId = additionalClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "",
+            UserName = additionalClaims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? ""
         };
 
         return tokenDto;

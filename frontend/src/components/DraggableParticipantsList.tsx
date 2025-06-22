@@ -120,12 +120,11 @@ const DraggableParticipantsList: React.FC<DraggableParticipantsListProps> = ({
         <SortableContext
           items={sortedParticipants.map(p => p.callSign)}
           strategy={rectSortingStrategy}
-        >
-          <div className={`participants-grid ${isDragActive ? 'drag-active' : ''}`} style={{
+        >          <div className={`participants-grid ${isDragActive ? 'drag-active' : ''}`} style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
             gap: '1rem',
-            alignItems: 'start',
+            alignItems: 'stretch', /* Force toutes les cartes d'une ligne à avoir la même hauteur */
             width: '100%',
           }}>
             {sortedParticipants.map((participant) => (

@@ -200,5 +200,113 @@ public class QsoAggregateControllerReorderParticipantsTests : BaseIntegrationTes
 
         // Assert
         await Verify(response, _verifySettings);
+    }    [Fact]
+    public async Task ReorderParticipants_WhenUserIsNotModerator_ShouldReturnForbidden()
+    {
+        // Arrange
+        var (moderatorId, moderatorToken) = await CreateAndAuthenticateUserAsync("F4MODERATOR");
+        var qsoId = Guid.NewGuid();
+        
+        // Le modérateur crée le QSO
+        var createRequest = new
+        {
+            Id = qsoId,
+            Name = "QSO Test Authorization",
+            Description = "QSO pour test d'autorisation",
+            Frequency = 145.5m
+        };
+
+        await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
+        await Task.Delay(100);
+
+        // Le modérateur ajoute des participants
+        await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", new { CallSign = "F4AAA" });
+        await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", new { CallSign = "F4BBB" });
+        await Task.Delay(100);
+
+        // Un autre utilisateur essaie de réorganiser (pas le modérateur)
+        var (userId, userToken) = await CreateAndAuthenticateUserAsync("F4USER");
+        var reorderRequest = new
+        {
+            NewOrders = new Dictionary<string, int>
+            {
+                { "F4AAA", 1 },
+                { "F4BBB", 0 }
+            }
+        };
+
+        // Act
+        var response = await _client.PutAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants/reorder", reorderRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Seul le modérateur du QSO peut réordonner les participants", content);
+    }
+
+    [Fact]
+    public async Task ReorderParticipants_WhenUserIsModerator_ShouldSucceed()
+    {
+        // Arrange
+        var (moderatorId, moderatorToken) = await CreateAndAuthenticateUserAsync("F4MODERATOR2");
+        var qsoId = Guid.NewGuid();
+        
+        // Le modérateur crée le QSO
+        var createRequest = new
+        {
+            Id = qsoId,
+            Name = "QSO Test Moderator Access",
+            Description = "QSO pour test d'accès modérateur",
+            Frequency = 145.5m
+        };
+
+        await _client.PostAsJsonAsync("/api/QsoAggregate", createRequest);
+        await Task.Delay(100);
+
+        // Le modérateur ajoute des participants
+        await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", new { CallSign = "F4AAA" });
+        await _client.PostAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants", new { CallSign = "F4BBB" });
+        await Task.Delay(100);
+
+        // Le modérateur réorganise ses propres participants (doit réussir)
+        var reorderRequest = new
+        {
+            NewOrders = new Dictionary<string, int>
+            {
+                { "F4AAA", 1 },
+                { "F4BBB", 0 }
+            }
+        };
+
+        // Act
+        var response = await _client.PutAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants/reorder", reorderRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ReorderParticipants_WhenUnauthenticated_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        var qsoId = Guid.NewGuid();
+        
+        // Supprimer le token d'authentification
+        ClearAuthentication();
+        
+        var reorderRequest = new
+        {
+            NewOrders = new Dictionary<string, int>
+            {
+                { "F4AAA", 1 },
+                { "F4BBB", 0 }
+            }
+        };
+
+        // Act
+        var response = await _client.PutAsJsonAsync($"/api/QsoAggregate/{qsoId}/participants/reorder", reorderRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }
