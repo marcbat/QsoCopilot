@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
 import ParticipantCard from './ParticipantCard';
 import ParticipantTable from './ParticipantTable';
+import ParticipantMap from './ParticipantMap';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -14,7 +15,7 @@ const QsoDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'details' | 'table'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'table' | 'map'>('details');
   const [newParticipant, setNewParticipant] = useState({
     callSign: ''
   });
@@ -263,8 +264,7 @@ const QsoDetailPage: React.FC = () => {
                   }}
                 >
                   Détails
-                </button>
-                <button
+                </button>                <button
                   className={`tab-button ${activeTab === 'table' ? 'active' : ''}`}
                   onClick={() => setActiveTab('table')}
                   style={{
@@ -282,10 +282,26 @@ const QsoDetailPage: React.FC = () => {
                 >
                   Table
                 </button>
+                <button
+                  className={`tab-button ${activeTab === 'map' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('map')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: activeTab === 'map' ? '600' : '400',
+                    color: activeTab === 'map' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    borderBottom: activeTab === 'map' ? '2px solid var(--primary-color)' : '2px solid transparent',
+                    marginBottom: '-2px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Carte
+                </button>
               </div>
-            </div>
-
-            {/* Contenu des onglets */}
+            </div>            {/* Contenu des onglets */}
             {qso.participants && qso.participants.length > 0 ? (
               <div className="tab-content">
                 {activeTab === 'details' ? (
@@ -300,12 +316,17 @@ const QsoDetailPage: React.FC = () => {
                       />
                     ))}
                   </div>
-                ) : (
+                ) : activeTab === 'table' ? (
                   /* Affichage en table */
                   <ParticipantTable
                     participants={qso.participants}
                     onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
                     showRemoveButton={isAuthenticated}
+                  />
+                ) : (
+                  /* Affichage sur carte */
+                  <ParticipantMap
+                    participants={qso.participants}
                   />
                 )}
               </div>

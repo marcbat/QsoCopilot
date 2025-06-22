@@ -843,3 +843,55 @@ body {
   width: 100%;
   min-width: 100%;
 }
+
+/* Styles pour la carte Leaflet */
+.leaflet-container {
+  font-family: inherit;
+  max-height: 500px;
+  overflow: hidden;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content {
+  margin: 12px 16px;
+  line-height: 1.4;
+}
+
+/* Styles pour le contenu des onglets avec carte */
+.tab-content .leaflet-container {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  height: 100% !important;
+  max-height: 450px;
+}
+
+/* Container de la carte pour éviter les débordements */
+.map-container {
+  height: 500px;
+  width: 100%;
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.map-wrapper {
+  height: calc(100% - 60px);
+  width: 100%;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Spinner pour le chargement */
+.spinner {
+  border: 2px solid var(--border-color);
+  border-top: 2px solid var(--primary-color);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
