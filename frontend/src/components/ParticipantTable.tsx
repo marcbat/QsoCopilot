@@ -69,6 +69,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
   const getState = (participant: ParticipantWithQrz) => {
     return participant.qrzInfo?.qrzCallsignInfo?.state || '';
   };
+
   return (
     <div style={{ 
       overflowX: 'auto',
@@ -83,7 +84,8 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
         borderRadius: '8px',
         overflow: 'hidden',
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-      }}>        <thead>
+      }}>
+        <thead>
           <tr style={{ 
             backgroundColor: 'var(--primary-color)', 
             color: 'white'

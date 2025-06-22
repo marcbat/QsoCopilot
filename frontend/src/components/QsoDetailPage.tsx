@@ -14,7 +14,7 @@ const QsoDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showParticipantDetails, setShowParticipantDetails] = useState(true);
+  const [activeTab, setActiveTab] = useState<'details' | 'table'>('details');
   const [newParticipant, setNewParticipant] = useState({
     callSign: ''
   });
@@ -199,22 +199,9 @@ const QsoDetailPage: React.FC = () => {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Section participants - mise en pleine largeur en mode table */}
-        <div 
-          className={showParticipantDetails ? "detail-section" : ""}
-          style={{
-            width: showParticipantDetails ? 'auto' : '100%',
-            marginTop: showParticipantDetails ? '0' : 'var(--spacing-lg)'
-          }}
-        ><div 
-            className="detail-card"
-            style={{
-              width: showParticipantDetails ? 'auto' : '100%',
-              maxWidth: showParticipantDetails ? 'none' : '100%'
-            }}
-          >
+        </div>        {/* Section participants */}
+        <div className="detail-section">
+          <div className="detail-card">
             <div style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -222,56 +209,14 @@ const QsoDetailPage: React.FC = () => {
               marginBottom: '1rem' 
             }}>
               <h3>Participants ({qso.participants?.length || 0})</h3>
-              <button
-                onClick={() => setShowParticipantDetails(!showParticipantDetails)}
-                className="participants-toggle"
-                title={showParticipantDetails ? 'Masquer les détails' : 'Afficher les détails'}
-                style={{
-                  background: 'var(--surface-color)',
-                  border: '2px solid var(--border-color)',
-                  borderRadius: '2rem',
-                  padding: '0.25rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  width: '3rem',
-                  height: '1.5rem',
-                  position: 'relative'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--primary-color)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-color)';
-                }}
-              >
-                <div 
-                  style={{
-                    position: 'absolute',
-                    width: '1rem',
-                    height: '1rem',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.75rem',
-                    transition: 'all 0.3s ease',
-                    left: '0.25rem',
-                    background: showParticipantDetails ? '#10b981' : '#64748b',
-                    transform: showParticipantDetails ? 'translateX(0)' : 'translateX(1.25rem)'
-                  }}
-                >
-                  {showParticipantDetails ? '📋' : '👤'}
-                </div>
-              </button>
             </div>
             
             {/* Formulaire rapide d'ajout de participant */}
             {isAuthenticated && (
               <div className="quick-add-participant" style={{ marginBottom: '1rem' }}>
                 <form onSubmit={handleAddParticipant} className="quick-participant-form">
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>                    <input
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
                       type="text"
                       name="callSign"
                       value={newParticipant.callSign}
@@ -292,19 +237,71 @@ const QsoDetailPage: React.FC = () => {
                   </div>
                 </form>
               </div>
-            )}            {qso.participants && qso.participants.length > 0 ? (
-              <div className="participants-list">
-                {showParticipantDetails ? (
-                  // Affichage détaillé
-                  qso.participants.map((participant: ParticipantDto, index: number) => (
-                    <ParticipantCard
-                      key={index}
-                      participant={participant}
-                      onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
-                      showRemoveButton={isAuthenticated}
-                    />
-                  ))                ) : (
-                  // Affichage en table compacte
+            )}
+
+            {/* Onglets */}
+            <div className="tabs-container" style={{ marginBottom: '1rem' }}>
+              <div className="tabs-header" style={{ 
+                display: 'flex', 
+                borderBottom: '2px solid var(--border-color)',
+                marginBottom: '1rem'
+              }}>
+                <button
+                  className={`tab-button ${activeTab === 'details' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('details')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: activeTab === 'details' ? '600' : '400',
+                    color: activeTab === 'details' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    borderBottom: activeTab === 'details' ? '2px solid var(--primary-color)' : '2px solid transparent',
+                    marginBottom: '-2px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Détails
+                </button>
+                <button
+                  className={`tab-button ${activeTab === 'table' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('table')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: activeTab === 'table' ? '600' : '400',
+                    color: activeTab === 'table' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    borderBottom: activeTab === 'table' ? '2px solid var(--primary-color)' : '2px solid transparent',
+                    marginBottom: '-2px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Table
+                </button>
+              </div>
+            </div>
+
+            {/* Contenu des onglets */}
+            {qso.participants && qso.participants.length > 0 ? (
+              <div className="tab-content">
+                {activeTab === 'details' ? (
+                  <div className="participants-list">
+                    {/* Affichage détaillé avec cartes */}
+                    {qso.participants.map((participant: ParticipantDto, index: number) => (
+                      <ParticipantCard
+                        key={index}
+                        participant={participant}
+                        onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
+                        showRemoveButton={isAuthenticated}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  /* Affichage en table */
                   <ParticipantTable
                     participants={qso.participants}
                     onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
@@ -316,7 +313,7 @@ const QsoDetailPage: React.FC = () => {
               <div className="no-participants">
                 <p>Aucun participant ajouté pour ce QSO</p>
               </div>
-            )}          </div>
+            )}</div>
         </div>
       </div>
     </div>
