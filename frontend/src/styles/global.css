@@ -847,6 +847,8 @@ body {
 /* Styles pour la carte Leaflet */
 .leaflet-container {
   font-family: inherit;
+  max-height: 500px;
+  overflow: hidden;
 }
 
 .leaflet-popup-content-wrapper {
@@ -863,6 +865,25 @@ body {
 .tab-content .leaflet-container {
   border-radius: 8px;
   border: 1px solid var(--border-color);
+  height: 100% !important;
+  max-height: 450px;
+}
+
+/* Container de la carte pour éviter les débordements */
+.map-container {
+  height: 500px;
+  width: 100%;
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.map-wrapper {
+  height: calc(100% - 60px);
+  width: 100%;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* Spinner pour le chargement */

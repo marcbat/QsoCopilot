@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ParticipantDto, ParticipantQrzInfoDto } from '../types';
@@ -23,6 +23,35 @@ interface ParticipantWithLocation extends ParticipantDto {
   longitude?: number;
   isLoadingLocation?: boolean;
 }
+
+// Composant pour ajuster automatiquement la vue de la carte
+const MapBoundsAdjuster: React.FC<{ participants: ParticipantWithLocation[] }> = ({ participants }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    const validParticipants = participants.filter(
+      p => p.latitude !== undefined && p.longitude !== undefined && 
+           !isNaN(p.latitude!) && !isNaN(p.longitude!)
+    );
+
+    if (validParticipants.length === 0) return;
+
+    if (validParticipants.length === 1) {
+      const p = validParticipants[0];
+      map.setView([p.latitude!, p.longitude!], 10);
+    } else {
+      // Créer des bounds pour englober tous les participants
+      const bounds = L.latLngBounds(
+        validParticipants.map(p => [p.latitude!, p.longitude!] as [number, number])
+      );
+      
+      // Ajuster la vue avec un padding pour un meilleur affichage
+      map.fitBounds(bounds, { padding: [20, 20] });
+    }
+  }, [map, participants]);
+
+  return null;
+};
 
 const ParticipantMap: React.FC<ParticipantMapProps> = ({ participants }) => {
   const [participantsWithLocation, setParticipantsWithLocation] = useState<ParticipantWithLocation[]>([]);
@@ -82,44 +111,29 @@ const ParticipantMap: React.FC<ParticipantMapProps> = ({ participants }) => {
     p => p.latitude !== undefined && p.longitude !== undefined && 
          !isNaN(p.latitude!) && !isNaN(p.longitude!)
   );
+  // Calculer le centre initial (sera ajusté par MapBoundsAdjuster)
+  const getInitialCenter = (): [number, number] => {
+    const validParticipants = participantsWithLocation.filter(
+      p => p.latitude !== undefined && p.longitude !== undefined && 
+           !isNaN(p.latitude!) && !isNaN(p.longitude!)
+    );
 
-  // Calculer le centre et les bounds de la carte
-  const getMapBounds = () => {
-    if (participantsWithValidCoords.length === 0) {
+    if (validParticipants.length === 0) {
       // Position par défaut (Paris)
-      return {
-        center: [48.8566, 2.3522] as [number, number],
-        zoom: 6
-      };
+      return [48.8566, 2.3522];
     }
 
-    if (participantsWithValidCoords.length === 1) {
-      const p = participantsWithValidCoords[0];
-      return {
-        center: [p.latitude!, p.longitude!] as [number, number],
-        zoom: 10
-      };
-    }
-
-    // Calculer les bounds pour englober tous les participants
-    const lats = participantsWithValidCoords.map(p => p.latitude!);
-    const lons = participantsWithValidCoords.map(p => p.longitude!);
+    // Centre approximatif pour démarrage
+    const lats = validParticipants.map(p => p.latitude!);
+    const lons = validParticipants.map(p => p.longitude!);
     
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLon = Math.min(...lons);
-    const maxLon = Math.max(...lons);
+    const centerLat = lats.reduce((a, b) => a + b, 0) / lats.length;
+    const centerLon = lons.reduce((a, b) => a + b, 0) / lons.length;
     
-    const centerLat = (minLat + maxLat) / 2;
-    const centerLon = (minLon + maxLon) / 2;
-    
-    return {
-      center: [centerLat, centerLon] as [number, number],
-      zoom: 6
-    };
+    return [centerLat, centerLon];
   };
 
-  const mapConfig = getMapBounds();
+  const initialCenter = getInitialCenter();
 
   if (isLoading) {
     return (
@@ -158,9 +172,8 @@ const ParticipantMap: React.FC<ParticipantMapProps> = ({ participants }) => {
       </div>
     );
   }
-
   return (
-    <div style={{ width: '100%', height: '500px', marginTop: '1rem' }}>
+    <div className="map-container">
       <div style={{ 
         marginBottom: '1rem', 
         padding: '0.75rem',
@@ -172,22 +185,26 @@ const ParticipantMap: React.FC<ParticipantMapProps> = ({ participants }) => {
         <strong>Participants localisés :</strong> {participantsWithValidCoords.length} sur {participants.length}
       </div>
       
-      <MapContainer
-        center={mapConfig.center}
-        zoom={mapConfig.zoom}
-        style={{ height: '100%', width: '100%', borderRadius: '8px' }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        
-        {participantsWithValidCoords.map((participant, index) => (
-          <Marker
-            key={index}
-            position={[participant.latitude!, participant.longitude!]}
-          >
+      <div className="map-wrapper">
+        <MapContainer
+          center={initialCenter}
+          zoom={6}
+          style={{ height: '100%', width: '100%', borderRadius: '8px' }}
+          scrollWheelZoom={true}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          
+          {/* Composant pour ajuster automatiquement les bounds */}
+          <MapBoundsAdjuster participants={participantsWithValidCoords} />
+          
+          {participantsWithValidCoords.map((participant, index) => (
+            <Marker
+              key={index}
+              position={[participant.latitude!, participant.longitude!]}
+            >
             <Popup>
               <div style={{ minWidth: '200px' }}>
                 <h4 style={{ 
@@ -219,8 +236,7 @@ const ParticipantMap: React.FC<ParticipantMapProps> = ({ participants }) => {
                 {participant.qrzInfo?.qrzCallsignInfo?.grid && (
                   <p style={{ margin: '0.25rem 0' }}>
                     <strong>Grille :</strong> {participant.qrzInfo.qrzCallsignInfo.grid}
-                  </p>
-                )}
+                  </p>                )}
                 
                 <p style={{ 
                   margin: '0.5rem 0 0 0', 
@@ -233,7 +249,8 @@ const ParticipantMap: React.FC<ParticipantMapProps> = ({ participants }) => {
             </Popup>
           </Marker>
         ))}
-      </MapContainer>
+        </MapContainer>
+      </div>
     </div>
   );
 };
