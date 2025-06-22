@@ -4,6 +4,8 @@ import { QsoAggregateDto, ParticipantDto, CreateParticipantRequest } from '../ty
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
+import ParticipantCard from './ParticipantCard';
+import ParticipantTable from './ParticipantTable';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -12,6 +14,7 @@ const QsoDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showParticipantDetails, setShowParticipantDetails] = useState(true);
   const [newParticipant, setNewParticipant] = useState({
     callSign: ''
   });
@@ -195,8 +198,74 @@ const QsoDetailPage: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>          <div className="detail-card">
-            <h3>Participants ({qso.participants?.length || 0})</h3>
+          </div>
+        </div>
+
+        {/* Section participants - mise en pleine largeur en mode table */}
+        <div 
+          className={showParticipantDetails ? "detail-section" : ""}
+          style={{
+            width: showParticipantDetails ? 'auto' : '100%',
+            marginTop: showParticipantDetails ? '0' : 'var(--spacing-lg)'
+          }}
+        ><div 
+            className="detail-card"
+            style={{
+              width: showParticipantDetails ? 'auto' : '100%',
+              maxWidth: showParticipantDetails ? 'none' : '100%'
+            }}
+          >
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              marginBottom: '1rem' 
+            }}>
+              <h3>Participants ({qso.participants?.length || 0})</h3>
+              <button
+                onClick={() => setShowParticipantDetails(!showParticipantDetails)}
+                className="participants-toggle"
+                title={showParticipantDetails ? 'Masquer les détails' : 'Afficher les détails'}
+                style={{
+                  background: 'var(--surface-color)',
+                  border: '2px solid var(--border-color)',
+                  borderRadius: '2rem',
+                  padding: '0.25rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '3rem',
+                  height: '1.5rem',
+                  position: 'relative'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--primary-color)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
+                }}
+              >
+                <div 
+                  style={{
+                    position: 'absolute',
+                    width: '1rem',
+                    height: '1rem',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.75rem',
+                    transition: 'all 0.3s ease',
+                    left: '0.25rem',
+                    background: showParticipantDetails ? '#10b981' : '#64748b',
+                    transform: showParticipantDetails ? 'translateX(0)' : 'translateX(1.25rem)'
+                  }}
+                >
+                  {showParticipantDetails ? '📋' : '👤'}
+                </div>
+              </button>
+            </div>
             
             {/* Formulaire rapide d'ajout de participant */}
             {isAuthenticated && (
@@ -223,62 +292,31 @@ const QsoDetailPage: React.FC = () => {
                   </div>
                 </form>
               </div>
-            )}
-              {qso.participants && qso.participants.length > 0 ? (
+            )}            {qso.participants && qso.participants.length > 0 ? (
               <div className="participants-list">
-                {qso.participants.map((participant: ParticipantDto, index: number) => (
-                  <div key={index} className="participant-card" style={{ position: 'relative' }}>
-                    {isAuthenticated && (
-                      <button
-                        className="remove-participant-btn"
-                        onClick={() => handleRemoveParticipant(participant.callSign)}
-                        title={`Supprimer ${participant.callSign}`}                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                          background: 'transparent',
-                          color: 'var(--text-secondary)',
-                          border: 'none',
-                          width: '20px',
-                          height: '20px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          transition: 'all 0.2s ease',
-                          opacity: '0.7'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = '#ef4444';
-                          e.currentTarget.style.opacity = '1';
-                          e.currentTarget.style.transform = 'scale(1.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = 'var(--text-secondary)';
-                          e.currentTarget.style.opacity = '0.7';
-                          e.currentTarget.style.transform = 'scale(1)';
-                        }}>
-                        🗑️
-                      </button>
-                    )}
-                    <div className="participant-info">
-                      <h4>{participant.callSign}</h4>                      <div className="participant-details">
-                        {participant.name && <p><strong>Nom :</strong> {participant.name}</p>}
-                        {participant.location && <p><strong>Localisation :</strong> {participant.location}</p>}
-                        {participant.signalReport && <p><strong>Rapport signal :</strong> {participant.signalReport}</p>}
-                        {participant.notes && <p><strong>Notes :</strong> {participant.notes}</p>}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                {showParticipantDetails ? (
+                  // Affichage détaillé
+                  qso.participants.map((participant: ParticipantDto, index: number) => (
+                    <ParticipantCard
+                      key={index}
+                      participant={participant}
+                      onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
+                      showRemoveButton={isAuthenticated}
+                    />
+                  ))                ) : (
+                  // Affichage en table compacte
+                  <ParticipantTable
+                    participants={qso.participants}
+                    onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
+                    showRemoveButton={isAuthenticated}
+                  />
+                )}
               </div>
             ) : (
               <div className="no-participants">
                 <p>Aucun participant ajouté pour ce QSO</p>
               </div>
-            )}
-          </div>
+            )}          </div>
         </div>
       </div>
     </div>

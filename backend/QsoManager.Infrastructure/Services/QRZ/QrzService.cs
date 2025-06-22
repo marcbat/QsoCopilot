@@ -16,13 +16,18 @@ public class QrzService : IQrzService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<QrzService> _logger;
     private readonly QrzConfiguration _qrzConfiguration;
-    private string? _sessionKey;
+    private readonly IQrzSessionCacheService _sessionCacheService;
 
-    public QrzService(IHttpClientFactory httpClientFactory, ILogger<QrzService> logger, IOptions<QrzConfiguration> qrzConfiguration)
+    public QrzService(
+        IHttpClientFactory httpClientFactory, 
+        ILogger<QrzService> logger, 
+        IOptions<QrzConfiguration> qrzConfiguration,
+        IQrzSessionCacheService sessionCacheService)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         _qrzConfiguration = qrzConfiguration.Value;
+        _sessionCacheService = sessionCacheService;
     }
 
     public async Task<QrzCallsignInfo?> LookupCallsignAsync(string callsign, string? qrzUsername = null, string? qrzPassword = null)
@@ -75,30 +80,67 @@ public class QrzService : IQrzService
         {
             _logger.LogError(ex, "Erreur lors du lookup DXCC QRZ pour l'ID {DxccId}", dxccId);
             return null;
-        }    }
-
-    private async Task<string?> GetSessionKeyAsync(string username, string password)
+        }    }    private async Task<string?> GetSessionKeyAsync(string username, string password)
     {
+        // Vérifier d'abord le cache
+        var cachedSession = _sessionCacheService.GetCachedSession(username);
+        if (cachedSession != null)
+        {
+            // Si la session expire bientôt (dans les 30 prochaines minutes), la renouveler proactivement
+            if (cachedSession.IsExpiringSoon(30))
+            {
+                _logger.LogDebug("Session QRZ expire bientôt pour {Username}, renouvellement proactif", username);
+                // Continuer pour renouveler la session
+            }
+            else if (cachedSession.IsValid)
+            {
+                _logger.LogDebug("Utilisation de la session QRZ en cache pour {Username}", username);
+                return cachedSession.SessionKey;
+            }
+        }
+
         try
-        {            using var httpClient = _httpClientFactory.CreateClient();
+        {
+            using var httpClient = _httpClientFactory.CreateClient();
             var url = $"https://xmldata.qrz.com/xml/?username={Uri.EscapeDataString(username)}&password={Uri.EscapeDataString(password)}";
             var response = await httpClient.GetStringAsync(url);
-              var doc = XDocument.Parse(response);
+              
+            var doc = XDocument.Parse(response);
             var ns = XNamespace.Get("http://xmldata.qrz.com");
             var sessionElement = doc.Root?.Element(ns + "Session");
-              if (sessionElement != null)
+              
+            if (sessionElement != null)
             {
                 var error = sessionElement.Element(ns + "Error")?.Value;
                 if (!string.IsNullOrEmpty(error))
                 {
                     _logger.LogWarning("Erreur QRZ lors de l'authentification: {Error}", error);
+                    // Supprimer la session du cache en cas d'erreur
+                    _sessionCacheService.RemoveSession(username);
                     return null;
                 }
 
                 var sessionKey = sessionElement.Element(ns + "Key")?.Value;
+                var subExpString = sessionElement.Element(ns + "SubExp")?.Value;
+                
                 if (!string.IsNullOrEmpty(sessionKey))
                 {
-                    _sessionKey = sessionKey;
+                    // Calculer la date d'expiration
+                    DateTime expirationDate = DateTime.UtcNow.AddHours(24); // Par défaut 24h
+                    
+                    if (!string.IsNullOrEmpty(subExpString) && DateTime.TryParse(subExpString, out var parsedExp))
+                    {
+                        expirationDate = parsedExp;
+                        _logger.LogDebug("Session QRZ expire le {ExpirationDate} selon SubExp", expirationDate);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("SubExp non disponible, utilisation d'une expiration par défaut de 24h");
+                    }
+                    
+                    // Mettre en cache la session
+                    _sessionCacheService.CacheSession(username, sessionKey, expirationDate);
+                    
                     return sessionKey;
                 }
             }

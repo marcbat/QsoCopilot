@@ -8,7 +8,8 @@ import {
   LoginRequest,
   LoginByEmailRequest,
   RegisterRequest,
-  TokenDto
+  TokenDto,
+  ParticipantQrzInfoDto
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5041/api';
@@ -123,6 +124,14 @@ export const authApiService = {
 export const healthApiService = {
   async checkHealth(): Promise<{ status: string; timestamp: string; service: string }> {
     const response = await axios.get(`${API_BASE_URL.replace('/api', '')}/Health`);
+    return response.data;
+  }
+};
+
+// Service pour les participants
+export const participantApiService = {
+  async getParticipantQrzInfo(callSign: string): Promise<ParticipantQrzInfoDto> {
+    const response: AxiosResponse<ParticipantQrzInfoDto> = await apiClient.get(`/Participant/${callSign}/qrz`);
     return response.data;
   }
 };

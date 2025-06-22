@@ -46,17 +46,17 @@ public class AuthControllerUpdateProfileTests : BaseIntegrationTest
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync("/api/auth/profile", request);
-
-        // Assert
+        var response = await _client.PutAsJsonAsync("/api/auth/profile", request);        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         
         var content = await response.Content.ReadAsStringAsync();
-        var moderatorDto = JsonSerializer.Deserialize<JsonElement>(content);
+        var responseDto = JsonSerializer.Deserialize<JsonElement>(content);
         
-        moderatorDto.GetProperty("id").GetString().Should().Be(userId.ToString());
-        moderatorDto.GetProperty("callSign").GetString().Should().Be(callSign);
-        moderatorDto.GetProperty("email").GetString().Should().Be("newemail@example.com");
+        // La réponse contient maintenant { profile: ModeratorDto, message: string }
+        var profile = responseDto.GetProperty("profile");
+        profile.GetProperty("id").GetString().Should().Be(userId.ToString());
+        profile.GetProperty("callSign").GetString().Should().Be(callSign);
+        profile.GetProperty("email").GetString().Should().Be("newemail@example.com");
     }
 
     [Fact]
@@ -72,15 +72,15 @@ public class AuthControllerUpdateProfileTests : BaseIntegrationTest
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync("/api/auth/profile", request);
-
-        // Assert
+        var response = await _client.PutAsJsonAsync("/api/auth/profile", request);        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         
         var content = await response.Content.ReadAsStringAsync();
-        var moderatorDto = JsonSerializer.Deserialize<JsonElement>(content);
+        var responseDto = JsonSerializer.Deserialize<JsonElement>(content);
         
-        moderatorDto.GetProperty("email").GetString().Should().Be("emailonly@example.com");
+        // La réponse contient maintenant { profile: ModeratorDto, message: string }
+        var profile = responseDto.GetProperty("profile");
+        profile.GetProperty("email").GetString().Should().Be("emailonly@example.com");
     }
 
     [Fact]
@@ -97,15 +97,15 @@ public class AuthControllerUpdateProfileTests : BaseIntegrationTest
         };
 
         // Act
-        var response = await _client.PutAsJsonAsync("/api/auth/profile", request);
-
-        // Assert
+        var response = await _client.PutAsJsonAsync("/api/auth/profile", request);        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         
         var content = await response.Content.ReadAsStringAsync();
-        var moderatorDto = JsonSerializer.Deserialize<JsonElement>(content);
+        var responseDto = JsonSerializer.Deserialize<JsonElement>(content);
         
-        moderatorDto.GetProperty("id").GetString().Should().Be(userId.ToString());
-        moderatorDto.GetProperty("callSign").GetString().Should().Be(callSign);
+        // La réponse contient maintenant { profile: ModeratorDto, message: string }
+        var profile = responseDto.GetProperty("profile");
+        profile.GetProperty("id").GetString().Should().Be(userId.ToString());
+        profile.GetProperty("callSign").GetString().Should().Be(callSign);
     }
 }

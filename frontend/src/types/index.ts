@@ -121,3 +121,51 @@ export interface ApiError {
   message: string;
   errors?: string[];
 }
+
+// Types pour les informations QRZ
+export interface QrzCallsignInfo {
+  callSign: string;
+  fName?: string;
+  name?: string;
+  nickname?: string;
+  nameFmt?: string;
+  addr1?: string;
+  addr2?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+  land?: string;
+  lat?: number;
+  lon?: number;
+  grid?: string;
+  county?: string;
+  class?: string;
+  email?: string;
+  url?: string;
+  qslManager?: string;
+  timeZone?: string;
+  geoLoc?: string;
+  cqZone?: number;
+  ituZone?: number;
+  dxcc?: number;
+  image?: string;
+  bio?: string;
+  eqsl?: string;
+  mqsl?: string;
+  lotw?: string;
+  iota?: string;
+  fetchedAt?: string;
+}
+
+export interface QrzDxccInfo {
+  country?: string;
+  code?: string;
+  continent?: string;
+  prefix?: string;
+}
+
+export interface ParticipantQrzInfoDto {
+  callSign: string;
+  qrzCallsignInfo?: QrzCallsignInfo;
+  qrzDxccInfo?: QrzDxccInfo;
+}
