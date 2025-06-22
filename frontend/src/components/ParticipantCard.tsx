@@ -107,14 +107,29 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
                 fontStyle: 'italic'
               }}>
                 {getDisplayName() || 'Informations non disponibles'}
-              </div>
-            ) : (
-              <div style={{ 
-                fontSize: '0.875rem', 
-                color: 'var(--text-secondary)',
-                fontWeight: '500'
-              }}>
-                {getDisplayName() || 'Nom non disponible'}
+              </div>            ) : (
+              <div>
+                <div style={{ 
+                  fontSize: '0.875rem', 
+                  color: 'var(--text-secondary)',
+                  fontWeight: '500'
+                }}>
+                  {getDisplayName() || 'Nom non disponible'}
+                </div>
+                {/* Localisation géographique près du nom */}
+                {qrzInfo?.qrzCallsignInfo && (
+                  <div style={{ 
+                    fontSize: '0.8rem', 
+                    color: 'var(--text-secondary)',
+                    marginTop: '2px',
+                    opacity: 0.8
+                  }}>
+                    {[
+                      qrzInfo.qrzCallsignInfo.country,
+                      qrzInfo.qrzCallsignInfo.state
+                    ].filter(Boolean).join(', ')}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -160,22 +175,8 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
           )}
           {participant.notes && (
             <p><strong>Notes :</strong> {participant.notes}</p>
-          )}
-          
-          {/* Informations QRZ supplémentaires */}
-          {qrzInfo?.qrzCallsignInfo && (
-            <>
-              {qrzInfo.qrzCallsignInfo.country && (
-                <p><strong>Pays :</strong> {qrzInfo.qrzCallsignInfo.country}</p>
-              )}
-              {qrzInfo.qrzCallsignInfo.grid && (
-                <p><strong>Grille :</strong> {qrzInfo.qrzCallsignInfo.grid}</p>
-              )}
-              {qrzInfo.qrzCallsignInfo.state && (
-                <p><strong>État/Région :</strong> {qrzInfo.qrzCallsignInfo.state}</p>
-              )}
-            </>
-          )}
+          )}          
+          {/* Informations QRZ supplémentaires (grille supprimée, pays et état déplacés près du nom) */}
         </div>
       </div>
     </div>
