@@ -189,13 +189,43 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
-            >
-              <td style={{ 
+            >              <td style={{ 
                 padding: '12px', 
                 fontWeight: '600',
                 color: 'var(--primary-color)'
               }}>
-                {participant.callSign}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>{participant.callSign}</span>
+                  <a
+                    href={`https://www.qrz.com/db/${participant.callSign}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`Voir ${participant.callSign} sur QRZ.com`}
+                    style={{
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '1px 4px',
+                      borderRadius: '3px',
+                      fontSize: '0.7rem',
+                      fontWeight: '500',
+                      backgroundColor: 'var(--primary-color)',
+                      color: 'white',
+                      transition: 'all 0.2s ease',
+                      opacity: 0.8
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '0.8';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    QRZ
+                  </a>
+                </div>
               </td>
               <td style={{ padding: '12px' }}>
                 {participant.isLoadingQrz ? (

@@ -89,15 +89,44 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
           🗑️
         </button>
       )}
-        <div className="participant-info">
-        <div style={{ 
+        <div className="participant-info">        <div style={{ 
           display: 'flex', 
           alignItems: 'flex-start', 
           gap: '12px', 
           marginBottom: '8px' 
         }}>
           <div style={{ flex: 1 }}>
-            <h4 style={{ margin: 0, marginBottom: '4px' }}>{participant.callSign}</h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <h4 style={{ margin: 0 }}>{participant.callSign}</h4>              <a
+                href={`https://www.qrz.com/db/${participant.callSign}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Voir ${participant.callSign} sur QRZ.com`}
+                style={{
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  fontSize: '0.75rem',
+                  fontWeight: '500',
+                  backgroundColor: 'var(--primary-color)',
+                  color: 'white',
+                  transition: 'all 0.2s ease',
+                  opacity: 0.8
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '0.8';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                QRZ
+              </a>
+            </div>
             {isLoadingQrz ? (
               <div style={{ 
                 fontSize: '0.875rem', 
