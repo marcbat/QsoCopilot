@@ -907,11 +907,8 @@ body {
   transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   cursor: grab;
   position: relative;
-  flex: 0 0 auto;
-  width: calc(25% - 0.75rem); /* 4 cartes par ligne avec gap */
-  min-width: 280px; /* Largeur minimale pour éviter les cartes trop petites */
-  max-width: 320px; /* Largeur maximale pour éviter les cartes trop larges */
-  align-self: flex-start; /* Force l'alignement en haut */
+  width: 100%; /* Prend toute la largeur de la cellule de grille */
+  align-self: start; /* Aligne en haut de la cellule */
 }
 
 /* Normalisation des cartes participants à l'intérieur du wrapper draggable */
@@ -953,7 +950,7 @@ body {
 .participants-grid {
   min-height: 120px;
   position: relative;
-  padding: 1rem;
+  padding: 0; /* Suppression du padding pour aligner avec la cellule d'info */
   border-radius: var(--border-radius);
   transition: background-color 0.2s ease, border 0.2s ease;
   width: 100%;
@@ -962,6 +959,7 @@ body {
 .participants-grid.drag-active {
   background-color: rgba(37, 99, 235, 0.05);
   border: 2px dashed var(--primary-color);
+  padding: 0.5rem; /* Padding seulement quand le drag est actif */
 }
 
 /* Message d'information pendant le réordonnancement */
@@ -983,29 +981,7 @@ body {
   font-size: 1.1em;
 }
 
-/* Amélioration du feedback visuel pour les cartes participants */
-.draggable-participant-card::before {
-  content: "";
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  width: 20px;
-  height: 20px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 9l4-4 4 4m0 6l-4 4-4-4' /%3E%3C/svg%3E");
-  background-size: contain;
-  opacity: 0.3;
-  z-index: 5;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-
-.draggable-participant-card:hover::before {
-  opacity: 0.7;
-}
-
-.draggable-participant-card.dragging::before {
-  display: none;
-}
+/* Le feedback visuel est géré par le curseur et les animations */
 
 /* Animation pour les transitions lors du drag and drop */
 .draggable-participant-card:not(.dragging) {
@@ -1014,34 +990,28 @@ body {
 
 /* Responsive pour le drag and drop */
 @media (max-width: 1400px) {
-  .draggable-participant-card {
-    width: calc(33.333% - 0.67rem); /* 3 cartes par ligne */
+  .participants-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important; /* 3 cartes par ligne */
   }
 }
 
 @media (max-width: 1024px) {
-  .draggable-participant-card {
-    width: calc(50% - 0.5rem); /* 2 cartes par ligne */
+  .participants-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)) !important; /* 2 cartes par ligne */
   }
 }
 
 @media (max-width: 768px) {
+  .participants-grid {
+    grid-template-columns: 1fr !important; /* 1 carte par ligne sur mobile */
+  }
+  
   .draggable-participant-card {
-    width: 100%; /* 1 carte par ligne sur mobile */
     cursor: pointer;
-    min-width: auto;
-    max-width: none;
   }
   
   .draggable-participant-card:active {
     cursor: pointer;
-  }
-  
-  .draggable-participant-card::before {
-    width: 16px;
-    height: 16px;
-    top: 0.5rem;
-    right: 0.5rem;
   }
 }
 
@@ -1049,9 +1019,5 @@ body {
 @media (hover: none) and (pointer: coarse) {
   .draggable-participant-card {
     cursor: default;
-  }
-  
-  .draggable-participant-card::before {
-    opacity: 0.6;
   }
 }

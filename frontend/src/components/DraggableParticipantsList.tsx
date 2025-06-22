@@ -48,8 +48,10 @@ const DraggableParticipantsList: React.FC<DraggableParticipantsListProps> = ({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
   // Trier les participants par ordre pour l'affichage
   const sortedParticipants = [...participants].sort((a, b) => a.order - b.order);
+
   const handleDragStart = (_event: DragStartEvent) => {
     setIsDragActive(true);
   };
@@ -86,24 +88,25 @@ const DraggableParticipantsList: React.FC<DraggableParticipantsListProps> = ({
           fontSize: '0.875rem',
           border: '1px solid var(--info-border, #81d4fa)'
         }}>
-          <strong>Réorganisation en cours...</strong> Les participants seront réorganisés automatiquement.        </div>
+          <strong>Réorganisation en cours...</strong> Les participants seront réorganisés automatiquement.
+        </div>
       )}
       
       {!isReordering && sortedParticipants.length > 1 && (
         <div className="drag-help-info" style={{
           background: 'var(--background-color)',
           color: 'var(--text-secondary)',
-          padding: '0.5rem 0.75rem',
+          padding: '0.75rem',
           borderRadius: '4px',
           marginBottom: '1rem',
-          fontSize: '0.8rem',
+          fontSize: '0.85rem',
           border: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem'
         }}>
-          <span>💡</span>
-          <span>Glissez-déposez les cartes pour réorganiser l'ordre des participants</span>
+          <span>🔄</span>
+          <span>Survolez une carte participant et glissez-déposez pour réorganiser l'ordre</span>
         </div>
       )}
       
@@ -117,14 +120,13 @@ const DraggableParticipantsList: React.FC<DraggableParticipantsListProps> = ({
         <SortableContext
           items={sortedParticipants.map(p => p.callSign)}
           strategy={rectSortingStrategy}
-        >          <div className={`participants-grid ${isDragActive ? 'drag-active' : ''}`} style={{
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
+        >
+          <div className={`participants-grid ${isDragActive ? 'drag-active' : ''}`} style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
             gap: '1rem',
-            alignItems: 'flex-start', /* Aligne toutes les cartes en haut */
-            alignContent: 'flex-start', /* Aligne les lignes en haut */
-            justifyContent: 'flex-start', /* Aligne les cartes à gauche */
+            alignItems: 'start',
+            width: '100%',
           }}>
             {sortedParticipants.map((participant) => (
               <DraggableParticipantCard
