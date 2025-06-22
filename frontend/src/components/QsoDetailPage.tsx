@@ -4,9 +4,9 @@ import { QsoAggregateDto, ParticipantDto, CreateParticipantRequest } from '../ty
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
-import ParticipantCard from './ParticipantCard';
 import ParticipantTable from './ParticipantTable';
 import ParticipantMap from './ParticipantMap';
+import DraggableParticipantsList from './DraggableParticipantsList';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -20,6 +20,7 @@ const QsoDetailPage: React.FC = () => {
     callSign: ''
   });
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   
   // Utiliser le hook de messages avec auto-hide
   const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
@@ -85,7 +86,6 @@ const QsoDetailPage: React.FC = () => {
       setIsAddingParticipant(false);
     }
   };
-
   const handleRemoveParticipant = async (callSign: string) => {
     if (!qso) return;
     
@@ -105,6 +105,44 @@ const QsoDetailPage: React.FC = () => {
     } catch (err: any) {
       console.error('Erreur lors de la suppression du participant:', err);
       setErrorMessage(extractErrorMessage(err, 'Impossible de supprimer le participant'));
+    }
+  };
+  const handleReorderParticipants = async (reorderedParticipants: ParticipantDto[]) => {
+    if (!qso) return;
+
+    try {
+      setIsReordering(true);
+      setErrorMessage(null);
+      setSuccessMessage(null);
+
+      // Préparer la requête de réordonnancement
+      const newOrders: { [callSign: string]: number } = {};
+      reorderedParticipants.forEach(participant => {
+        newOrders[participant.callSign] = participant.order;
+      });
+
+      const reorderRequest = { newOrders };
+
+      await qsoApiService.reorderParticipants(qso.id, reorderRequest);
+      
+      // Mettre à jour l'état local immédiatement pour une meilleure expérience utilisateur
+      setQso(prevQso => ({
+        ...prevQso!,
+        participants: reorderedParticipants
+      }));
+
+      setSuccessMessage('Ordre des participants mis à jour avec succès');
+      
+      // Optionnel : Recharger les données pour s'assurer de la cohérence
+      // await loadQso();
+    } catch (err: any) {
+      console.error('Erreur lors du réordonnancement des participants:', err);
+      setErrorMessage(extractErrorMessage(err, 'Impossible de réorganiser les participants'));
+      
+      // En cas d'erreur, recharger les données pour restaurer l'état précédent
+      await loadQso();
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -305,17 +343,14 @@ const QsoDetailPage: React.FC = () => {
             {qso.participants && qso.participants.length > 0 ? (
               <div className="tab-content">
                 {activeTab === 'details' ? (
-                  <div className="participants-list">
-                    {/* Affichage détaillé avec cartes */}
-                    {qso.participants.map((participant: ParticipantDto, index: number) => (
-                      <ParticipantCard
-                        key={index}
-                        participant={participant}
-                        onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
-                        showRemoveButton={isAuthenticated}
-                      />
-                    ))}
-                  </div>
+                  /* Affichage détaillé avec cartes et drag and drop */
+                  <DraggableParticipantsList
+                    participants={qso.participants}
+                    onReorder={handleReorderParticipants}
+                    onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
+                    showRemoveButton={isAuthenticated}
+                    isReordering={isReordering}
+                  />
                 ) : activeTab === 'table' ? (
                   /* Affichage en table */
                   <ParticipantTable

@@ -895,3 +895,141 @@ body {
   height: 24px;
   animation: spin 1s linear infinite;
 }
+
+/* Styles pour le drag and drop des participants */
+.draggable-participants-list {
+  position: relative;
+}
+
+.draggable-participant-card {
+  user-select: none;
+  touch-action: none;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  cursor: grab;
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.draggable-participant-card:active {
+  cursor: grabbing;
+}
+
+.draggable-participant-card.dragging {
+  opacity: 0.6;
+  transform: scale(1.02);
+  z-index: 1000;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border: 2px dashed var(--primary-color);
+  border-radius: var(--border-radius);
+}
+
+.draggable-participant-card:hover:not(.dragging) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Indicateur de zone de drop */
+.drop-indicator {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Zone de drop active */
+.participants-grid {
+  min-height: 100px;
+  position: relative;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s ease, border 0.2s ease;
+}
+
+.participants-grid.drag-active {
+  background-color: rgba(37, 99, 235, 0.05);
+  border: 2px dashed var(--primary-color);
+}
+
+/* Message d'information pendant le réordonnancement */
+.reordering-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--border-radius);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reordering-info::before {
+  content: "ℹ️";
+  font-size: 1.1em;
+}
+
+/* Amélioration du feedback visuel pour les cartes participants */
+.draggable-participant-card::before {
+  content: "";
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 20px;
+  height: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 9l4-4 4 4m0 6l-4 4-4-4' /%3E%3C/svg%3E");
+  background-size: contain;
+  opacity: 0.3;
+  z-index: 5;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.draggable-participant-card:hover::before {
+  opacity: 0.7;
+}
+
+.draggable-participant-card.dragging::before {
+  display: none;
+}
+
+/* Espacement entre les éléments pour faciliter le drop */
+.draggable-participant-card + .draggable-participant-card {
+  margin-top: 0.5rem;
+}
+
+/* Animation pour les transitions lors du drag and drop */
+.draggable-participant-card:not(.dragging) {
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease, margin 0.2s ease;
+}
+
+/* Responsive pour le drag and drop */
+@media (max-width: 768px) {
+  .draggable-participant-card {
+    cursor: pointer;
+  }
+  
+  .draggable-participant-card:active {
+    cursor: pointer;
+  }
+  
+  .draggable-participant-card::before {
+    width: 16px;
+    height: 16px;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+}
+
+/* Support pour les écrans tactiles */
+@media (hover: none) and (pointer: coarse) {
+  .draggable-participant-card {
+    cursor: default;
+  }
+  
+  .draggable-participant-card::before {
+    opacity: 0.6;
+  }
+}

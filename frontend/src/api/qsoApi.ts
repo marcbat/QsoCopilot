@@ -5,6 +5,7 @@ import {
   CreateQsoRequest, 
   UpdateQsoRequest,
   CreateParticipantRequest,
+  ReorderParticipantsRequest,
   LoginRequest,
   LoginByEmailRequest,
   RegisterRequest,
@@ -80,9 +81,12 @@ export const qsoApiService = {
     );
     return response.data;
   },
-
   async removeParticipant(qsoId: string, callSign: string): Promise<void> {
     await apiClient.delete(`/QsoAggregate/${qsoId}/participants/${callSign}`);
+  },
+
+  async reorderParticipants(qsoId: string, reorderRequest: ReorderParticipantsRequest): Promise<void> {
+    await apiClient.put(`/QsoAggregate/${qsoId}/participants/reorder`, reorderRequest);
   },
 
   async searchQsoByName(name: string): Promise<QsoAggregateDto[]> {

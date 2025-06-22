@@ -49,6 +49,9 @@ export interface CreateParticipantRequest {
   location?: string;
   signalReport?: string;
   notes?: string;
+  qth?: string;
+  rstSent?: string;
+  rstReceived?: string;
 }
 
 export interface AddParticipantRequest {
@@ -57,6 +60,10 @@ export interface AddParticipantRequest {
   qth?: string;
   rstSent?: string;
   rstReceived?: string;
+}
+
+export interface ReorderParticipantsRequest {
+  newOrders: { [callSign: string]: number };
 }
 
 // Types pour l'authentification
