@@ -1,0 +1,13 @@
+﻿{
+  Status: 400 Bad Request,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      errors: [
+        Les participants suivants n'existent pas : F4XXX
+      ]
+    }
+  }
+}
