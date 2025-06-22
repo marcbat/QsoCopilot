@@ -16,16 +16,21 @@ public class QsoAggregateRepository : IQsoAggregateRepository
     {
         _eventRepository = eventRepository;
         _projectionRepository = projectionRepository;
-    }
-
-    public async Task<Validation<Error, QsoAggregate>> GetByIdAsync(Guid id)
+    }    public async Task<Validation<Error, QsoAggregate>> GetByIdAsync(Guid id)
     {
         try
         {
             var eventsResult = await _eventRepository.GetAsync(id);
             
             return eventsResult.Match(
-                events => QsoAggregate.Create(events),
+                events => 
+                {
+                    if (!events.Any())
+                    {
+                        return Error.New($"Aucun QSO trouvé avec l'ID {id}.");
+                    }
+                    return QsoAggregate.Create(events);
+                },
                 errors => Validation<Error, QsoAggregate>.Fail(errors)
             );
         }

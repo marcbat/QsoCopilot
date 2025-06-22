@@ -87,14 +87,13 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors de la suppression du participant");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
-    }
-
-    [HttpPut("{aggregateId:guid}/participants/reorder")]
+    }    [HttpPut("{aggregateId:guid}/participants/reorder")]
+    [Authorize]
     public async Task<ActionResult> ReorderParticipants(Guid aggregateId, [FromBody] ReorderParticipantsRequest request)
     {
         try
         {
-            var command = new ReorderParticipantsCommand(aggregateId, request.NewOrders);
+            var command = new ReorderParticipantsCommand(aggregateId, request.NewOrders, User);
             var result = await _mediator.Send(command);
 
             return result.Match<ActionResult>(
