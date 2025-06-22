@@ -895,3 +895,129 @@ body {
   height: 24px;
   animation: spin 1s linear infinite;
 }
+
+/* Styles pour le drag and drop des participants */
+.draggable-participants-list {
+  position: relative;
+}
+
+.draggable-participant-card {
+  user-select: none;
+  touch-action: none;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  cursor: grab;
+  position: relative;
+  width: 100%; /* Prend toute la largeur de la cellule de grille */
+  align-self: start; /* Aligne en haut de la cellule */
+}
+
+/* Normalisation des cartes participants à l'intérieur du wrapper draggable */
+.draggable-participant-card .participant-card {
+  margin: 0; /* Supprime les marges qui pourraient causer des décalages */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.draggable-participant-card:active {
+  cursor: grabbing;
+}
+
+.draggable-participant-card.dragging {
+  opacity: 0.6;
+  transform: scale(1.02);
+  z-index: 1000;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  border: 2px dashed var(--primary-color);
+  border-radius: var(--border-radius);
+}
+
+.draggable-participant-card:hover:not(.dragging) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Indicateur de zone de drop */
+.drop-indicator {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Zone de drop active */
+.participants-grid {
+  min-height: 120px;
+  position: relative;
+  padding: 0; /* Suppression du padding pour aligner avec la cellule d'info */
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s ease, border 0.2s ease;
+  width: 100%;
+}
+
+.participants-grid.drag-active {
+  background-color: rgba(37, 99, 235, 0.05);
+  border: 2px dashed var(--primary-color);
+  padding: 0.5rem; /* Padding seulement quand le drag est actif */
+}
+
+/* Message d'information pendant le réordonnancement */
+.reordering-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--border-radius);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reordering-info::before {
+  content: "ℹ️";
+  font-size: 1.1em;
+}
+
+/* Le feedback visuel est géré par le curseur et les animations */
+
+/* Animation pour les transitions lors du drag and drop */
+.draggable-participant-card:not(.dragging) {
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Responsive pour le drag and drop */
+@media (max-width: 1400px) {
+  .participants-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important; /* 3 cartes par ligne */
+  }
+}
+
+@media (max-width: 1024px) {
+  .participants-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)) !important; /* 2 cartes par ligne */
+  }
+}
+
+@media (max-width: 768px) {
+  .participants-grid {
+    grid-template-columns: 1fr !important; /* 1 carte par ligne sur mobile */
+  }
+  
+  .draggable-participant-card {
+    cursor: pointer;
+  }
+  
+  .draggable-participant-card:active {
+    cursor: pointer;
+  }
+}
+
+/* Support pour les écrans tactiles */
+@media (hover: none) and (pointer: coarse) {
+  .draggable-participant-card {
+    cursor: default;
+  }
+}
