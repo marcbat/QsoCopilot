@@ -5,6 +5,7 @@ import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
 import ParticipantCard from './ParticipantCard';
+import ParticipantTable from './ParticipantTable';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -13,7 +14,7 @@ const QsoDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();  const [qso, setQso] = useState<QsoAggregateDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [activeTab, setActiveTab] = useState<'details' | 'table'>('details');
   const [newParticipant, setNewParticipant] = useState({
     callSign: ''
   });
@@ -214,7 +215,8 @@ const QsoDetailPage: React.FC = () => {
             {isAuthenticated && (
               <div className="quick-add-participant" style={{ marginBottom: '1rem' }}>
                 <form onSubmit={handleAddParticipant} className="quick-participant-form">
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>                    <input
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
                       type="text"
                       name="callSign"
                       value={newParticipant.callSign}
@@ -235,17 +237,77 @@ const QsoDetailPage: React.FC = () => {
                   </div>
                 </form>
               </div>
-            )}            {qso.participants && qso.participants.length > 0 ? (
-              <div className="participants-list">
-                {/* Affichage détaillé uniquement */}
-                {qso.participants.map((participant: ParticipantDto, index: number) => (
-                  <ParticipantCard
-                    key={index}
-                    participant={participant}
+            )}
+
+            {/* Onglets */}
+            <div className="tabs-container" style={{ marginBottom: '1rem' }}>
+              <div className="tabs-header" style={{ 
+                display: 'flex', 
+                borderBottom: '2px solid var(--border-color)',
+                marginBottom: '1rem'
+              }}>
+                <button
+                  className={`tab-button ${activeTab === 'details' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('details')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: activeTab === 'details' ? '600' : '400',
+                    color: activeTab === 'details' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    borderBottom: activeTab === 'details' ? '2px solid var(--primary-color)' : '2px solid transparent',
+                    marginBottom: '-2px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Détails
+                </button>
+                <button
+                  className={`tab-button ${activeTab === 'table' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('table')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: activeTab === 'table' ? '600' : '400',
+                    color: activeTab === 'table' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    borderBottom: activeTab === 'table' ? '2px solid var(--primary-color)' : '2px solid transparent',
+                    marginBottom: '-2px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Table
+                </button>
+              </div>
+            </div>
+
+            {/* Contenu des onglets */}
+            {qso.participants && qso.participants.length > 0 ? (
+              <div className="tab-content">
+                {activeTab === 'details' ? (
+                  <div className="participants-list">
+                    {/* Affichage détaillé avec cartes */}
+                    {qso.participants.map((participant: ParticipantDto, index: number) => (
+                      <ParticipantCard
+                        key={index}
+                        participant={participant}
+                        onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
+                        showRemoveButton={isAuthenticated}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  /* Affichage en table */
+                  <ParticipantTable
+                    participants={qso.participants}
                     onRemove={isAuthenticated ? handleRemoveParticipant : undefined}
                     showRemoveButton={isAuthenticated}
                   />
-                ))}
+                )}
               </div>
             ) : (
               <div className="no-participants">
