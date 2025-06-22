@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
 import ParticipantTable from './ParticipantTable';
 import ParticipantMap from './ParticipantMap';
+import ParticipantCard from './ParticipantCard';
 import DraggableParticipantsList from './DraggableParticipantsList';
 import { canUserReorderParticipants, canUserModifyQso } from '../utils/authorizationUtils';
 // @ts-ignore - Temporary ignore for build
@@ -377,21 +378,22 @@ const QsoDetailPage: React.FC = () => {
                       onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
                       showRemoveButton={canUserModifyQso(user, qso)}
                       isReordering={isReordering}
-                    />
-                  ) : (
+                    />                  ) : (
                     /* Affichage des cartes sans drag and drop pour les non-modérateurs */
-                    <div className="participants-grid">
+                    <div className="participants-grid" style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                      gap: '1rem',
+                      alignItems: 'stretch',
+                      width: '100%'
+                    }}>
                       {qso.participants.map((participant) => (
-                        <div key={participant.callSign} className="participant-card">
-                          <h3>{participant.callSign}</h3>
-                          {participant.name && <p><strong>Nom:</strong> {participant.name}</p>}
-                          {participant.qth && <p><strong>QTH:</strong> {participant.qth}</p>}
-                          {participant.rstSent && <p><strong>RST Envoyé:</strong> {participant.rstSent}</p>}
-                          {participant.rstReceived && <p><strong>RST Reçu:</strong> {participant.rstReceived}</p>}
-                          {participant.signalReport && <p><strong>Rapport Signal:</strong> {participant.signalReport}</p>}
-                          {participant.location && <p><strong>Localisation:</strong> {participant.location}</p>}
-                          {participant.notes && <p><strong>Notes:</strong> {participant.notes}</p>}
-                        </div>
+                        <ParticipantCard
+                          key={participant.callSign}
+                          participant={participant}
+                          onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
+                          showRemoveButton={canUserModifyQso(user, qso)}
+                        />
                       ))}
                     </div>
                   )
