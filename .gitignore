@@ -123,6 +123,9 @@ node_modules/
 # vuepress build output
 .vuepress/dist
 
+# Vite build output
+dist/
+
 # Serverless directories
 .serverless/
 
