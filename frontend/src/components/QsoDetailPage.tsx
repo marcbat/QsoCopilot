@@ -16,8 +16,7 @@ const QsoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();const [qso, setQso] = useState<QsoAggregateDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'details' | 'table' | 'map'>('details');
+  const [isLoading, setIsLoading] = useState(true);  const [activeTab, setActiveTab] = useState<'details' | 'table' | 'map'>('details');
   const [newParticipant, setNewParticipant] = useState({
     callSign: ''
   });
@@ -26,7 +25,9 @@ const QsoDetailPage: React.FC = () => {
   
   // Utiliser le hook de messages avec auto-hide
   const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
-  useEffect(() => {
+
+  // Variable pour déterminer si les onglets Table et Carte doivent être désactivés
+  const shouldDisableQrzTabs = !canUserFetchQrzInfo(user);  useEffect(() => {
     if (!id) {
       setErrorMessage('ID du QSO manquant');
       setIsLoading(false);
@@ -35,6 +36,13 @@ const QsoDetailPage: React.FC = () => {
 
     loadQso();
   }, [id]);
+
+  // Effet pour forcer le retour à l'onglet "détails" si les onglets QRZ sont désactivés
+  useEffect(() => {
+    if (shouldDisableQrzTabs && (activeTab === 'table' || activeTab === 'map')) {
+      setActiveTab('details');
+    }
+  }, [shouldDisableQrzTabs, activeTab]);
   const loadQso = async () => {
     try {
       setIsLoading(true);      setErrorMessage(null);
@@ -165,25 +173,32 @@ const QsoDetailPage: React.FC = () => {
 
   const handleBack = () => {
     navigate('/');
-  };
-
-  // Fonction pour générer le message informatif concernant les informations QRZ
+  };  // Fonction pour générer le message informatif concernant les informations QRZ
   const getQrzInfoMessage = () => {
     if (!isAuthenticated) {
       return {
         type: 'info',
-        message: 'ℹ️ Pour afficher les détails complets des participants (nom, localisation, etc.), veuillez vous connecter et configurer vos identifiants QRZ.com dans votre profil.'
+        message: 'ℹ️ Pour afficher les détails complets des participants (nom, localisation, etc.) et accéder aux onglets "Table" et "Carte", veuillez vous connecter et configurer vos identifiants QRZ.com dans votre profil.'
       };
     }
     
     if (!canUserFetchQrzInfo(user)) {
       return {
         type: 'warning', 
-        message: '⚠️ Pour afficher les détails complets des participants, vous devez configurer vos identifiants QRZ.com dans votre profil.'
+        message: '⚠️ Pour afficher les détails complets des participants et accéder aux onglets "Table" et "Carte", vous devez configurer vos identifiants QRZ.com dans votre profil.'
       };
     }
     
     return null;
+  };
+
+  // Fonction pour gérer le changement d'onglet avec validation
+  const handleTabChange = (tab: 'details' | 'table' | 'map') => {
+    if ((tab === 'table' || tab === 'map') && shouldDisableQrzTabs) {
+      // Ne pas permettre de changer vers un onglet désactivé
+      return;
+    }
+    setActiveTab(tab);
   };
 
   if (isLoading) {
@@ -350,10 +365,9 @@ const QsoDetailPage: React.FC = () => {
                 display: 'flex', 
                 borderBottom: '2px solid var(--border-color)',
                 marginBottom: '1rem'
-              }}>
-                <button
+              }}>                <button
                   className={`tab-button ${activeTab === 'details' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('details')}
+                  onClick={() => handleTabChange('details')}
                   style={{
                     padding: '0.75rem 1.5rem',
                     border: 'none',
@@ -368,38 +382,45 @@ const QsoDetailPage: React.FC = () => {
                   }}
                 >
                   Détails
-                </button>                <button
+                </button>
+                <button
                   className={`tab-button ${activeTab === 'table' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('table')}
+                  onClick={() => handleTabChange('table')}
+                  disabled={shouldDisableQrzTabs}
+                  title={shouldDisableQrzTabs ? 'Connectez-vous et configurez vos identifiants QRZ.com pour accéder à cet onglet' : ''}
                   style={{
                     padding: '0.75rem 1.5rem',
                     border: 'none',
                     background: 'transparent',
-                    cursor: 'pointer',
+                    cursor: shouldDisableQrzTabs ? 'not-allowed' : 'pointer',
                     fontSize: '1rem',
                     fontWeight: activeTab === 'table' ? '600' : '400',
-                    color: activeTab === 'table' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    color: shouldDisableQrzTabs ? 'var(--text-disabled)' : (activeTab === 'table' ? 'var(--primary-color)' : 'var(--text-secondary)'),
                     borderBottom: activeTab === 'table' ? '2px solid var(--primary-color)' : '2px solid transparent',
                     marginBottom: '-2px',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    opacity: shouldDisableQrzTabs ? 0.5 : 1
                   }}
                 >
                   Table
                 </button>
                 <button
                   className={`tab-button ${activeTab === 'map' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('map')}
+                  onClick={() => handleTabChange('map')}
+                  disabled={shouldDisableQrzTabs}
+                  title={shouldDisableQrzTabs ? 'Connectez-vous et configurez vos identifiants QRZ.com pour accéder à cet onglet' : ''}
                   style={{
                     padding: '0.75rem 1.5rem',
                     border: 'none',
                     background: 'transparent',
-                    cursor: 'pointer',
+                    cursor: shouldDisableQrzTabs ? 'not-allowed' : 'pointer',
                     fontSize: '1rem',
                     fontWeight: activeTab === 'map' ? '600' : '400',
-                    color: activeTab === 'map' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    color: shouldDisableQrzTabs ? 'var(--text-disabled)' : (activeTab === 'map' ? 'var(--primary-color)' : 'var(--text-secondary)'),
                     borderBottom: activeTab === 'map' ? '2px solid var(--primary-color)' : '2px solid transparent',
                     marginBottom: '-2px',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    opacity: shouldDisableQrzTabs ? 0.5 : 1
                   }}
                 >
                   Carte
