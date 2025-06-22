@@ -9,13 +9,15 @@ interface DraggableParticipantCardProps {
   onRemove?: (callSign: string) => void;
   showRemoveButton?: boolean;
   isDragging?: boolean;
+  shouldFetchQrzInfo?: boolean;
 }
 
 const DraggableParticipantCard: React.FC<DraggableParticipantCardProps> = ({
   participant,
   onRemove,
   showRemoveButton,
-  isDragging = false
+  isDragging = false,
+  shouldFetchQrzInfo = false
 }) => {
   const {
     attributes,
@@ -55,11 +57,11 @@ const DraggableParticipantCard: React.FC<DraggableParticipantCardProps> = ({
           borderRadius: '2px',
           zIndex: 10
         }} />
-      )}
-      <ParticipantCard
+      )}      <ParticipantCard
         participant={participant}
         onRemove={onRemove}
         showRemoveButton={showRemoveButton}
+        shouldFetchQrzInfo={shouldFetchQrzInfo}
       />
     </div>
   );

@@ -8,7 +8,7 @@ import ParticipantTable from './ParticipantTable';
 import ParticipantMap from './ParticipantMap';
 import ParticipantCard from './ParticipantCard';
 import DraggableParticipantsList from './DraggableParticipantsList';
-import { canUserReorderParticipants, canUserModifyQso } from '../utils/authorizationUtils';
+import { canUserReorderParticipants, canUserModifyQso, canUserFetchQrzInfo } from '../utils/authorizationUtils';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -370,15 +370,15 @@ const QsoDetailPage: React.FC = () => {
             {qso.participants && qso.participants.length > 0 ? (
               <div className="tab-content">
                 {activeTab === 'details' ? (
-                  canUserReorderParticipants(user, qso) ? (
-                    /* Affichage détaillé avec cartes et drag and drop pour le modérateur */
+                  canUserReorderParticipants(user, qso) ? (                    /* Affichage détaillé avec cartes et drag and drop pour le modérateur */
                     <DraggableParticipantsList
                       participants={qso.participants}
                       onReorder={handleReorderParticipants}
                       onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
                       showRemoveButton={canUserModifyQso(user, qso)}
                       isReordering={isReordering}
-                    />                  ) : (
+                      shouldFetchQrzInfo={canUserFetchQrzInfo(user)}
+                    />) : (
                     /* Affichage des cartes sans drag and drop pour les non-modérateurs */
                     <div className="participants-grid" style={{
                       display: 'grid',
@@ -386,13 +386,13 @@ const QsoDetailPage: React.FC = () => {
                       gap: '1rem',
                       alignItems: 'stretch',
                       width: '100%'
-                    }}>
-                      {qso.participants.map((participant) => (
+                    }}>                      {qso.participants.map((participant) => (
                         <ParticipantCard
                           key={participant.callSign}
                           participant={participant}
                           onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
                           showRemoveButton={canUserModifyQso(user, qso)}
+                          shouldFetchQrzInfo={canUserFetchQrzInfo(user)}
                         />
                       ))}
                     </div>

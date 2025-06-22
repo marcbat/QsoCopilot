@@ -6,18 +6,24 @@ interface ParticipantCardProps {
   participant: ParticipantDto;
   onRemove?: (callSign: string) => void;
   showRemoveButton?: boolean;
+  shouldFetchQrzInfo?: boolean;
 }
 
 const ParticipantCard: React.FC<ParticipantCardProps> = ({ 
   participant, 
   onRemove, 
-  showRemoveButton = false 
+  showRemoveButton = false,
+  shouldFetchQrzInfo = false
 }) => {
   const [qrzInfo, setQrzInfo] = useState<ParticipantQrzInfoDto | null>(null);
   const [isLoadingQrz, setIsLoadingQrz] = useState(false);
   const [qrzError, setQrzError] = useState<string | null>(null);
-
   useEffect(() => {
+    // Ne pas chercher les informations QRZ si pas autorisé
+    if (!shouldFetchQrzInfo) {
+      return;
+    }
+
     const fetchQrzInfo = async () => {
       try {
         setIsLoadingQrz(true);
@@ -33,7 +39,7 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
     };
 
     fetchQrzInfo();
-  }, [participant.callSign]);
+  }, [participant.callSign, shouldFetchQrzInfo]);
 
   const getDisplayName = () => {
     if (qrzInfo?.qrzCallsignInfo?.fName) {
