@@ -6,18 +6,24 @@ interface ParticipantCardProps {
   participant: ParticipantDto;
   onRemove?: (callSign: string) => void;
   showRemoveButton?: boolean;
+  shouldFetchQrzInfo?: boolean;
 }
 
 const ParticipantCard: React.FC<ParticipantCardProps> = ({ 
   participant, 
   onRemove, 
-  showRemoveButton = false 
+  showRemoveButton = false,
+  shouldFetchQrzInfo = false
 }) => {
   const [qrzInfo, setQrzInfo] = useState<ParticipantQrzInfoDto | null>(null);
   const [isLoadingQrz, setIsLoadingQrz] = useState(false);
   const [qrzError, setQrzError] = useState<string | null>(null);
-
   useEffect(() => {
+    // Ne pas chercher les informations QRZ si pas autorisé
+    if (!shouldFetchQrzInfo) {
+      return;
+    }
+
     const fetchQrzInfo = async () => {
       try {
         setIsLoadingQrz(true);
@@ -33,7 +39,7 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
     };
 
     fetchQrzInfo();
-  }, [participant.callSign]);
+  }, [participant.callSign, shouldFetchQrzInfo]);
 
   const getDisplayName = () => {
     if (qrzInfo?.qrzCallsignInfo?.fName) {
@@ -99,23 +105,25 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
                 fontStyle: 'italic'
               }}>
                 Chargement des informations...
-              </div>
-            ) : qrzError ? (
-              <div style={{ 
-                fontSize: '0.875rem', 
-                color: 'var(--text-secondary)',
-                fontStyle: 'italic'
-              }}>
-                {getDisplayName() || 'Informations non disponibles'}
-              </div>            ) : (
-              <div>
+              </div>            ) : qrzError ? (
+              getDisplayName() && (
                 <div style={{ 
                   fontSize: '0.875rem', 
                   color: 'var(--text-secondary)',
-                  fontWeight: '500'
+                  fontStyle: 'italic'
                 }}>
-                  {getDisplayName() || 'Nom non disponible'}
+                  {getDisplayName()}
                 </div>
+              )) : (
+              <div>                {getDisplayName() && (
+                  <div style={{ 
+                    fontSize: '0.875rem', 
+                    color: 'var(--text-secondary)',
+                    fontWeight: '500'
+                  }}>
+                    {getDisplayName()}
+                  </div>
+                )}
                 {/* Localisation géographique près du nom */}
                 {qrzInfo?.qrzCallsignInfo && (
                   <div style={{ 

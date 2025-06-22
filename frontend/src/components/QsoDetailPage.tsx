@@ -8,7 +8,7 @@ import ParticipantTable from './ParticipantTable';
 import ParticipantMap from './ParticipantMap';
 import ParticipantCard from './ParticipantCard';
 import DraggableParticipantsList from './DraggableParticipantsList';
-import { canUserReorderParticipants, canUserModifyQso } from '../utils/authorizationUtils';
+import { canUserReorderParticipants, canUserModifyQso, canUserFetchQrzInfo } from '../utils/authorizationUtils';
 // @ts-ignore - Temporary ignore for build
 import { extractErrorMessage } from '../utils/errorUtils';
 
@@ -16,8 +16,7 @@ const QsoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();const [qso, setQso] = useState<QsoAggregateDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'details' | 'table' | 'map'>('details');
+  const [isLoading, setIsLoading] = useState(true);  const [activeTab, setActiveTab] = useState<'details' | 'table' | 'map'>('details');
   const [newParticipant, setNewParticipant] = useState({
     callSign: ''
   });
@@ -26,7 +25,9 @@ const QsoDetailPage: React.FC = () => {
   
   // Utiliser le hook de messages avec auto-hide
   const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
-  useEffect(() => {
+
+  // Variable pour déterminer si les onglets Table et Carte doivent être désactivés
+  const shouldDisableQrzTabs = !canUserFetchQrzInfo(user);  useEffect(() => {
     if (!id) {
       setErrorMessage('ID du QSO manquant');
       setIsLoading(false);
@@ -35,6 +36,13 @@ const QsoDetailPage: React.FC = () => {
 
     loadQso();
   }, [id]);
+
+  // Effet pour forcer le retour à l'onglet "détails" si les onglets QRZ sont désactivés
+  useEffect(() => {
+    if (shouldDisableQrzTabs && (activeTab === 'table' || activeTab === 'map')) {
+      setActiveTab('details');
+    }
+  }, [shouldDisableQrzTabs, activeTab]);
   const loadQso = async () => {
     try {
       setIsLoading(true);      setErrorMessage(null);
@@ -165,6 +173,32 @@ const QsoDetailPage: React.FC = () => {
 
   const handleBack = () => {
     navigate('/');
+  };  // Fonction pour générer le message informatif concernant les informations QRZ
+  const getQrzInfoMessage = () => {
+    if (!isAuthenticated) {
+      return {
+        type: 'info',
+        message: 'ℹ️ Pour afficher les détails complets des participants (nom, localisation, etc.) et accéder aux onglets "Table" et "Carte", veuillez vous connecter et configurer vos identifiants QRZ.com dans votre profil.'
+      };
+    }
+    
+    if (!canUserFetchQrzInfo(user)) {
+      return {
+        type: 'warning', 
+        message: '⚠️ Pour afficher les détails complets des participants et accéder aux onglets "Table" et "Carte", vous devez configurer vos identifiants QRZ.com dans votre profil.'
+      };
+    }
+    
+    return null;
+  };
+
+  // Fonction pour gérer le changement d'onglet avec validation
+  const handleTabChange = (tab: 'details' | 'table' | 'map') => {
+    if ((tab === 'table' || tab === 'map') && shouldDisableQrzTabs) {
+      // Ne pas permettre de changer vers un onglet désactivé
+      return;
+    }
+    setActiveTab(tab);
   };
 
   if (isLoading) {
@@ -253,8 +287,7 @@ const QsoDetailPage: React.FC = () => {
           </div>
         </div>        {/* Section participants */}
         <div className="detail-section">
-          <div className="detail-card">
-            <div style={{ 
+          <div className="detail-card">            <div style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
@@ -262,6 +295,27 @@ const QsoDetailPage: React.FC = () => {
             }}>
               <h3>Participants ({qso.participants?.length || 0})</h3>
             </div>
+
+            {/* Message informatif concernant les informations QRZ */}
+            {(() => {
+              const qrzMessage = getQrzInfoMessage();
+              if (!qrzMessage) return null;
+              
+              return (
+                <div className="qrz-info-message" style={{ 
+                  marginBottom: '1rem', 
+                  padding: '0.75rem',
+                  backgroundColor: qrzMessage.type === 'warning' ? 'var(--alert-warning-bg)' : 'var(--alert-success-bg)',
+                  color: qrzMessage.type === 'warning' ? 'var(--alert-warning-color)' : 'var(--alert-success-color)',
+                  border: `1px solid ${qrzMessage.type === 'warning' ? 'var(--alert-warning-border)' : 'var(--alert-success-border)'}`,
+                  borderRadius: 'var(--border-radius)',
+                  fontSize: '0.875rem'
+                }}>
+                  {qrzMessage.message}
+                </div>
+              );
+            })()}
+
               {/* Formulaire rapide d'ajout de participant */}
             {canUserModifyQso(user, qso) && (
               <div className="quick-add-participant" style={{ marginBottom: '1rem' }}>
@@ -311,10 +365,9 @@ const QsoDetailPage: React.FC = () => {
                 display: 'flex', 
                 borderBottom: '2px solid var(--border-color)',
                 marginBottom: '1rem'
-              }}>
-                <button
+              }}>                <button
                   className={`tab-button ${activeTab === 'details' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('details')}
+                  onClick={() => handleTabChange('details')}
                   style={{
                     padding: '0.75rem 1.5rem',
                     border: 'none',
@@ -329,38 +382,45 @@ const QsoDetailPage: React.FC = () => {
                   }}
                 >
                   Détails
-                </button>                <button
+                </button>
+                <button
                   className={`tab-button ${activeTab === 'table' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('table')}
+                  onClick={() => handleTabChange('table')}
+                  disabled={shouldDisableQrzTabs}
+                  title={shouldDisableQrzTabs ? 'Connectez-vous et configurez vos identifiants QRZ.com pour accéder à cet onglet' : ''}
                   style={{
                     padding: '0.75rem 1.5rem',
                     border: 'none',
                     background: 'transparent',
-                    cursor: 'pointer',
+                    cursor: shouldDisableQrzTabs ? 'not-allowed' : 'pointer',
                     fontSize: '1rem',
                     fontWeight: activeTab === 'table' ? '600' : '400',
-                    color: activeTab === 'table' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    color: shouldDisableQrzTabs ? 'var(--text-disabled)' : (activeTab === 'table' ? 'var(--primary-color)' : 'var(--text-secondary)'),
                     borderBottom: activeTab === 'table' ? '2px solid var(--primary-color)' : '2px solid transparent',
                     marginBottom: '-2px',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    opacity: shouldDisableQrzTabs ? 0.5 : 1
                   }}
                 >
                   Table
                 </button>
                 <button
                   className={`tab-button ${activeTab === 'map' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('map')}
+                  onClick={() => handleTabChange('map')}
+                  disabled={shouldDisableQrzTabs}
+                  title={shouldDisableQrzTabs ? 'Connectez-vous et configurez vos identifiants QRZ.com pour accéder à cet onglet' : ''}
                   style={{
                     padding: '0.75rem 1.5rem',
                     border: 'none',
                     background: 'transparent',
-                    cursor: 'pointer',
+                    cursor: shouldDisableQrzTabs ? 'not-allowed' : 'pointer',
                     fontSize: '1rem',
                     fontWeight: activeTab === 'map' ? '600' : '400',
-                    color: activeTab === 'map' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    color: shouldDisableQrzTabs ? 'var(--text-disabled)' : (activeTab === 'map' ? 'var(--primary-color)' : 'var(--text-secondary)'),
                     borderBottom: activeTab === 'map' ? '2px solid var(--primary-color)' : '2px solid transparent',
                     marginBottom: '-2px',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    opacity: shouldDisableQrzTabs ? 0.5 : 1
                   }}
                 >
                   Carte
@@ -370,15 +430,15 @@ const QsoDetailPage: React.FC = () => {
             {qso.participants && qso.participants.length > 0 ? (
               <div className="tab-content">
                 {activeTab === 'details' ? (
-                  canUserReorderParticipants(user, qso) ? (
-                    /* Affichage détaillé avec cartes et drag and drop pour le modérateur */
+                  canUserReorderParticipants(user, qso) ? (                    /* Affichage détaillé avec cartes et drag and drop pour le modérateur */
                     <DraggableParticipantsList
                       participants={qso.participants}
                       onReorder={handleReorderParticipants}
                       onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
                       showRemoveButton={canUserModifyQso(user, qso)}
                       isReordering={isReordering}
-                    />                  ) : (
+                      shouldFetchQrzInfo={canUserFetchQrzInfo(user)}
+                    />) : (
                     /* Affichage des cartes sans drag and drop pour les non-modérateurs */
                     <div className="participants-grid" style={{
                       display: 'grid',
@@ -386,13 +446,13 @@ const QsoDetailPage: React.FC = () => {
                       gap: '1rem',
                       alignItems: 'stretch',
                       width: '100%'
-                    }}>
-                      {qso.participants.map((participant) => (
+                    }}>                      {qso.participants.map((participant) => (
                         <ParticipantCard
                           key={participant.callSign}
                           participant={participant}
                           onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
                           showRemoveButton={canUserModifyQso(user, qso)}
+                          shouldFetchQrzInfo={canUserFetchQrzInfo(user)}
                         />
                       ))}
                     </div>
@@ -410,12 +470,12 @@ const QsoDetailPage: React.FC = () => {
                     participants={qso.participants}
                   />
                 )}
-              </div>
-            ) : (
+              </div>            ) : (
               <div className="no-participants">
                 <p>Aucun participant ajouté pour ce QSO</p>
               </div>
-            )}</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -26,3 +26,16 @@ export const canUserModifyQso = (user: User | null, qso: QsoAggregateDto | null)
 export const canUserReorderParticipants = (user: User | null, qso: QsoAggregateDto | null): boolean => {
   return isUserModerator(user, qso);
 };
+
+/**
+ * Vérifie si l'utilisateur peut récupérer les informations QRZ
+ * (utilisateur connecté avec des identifiants QRZ configurés)
+ */
+export const canUserFetchQrzInfo = (user: User | null): boolean => {
+  if (!user) {
+    return false;
+  }
+  
+  // Vérifier si l'utilisateur a configuré ses identifiants QRZ
+  return !!(user.qrzUsername);
+};

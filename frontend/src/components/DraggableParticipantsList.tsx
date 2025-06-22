@@ -27,6 +27,7 @@ interface DraggableParticipantsListProps {
   onRemove?: (callSign: string) => void;
   showRemoveButton?: boolean;
   isReordering?: boolean;
+  shouldFetchQrzInfo?: boolean;
 }
 
 const DraggableParticipantsList: React.FC<DraggableParticipantsListProps> = ({
@@ -34,7 +35,8 @@ const DraggableParticipantsList: React.FC<DraggableParticipantsListProps> = ({
   onReorder,
   onRemove,
   showRemoveButton = false,
-  isReordering = false
+  isReordering = false,
+  shouldFetchQrzInfo = false
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   
@@ -126,14 +128,14 @@ const DraggableParticipantsList: React.FC<DraggableParticipantsListProps> = ({
             gap: '1rem',
             alignItems: 'stretch', /* Force toutes les cartes d'une ligne à avoir la même hauteur */
             width: '100%',
-          }}>
-            {sortedParticipants.map((participant) => (
+          }}>            {sortedParticipants.map((participant) => (
               <DraggableParticipantCard
                 key={participant.callSign}
                 participant={participant}
                 onRemove={onRemove}
                 showRemoveButton={showRemoveButton}
                 isDragging={isReordering}
+                shouldFetchQrzInfo={shouldFetchQrzInfo}
               />
             ))}
           </div>
