@@ -167,6 +167,25 @@ const QsoDetailPage: React.FC = () => {
     navigate('/');
   };
 
+  // Fonction pour générer le message informatif concernant les informations QRZ
+  const getQrzInfoMessage = () => {
+    if (!isAuthenticated) {
+      return {
+        type: 'info',
+        message: 'ℹ️ Pour afficher les détails complets des participants (nom, localisation, etc.), veuillez vous connecter et configurer vos identifiants QRZ.com dans votre profil.'
+      };
+    }
+    
+    if (!canUserFetchQrzInfo(user)) {
+      return {
+        type: 'warning', 
+        message: '⚠️ Pour afficher les détails complets des participants, vous devez configurer vos identifiants QRZ.com dans votre profil.'
+      };
+    }
+    
+    return null;
+  };
+
   if (isLoading) {
     return (
       <div className="page-container">
@@ -253,8 +272,7 @@ const QsoDetailPage: React.FC = () => {
           </div>
         </div>        {/* Section participants */}
         <div className="detail-section">
-          <div className="detail-card">
-            <div style={{ 
+          <div className="detail-card">            <div style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
@@ -262,6 +280,27 @@ const QsoDetailPage: React.FC = () => {
             }}>
               <h3>Participants ({qso.participants?.length || 0})</h3>
             </div>
+
+            {/* Message informatif concernant les informations QRZ */}
+            {(() => {
+              const qrzMessage = getQrzInfoMessage();
+              if (!qrzMessage) return null;
+              
+              return (
+                <div className="qrz-info-message" style={{ 
+                  marginBottom: '1rem', 
+                  padding: '0.75rem',
+                  backgroundColor: qrzMessage.type === 'warning' ? 'var(--alert-warning-bg)' : 'var(--alert-success-bg)',
+                  color: qrzMessage.type === 'warning' ? 'var(--alert-warning-color)' : 'var(--alert-success-color)',
+                  border: `1px solid ${qrzMessage.type === 'warning' ? 'var(--alert-warning-border)' : 'var(--alert-success-border)'}`,
+                  borderRadius: 'var(--border-radius)',
+                  fontSize: '0.875rem'
+                }}>
+                  {qrzMessage.message}
+                </div>
+              );
+            })()}
+
               {/* Formulaire rapide d'ajout de participant */}
             {canUserModifyQso(user, qso) && (
               <div className="quick-add-participant" style={{ marginBottom: '1rem' }}>
@@ -410,12 +449,12 @@ const QsoDetailPage: React.FC = () => {
                     participants={qso.participants}
                   />
                 )}
-              </div>
-            ) : (
+              </div>            ) : (
               <div className="no-participants">
                 <p>Aucun participant ajouté pour ce QSO</p>
               </div>
-            )}</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -105,23 +105,25 @@ const ParticipantCard: React.FC<ParticipantCardProps> = ({
                 fontStyle: 'italic'
               }}>
                 Chargement des informations...
-              </div>
-            ) : qrzError ? (
-              <div style={{ 
-                fontSize: '0.875rem', 
-                color: 'var(--text-secondary)',
-                fontStyle: 'italic'
-              }}>
-                {getDisplayName() || 'Informations non disponibles'}
-              </div>            ) : (
-              <div>
+              </div>            ) : qrzError ? (
+              getDisplayName() && (
                 <div style={{ 
                   fontSize: '0.875rem', 
                   color: 'var(--text-secondary)',
-                  fontWeight: '500'
+                  fontStyle: 'italic'
                 }}>
-                  {getDisplayName() || 'Nom non disponible'}
+                  {getDisplayName()}
                 </div>
+              )) : (
+              <div>                {getDisplayName() && (
+                  <div style={{ 
+                    fontSize: '0.875rem', 
+                    color: 'var(--text-secondary)',
+                    fontWeight: '500'
+                  }}>
+                    {getDisplayName()}
+                  </div>
+                )}
                 {/* Localisation géographique près du nom */}
                 {qrzInfo?.qrzCallsignInfo && (
                   <div style={{ 
