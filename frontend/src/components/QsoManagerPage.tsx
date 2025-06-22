@@ -14,34 +14,47 @@ const QsoManagerPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   
   // Utiliser le hook de messages avec auto-hide
-  const { errorMessage, setErrorMessage } = useMessages();
-  // Charger la liste des QSO
+  const { errorMessage, setErrorMessage } = useMessages();  // Charger la liste des QSO
   const loadQsos = async () => {
     try {
       setIsLoading(true);
       setErrorMessage(null);
-      const data = await qsoApiService.getAllQsoAggregates();
-      setQsos(data);    } catch (err: any) {
+      const data = await qsoApiService.getAllQsoAggregates();      // Trier les QSO par date de début (plus récents en premier)
+      const sortedQsos = data.sort((a, b) => {
+        const dateA = new Date(a.startDateTime || a.createdDate || '');
+        const dateB = new Date(b.startDateTime || b.createdDate || '');
+        return dateB.getTime() - dateA.getTime(); // Tri décroissant (plus récents en premier)
+      });
+      setQsos(sortedQsos);
+    } catch (err: any) {
       console.error('Erreur lors du chargement des QSO:', err);
       setErrorMessage(extractErrorMessage(err, 'Erreur lors du chargement de la liste des QSO'));
     } finally {
       setIsLoading(false);
     }
   };
-
   // Rechercher les QSO par nom
   const searchQsos = async (term: string) => {
     if (!term.trim()) {
       loadQsos();
       return;
-    }    try {
+    }
+
+    try {
       setIsLoading(true);
       setErrorMessage(null);
       const data = await qsoApiService.searchQsoByName(term);
-      setQsos(data);    } catch (err: any) {
+      // Trier les résultats de recherche par date (plus récents en premier)
+      const sortedQsos = data.sort((a, b) => {
+        const dateA = new Date(a.startDateTime || a.createdDate || '');
+        const dateB = new Date(b.startDateTime || b.createdDate || '');
+        return dateB.getTime() - dateA.getTime(); // Tri décroissant (plus récents en premier)
+      });
+      setQsos(sortedQsos);
+    } catch (err: any) {
       console.error('Erreur lors de la recherche:', err);
       setErrorMessage(extractErrorMessage(err, 'Erreur lors de la recherche'));
-    }finally {
+    } finally {
       setIsLoading(false);
     }
   };
