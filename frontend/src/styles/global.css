@@ -23,11 +23,11 @@
   --alert-warning-bg: #fefce8;
   --alert-warning-color: #a16207;
   --alert-warning-border: #fef08a;
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
+  --spacing-xs: 0.25rem;  --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
+  --input-height: 40px;
 }
 
 /* Thème dark */
@@ -261,6 +261,7 @@ body {
 .form-input,
 .form-select {
   width: 100%;
+  height: var(--input-height);
   padding: var(--spacing-sm);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
@@ -268,6 +269,7 @@ body {
   background-color: var(--surface-color);
   color: var(--text-primary);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .form-input:focus,
@@ -422,6 +424,14 @@ body {
   flex: 1;
   min-width: 150px;
   margin-bottom: 0;
+}
+
+.qso-form-horizontal .form-group .btn {
+  width: 100%;
+  height: var(--input-height, 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Styles pour les nouvelles pages */
