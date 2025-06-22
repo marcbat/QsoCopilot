@@ -908,6 +908,10 @@ body {
   cursor: grab;
   position: relative;
   margin-bottom: 0.5rem;
+  flex: 0 0 auto;
+  width: calc(25% - 0.75rem); /* 4 cartes par ligne avec gap */
+  min-width: 280px; /* Largeur minimale pour éviter les cartes trop petites */
+  max-width: 320px; /* Largeur maximale pour éviter les cartes trop larges */
 }
 
 .draggable-participant-card:active {
@@ -940,11 +944,12 @@ body {
 
 /* Zone de drop active */
 .participants-grid {
-  min-height: 100px;
+  min-height: 120px;
   position: relative;
-  padding: 0.5rem;
+  padding: 1rem;
   border-radius: var(--border-radius);
   transition: background-color 0.2s ease, border 0.2s ease;
+  width: 100%;
 }
 
 .participants-grid.drag-active {
@@ -1006,9 +1011,24 @@ body {
 }
 
 /* Responsive pour le drag and drop */
+@media (max-width: 1400px) {
+  .draggable-participant-card {
+    width: calc(33.333% - 0.67rem); /* 3 cartes par ligne */
+  }
+}
+
+@media (max-width: 1024px) {
+  .draggable-participant-card {
+    width: calc(50% - 0.5rem); /* 2 cartes par ligne */
+  }
+}
+
 @media (max-width: 768px) {
   .draggable-participant-card {
+    width: 100%; /* 1 carte par ligne sur mobile */
     cursor: pointer;
+    min-width: auto;
+    max-width: none;
   }
   
   .draggable-participant-card:active {

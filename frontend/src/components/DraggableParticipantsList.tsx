@@ -119,8 +119,10 @@ const DraggableParticipantsList: React.FC<DraggableParticipantsListProps> = ({
           strategy={rectSortingStrategy}
         >          <div className={`participants-grid ${isDragActive ? 'drag-active' : ''}`} style={{
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
             gap: '1rem',
+            alignItems: 'flex-start',
           }}>
             {sortedParticipants.map((participant) => (
               <DraggableParticipantCard
