@@ -907,11 +907,18 @@ body {
   transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   cursor: grab;
   position: relative;
-  margin-bottom: 0.5rem;
   flex: 0 0 auto;
   width: calc(25% - 0.75rem); /* 4 cartes par ligne avec gap */
   min-width: 280px; /* Largeur minimale pour éviter les cartes trop petites */
   max-width: 320px; /* Largeur maximale pour éviter les cartes trop larges */
+  align-self: flex-start; /* Force l'alignement en haut */
+}
+
+/* Normalisation des cartes participants à l'intérieur du wrapper draggable */
+.draggable-participant-card .participant-card {
+  margin: 0; /* Supprime les marges qui pourraient causer des décalages */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .draggable-participant-card:active {
@@ -1000,14 +1007,9 @@ body {
   display: none;
 }
 
-/* Espacement entre les éléments pour faciliter le drop */
-.draggable-participant-card + .draggable-participant-card {
-  margin-top: 0.5rem;
-}
-
 /* Animation pour les transitions lors du drag and drop */
 .draggable-participant-card:not(.dragging) {
-  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease, margin 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Responsive pour le drag and drop */

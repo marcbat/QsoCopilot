@@ -122,7 +122,9 @@ const DraggableParticipantsList: React.FC<DraggableParticipantsListProps> = ({
             flexDirection: 'row',
             flexWrap: 'wrap',
             gap: '1rem',
-            alignItems: 'flex-start',
+            alignItems: 'flex-start', /* Aligne toutes les cartes en haut */
+            alignContent: 'flex-start', /* Aligne les lignes en haut */
+            justifyContent: 'flex-start', /* Aligne les cartes à gauche */
           }}>
             {sortedParticipants.map((participant) => (
               <DraggableParticipantCard
