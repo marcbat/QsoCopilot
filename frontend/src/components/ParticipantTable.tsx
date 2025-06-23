@@ -65,9 +65,15 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
   const getGrid = (participant: ParticipantWithQrz) => {
     return participant.qrzInfo?.qrzCallsignInfo?.grid || '';
   };
-
   const getState = (participant: ParticipantWithQrz) => {
     return participant.qrzInfo?.qrzCallsignInfo?.state || '';
+  };
+  const getEmail = (participant: ParticipantWithQrz) => {
+    return participant.qrzInfo?.qrzCallsignInfo?.email || '';
+  };
+
+  const getAddr2 = (participant: ParticipantWithQrz) => {
+    return participant.qrzInfo?.qrzCallsignInfo?.addr2 || '';
   };
 
   return (
@@ -98,8 +104,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
               width: '12%'
             }}>
               Indicatif
-            </th>
-            <th style={{ 
+            </th>            <th style={{ 
               padding: '12px', 
               textAlign: 'left', 
               fontWeight: '600',
@@ -115,7 +120,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
               fontSize: '0.875rem',
               width: '15%'
             }}>
-              Localisation
+              Email
             </th>
             <th style={{ 
               padding: '12px', 
@@ -136,31 +141,20 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
               Grille
             </th>
             <th style={{ 
-              padding: '12px', 
-              textAlign: 'left', 
+              padding: '12px',              textAlign: 'left', 
               fontWeight: '600',
               fontSize: '0.875rem',
               width: '12%'
             }}>
               État/Région
-            </th>
-            <th style={{ 
-              padding: '12px', 
-              textAlign: 'left', 
-              fontWeight: '600',
-              fontSize: '0.875rem',
-              width: '10%'
-            }}>
-              Rapport
-            </th>
-            <th style={{ 
+            </th>            <th style={{ 
               padding: '12px', 
               textAlign: 'left', 
               fontWeight: '600',
               fontSize: '0.875rem',
               width: '17%'
             }}>
-              Notes
+              Ville
             </th>
             {showRemoveButton && (
               <th style={{ 
@@ -246,15 +240,24 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                     </span>
                   )
                 )}
-              </td>
-              <td style={{ padding: '12px' }}>
-                {participant.location || (
+              </td>              <td style={{ padding: '12px' }}>
+                {participant.isLoadingQrz ? (
                   <span style={{ 
                     fontStyle: 'italic', 
-                    color: 'var(--text-secondary)' 
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.875rem'
                   }}>
-                    -
+                    ...
                   </span>
+                ) : (
+                  getEmail(participant) || (
+                    <span style={{ 
+                      fontStyle: 'italic', 
+                      color: 'var(--text-secondary)' 
+                    }}>
+                      -
+                    </span>
+                  )
                 )}
               </td>
               <td style={{ padding: '12px' }}>
@@ -307,8 +310,7 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                     ...
                   </span>
                 ) : (
-                  getState(participant) || (
-                    <span style={{ 
+                  getState(participant) || (                    <span style={{ 
                       fontStyle: 'italic', 
                       color: 'var(--text-secondary)' 
                     }}>
@@ -318,33 +320,33 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({
                 )}
               </td>
               <td style={{ padding: '12px' }}>
-                {participant.signalReport || (
+                {participant.isLoadingQrz ? (
                   <span style={{ 
                     fontStyle: 'italic', 
-                    color: 'var(--text-secondary)' 
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.875rem'
                   }}>
-                    -
-                  </span>
-                )}
-              </td>
-              <td style={{ padding: '12px' }}>
-                {participant.notes ? (
-                  <span title={participant.notes} style={{ 
-                    maxWidth: '150px',
-                    display: 'inline-block',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}>
-                    {participant.notes}
+                    ...
                   </span>
                 ) : (
-                  <span style={{ 
-                    fontStyle: 'italic', 
-                    color: 'var(--text-secondary)' 
-                  }}>
-                    -
-                  </span>
+                  getAddr2(participant) ? (
+                    <span title={getAddr2(participant)} style={{ 
+                      maxWidth: '150px',
+                      display: 'inline-block',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {getAddr2(participant)}
+                    </span>
+                  ) : (
+                    <span style={{ 
+                      fontStyle: 'italic', 
+                      color: 'var(--text-secondary)' 
+                    }}>
+                      -
+                    </span>
+                  )
                 )}
               </td>
               {showRemoveButton && onRemove && (
