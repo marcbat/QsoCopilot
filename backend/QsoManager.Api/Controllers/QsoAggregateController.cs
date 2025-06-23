@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QsoManager.Application.Commands.QsoAggregate;
+using QsoManager.Application.Common;
 using QsoManager.Application.DTOs;
 using QsoManager.Application.Queries.QsoAggregate;
 
@@ -126,8 +127,7 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors du déplacement du participant");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });        }
     }    
-    
-    /// <summary>
+      /// <summary>
     /// Récupère tous les QSO Aggregates
     /// </summary>    [HttpGet]
     public async Task<ActionResult<IEnumerable<QsoAggregateDto>>> GetAll()
@@ -145,6 +145,42 @@ public class QsoAggregateController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de la récupération de tous les QSO Aggregates");
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });
+        }
+    }
+
+    /// <summary>
+    /// Récupère tous les QSO Aggregates avec pagination
+    /// </summary>
+    [HttpGet("paginated")]
+    public async Task<ActionResult<PagedResult<QsoAggregateDto>>> GetAllPaginated(
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var pagination = new PaginationParameters 
+            { 
+                PageNumber = pageNumber, 
+                PageSize = pageSize 
+            };
+
+            if (!pagination.IsValid)
+            {
+                return BadRequest(new { Message = "Invalid pagination parameters" });
+            }
+
+            var query = new GetAllQsoAggregatesWithPaginationQuery(pagination, User);
+            var result = await _mediator.Send(query);
+
+            return result.Match<ActionResult<PagedResult<QsoAggregateDto>>>(
+                pagedQsos => Ok(pagedQsos),
+                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la récupération paginée de tous les QSO Aggregates");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
     }    /// <summary>
@@ -210,6 +246,58 @@ public class QsoAggregateController : ControllerBase
     }
 
     /// <summary>
+    /// Recherche les QSO par nom avec pagination
+    /// </summary>
+    [HttpGet("search/paginated")]
+    public async Task<ActionResult<PagedResult<QsoAggregateDto>>> SearchByNamePaginated(
+        [FromQuery] string name,
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return BadRequest(new { Message = "Name parameter is required" });
+            }
+
+            var pagination = new PaginationParameters 
+            { 
+                PageNumber = pageNumber, 
+                PageSize = pageSize 
+            };
+
+            if (!pagination.IsValid)
+            {
+                return BadRequest(new { Message = "Invalid pagination parameters" });
+            }
+
+            _logger.LogInformation("Recherche paginée de QSO avec le terme '{SearchTerm}' (page {PageNumber}, taille {PageSize})", 
+                name, pageNumber, pageSize);
+            
+            var query = new SearchQsoAggregatesByNameWithPaginationQuery(name, pagination, User);
+            var result = await _mediator.Send(query);
+
+            return result.Match<ActionResult<PagedResult<QsoAggregateDto>>>(
+                success => 
+                {
+                    _logger.LogInformation("Controller returning page {PageNumber} of {TotalPages} with {ItemCount} QSO results for term '{SearchTerm}' (total: {TotalCount})", 
+                        success.PageNumber, success.TotalPages, success.Items.Count(), name, success.TotalCount);
+                    return Ok(success);
+                },
+                errors => 
+                {
+                    _logger.LogError("Paginated search failed with errors: {Errors}", string.Join(", ", errors.Select(e => e.Message)));
+                    return StatusCode(500, new { Message = "Erreur lors de la recherche paginée" });
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la recherche paginée des QSO par nom {Name}", name);
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });
+        }
+    }    /// <summary>
     /// Recherche les QSO modérés par l'utilisateur courant
     /// </summary>
     [HttpGet("my-moderated")]
@@ -245,6 +333,62 @@ public class QsoAggregateController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de la recherche des QSO modérés par l'utilisateur courant");
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });
+        }
+    }
+
+    /// <summary>
+    /// Recherche les QSO modérés par l'utilisateur courant avec pagination
+    /// </summary>
+    [HttpGet("my-moderated/paginated")]
+    [Authorize]
+    public async Task<ActionResult<PagedResult<QsoAggregateDto>>> SearchMyModeratedPaginated(
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            // Récupérer l'ID de l'utilisateur courant depuis les claims
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return BadRequest(new { Message = "Unable to identify current user" });
+            }
+
+            var pagination = new PaginationParameters 
+            { 
+                PageNumber = pageNumber, 
+                PageSize = pageSize 
+            };
+
+            if (!pagination.IsValid)
+            {
+                return BadRequest(new { Message = "Invalid pagination parameters" });
+            }
+
+            _logger.LogInformation("Recherche paginée des QSO modérés par l'utilisateur '{UserId}' (page {PageNumber}, taille {PageSize})", 
+                userId, pageNumber, pageSize);
+            
+            var query = new SearchQsoAggregatesByModeratorWithPaginationQuery(userId, pagination, User);
+            var result = await _mediator.Send(query);
+
+            return result.Match<ActionResult<PagedResult<QsoAggregateDto>>>(
+                success => 
+                {
+                    _logger.LogInformation("Controller returning page {PageNumber} of {TotalPages} with {ItemCount} QSO results for moderator '{UserId}' (total: {TotalCount})", 
+                        success.PageNumber, success.TotalPages, success.Items.Count(), userId, success.TotalCount);
+                    return Ok(success);
+                },
+                errors => 
+                {
+                    _logger.LogError("Paginated search by moderator failed with errors: {Errors}", string.Join(", ", errors.Select(e => e.Message)));
+                    return StatusCode(500, new { Message = "Erreur lors de la recherche paginée des QSO modérés" });
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la recherche paginée des QSO modérés par l'utilisateur courant");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
     }[HttpDelete("{aggregateId:guid}")]

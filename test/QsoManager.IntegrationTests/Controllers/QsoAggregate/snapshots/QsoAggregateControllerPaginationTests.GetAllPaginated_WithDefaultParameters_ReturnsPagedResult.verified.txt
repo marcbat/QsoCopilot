@@ -1,0 +1,113 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      items: [
+        {
+          id: Guid_1,
+          name: QSO Test Alpha,
+          description: First test QSO for pagination,
+          moderatorId: Guid_2,
+          frequency: 14.205,
+          participants: [
+            {
+              callSign: F4TEST,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_1,
+          createdDate: DateTimeOffset_1
+        },
+        {
+          id: Guid_3,
+          name: QSO Test Beta,
+          description: Second test QSO for pagination,
+          moderatorId: Guid_2,
+          frequency: 7.04,
+          participants: [
+            {
+              callSign: F4TEST,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_2,
+          createdDate: DateTimeOffset_2
+        },
+        {
+          id: Guid_4,
+          name: QSO Test Gamma,
+          description: Third test QSO for pagination,
+          moderatorId: Guid_2,
+          frequency: 3.58,
+          participants: [
+            {
+              callSign: F4TEST,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_3,
+          createdDate: DateTimeOffset_3
+        },
+        {
+          id: Guid_5,
+          name: Another QSO,
+          description: Fourth test QSO with different name pattern,
+          moderatorId: Guid_2,
+          frequency: 21.205,
+          participants: [
+            {
+              callSign: F4TEST,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4
+        },
+        {
+          id: Guid_6,
+          name: QSO Test Delta,
+          description: Fifth test QSO for pagination,
+          moderatorId: Guid_2,
+          frequency: 28.405,
+          participants: [
+            {
+              callSign: F4TEST,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_5,
+          createdDate: DateTimeOffset_5
+        }
+      ],
+      pageNumber: 1,
+      pageSize: 20,
+      totalCount: 5,
+      totalPages: 1,
+      hasPreviousPage: false,
+      hasNextPage: false
+    }
+  }
+}

@@ -1,5 +1,6 @@
 using LanguageExt;
 using LanguageExt.Common;
+using QsoManager.Application.Common;
 using QsoManager.Application.Projections.Models;
 
 namespace QsoManager.Application.Projections.Interfaces;
@@ -19,4 +20,9 @@ public interface IQsoAggregateProjectionRepository : IProjectionRepository<QsoAg
     Task<Validation<Error, IEnumerable<QsoAggregateProjectionDto>>> SearchByNameAsync(string name, CancellationToken cancellationToken = default);
     Task<Validation<Error, IEnumerable<QsoAggregateProjectionDto>>> SearchByModeratorAsync(Guid moderatorId, CancellationToken cancellationToken = default);
     Task<Validation<Error, bool>> ExistsWithNameAsync(string name, CancellationToken cancellationToken = default);
+    
+    // Méthodes paginées
+    Task<Validation<Error, PagedResult<QsoAggregateProjectionDto>>> GetAllPaginatedAsync(PaginationParameters pagination, CancellationToken cancellationToken = default);
+    Task<Validation<Error, PagedResult<QsoAggregateProjectionDto>>> SearchByNamePaginatedAsync(string name, PaginationParameters pagination, CancellationToken cancellationToken = default);
+    Task<Validation<Error, PagedResult<QsoAggregateProjectionDto>>> SearchByModeratorPaginatedAsync(Guid moderatorId, PaginationParameters pagination, CancellationToken cancellationToken = default);
 }

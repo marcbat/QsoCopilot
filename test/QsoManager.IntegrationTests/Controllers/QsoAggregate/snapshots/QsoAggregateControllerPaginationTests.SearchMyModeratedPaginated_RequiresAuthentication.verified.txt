@@ -1,0 +1,8 @@
+﻿{
+  Version: 1.1,
+  Status: 401 Unauthorized,
+  Headers: {
+    WWW-Authenticate: Bearer
+  },
+  RequestMessage: http://localhost/api/QsoAggregate/my-moderated/paginated
+}
