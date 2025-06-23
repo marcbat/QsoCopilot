@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { CreateQsoRequest } from '../types';
 import { qsoApiService } from '../api';
 import { useMessages } from '../hooks/useMessages';
+import { useToasts } from '../hooks/useToasts';
+import ToastContainer from './ToastContainer';
 import { extractErrorMessage } from '../utils/errorUtils';
 
 interface CreateQsoFormProps {
@@ -15,9 +17,11 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
   });
 
   const [isLoading, setIsLoading] = useState(false);
+    // Utiliser le hook de messages avec auto-hide
+  const { errorMessage, setErrorMessage } = useMessages();
   
-  // Utiliser le hook de messages avec auto-hide
-  const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
+  // Utiliser le hook de toasts pour les notifications de succès
+  const { toasts, removeToast, showSuccess } = useToasts();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -25,16 +29,14 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
       ...prev, 
       [name]: name === 'frequency' ? (value ? parseFloat(value) : 0) : value 
     }));
-  };
-  const handleSubmit = async (e: React.FormEvent) => {
+  };  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
-    setSuccessMessage(null);
 
     try {
       const qsoData = await qsoApiService.createQsoAggregate(formData);
-      setSuccessMessage(`QSO créé avec succès: ${qsoData.name}`);
+      showSuccess(`QSO créé avec succès: ${qsoData.name}`);
       
       // Réinitialiser le formulaire
       setFormData({
@@ -55,9 +57,7 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
   return (
     <div className="create-qso-form">      <div className="card-header">
         <h2 className="card-title">🚀 Créer un nouveau QSO</h2>
-      </div>      
-      {errorMessage && <div className="alert alert-error">{errorMessage}</div>}
-      {successMessage && <div className="alert alert-success">{successMessage}</div>}
+      </div>        {errorMessage && <div className="alert alert-error">{errorMessage}</div>}
 
       <form onSubmit={handleSubmit} className="qso-form-horizontal">
         <div className="form-group">
@@ -110,9 +110,11 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
             disabled={isLoading || !formData.name || !formData.frequency}
           >
             {isLoading ? 'Création...' : 'Créer le QSO'}
-          </button>
-        </div>
+          </button>        </div>
       </form>
+      
+      {/* Container pour les toasts */}
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };

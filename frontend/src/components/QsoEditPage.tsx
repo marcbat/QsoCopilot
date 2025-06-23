@@ -4,6 +4,8 @@ import { QsoAggregateDto, ParticipantDto, UpdateQsoRequest } from '../types';
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
+import { useToasts } from '../hooks/useToasts';
+import ToastContainer from './ToastContainer';
 import { extractErrorMessage } from '../utils/errorUtils';
 
 const QsoEditPage: React.FC = () => {
@@ -14,7 +16,10 @@ const QsoEditPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   
   // Utiliser le hook de messages avec auto-hide
-  const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
+  const { errorMessage, setErrorMessage } = useMessages();
+  
+  // Utiliser le hook de toasts pour les notifications de succès
+  const { toasts, removeToast, showSuccess } = useToasts();
   
   // États pour le formulaire QSO
   const [formData, setFormData] = useState({
@@ -83,10 +88,8 @@ const QsoEditPage: React.FC = () => {
         endDateTime: formData.endDateTime ? new Date(formData.endDateTime).toISOString() : undefined,
         frequency: formData.frequency ? parseFloat(formData.frequency) : undefined,
         mode: formData.mode || undefined
-      };
-
-      await qsoApiService.updateQso(qso.id, updateData);
-      setSuccessMessage('QSO mis à jour avec succès');
+      };      await qsoApiService.updateQso(qso.id, updateData);
+      showSuccess('QSO mis à jour avec succès');
       
       // Recharger les données
       await loadQso();    } catch (err: any) {
@@ -138,14 +141,7 @@ const QsoEditPage: React.FC = () => {
         </button>
       </div>{errorMessage && (
         <div className="error-message" style={{ marginBottom: '1rem' }}>
-          {errorMessage}
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="success-message" style={{ marginBottom: '1rem' }}>
-          {successMessage}
-        </div>
+          {errorMessage}        </div>
       )}
 
       <div className="edit-content">
@@ -250,7 +246,8 @@ const QsoEditPage: React.FC = () => {
               </div>
             </div>          )}
         </div>
-      </div>
+      </div>      {/* Container pour les toasts */}
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };

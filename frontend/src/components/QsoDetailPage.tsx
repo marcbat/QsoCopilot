@@ -4,6 +4,8 @@ import { QsoAggregateDto, ParticipantDto, CreateParticipantRequest } from '../ty
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
+import { useToasts } from '../hooks/useToasts';
+import ToastContainer from './ToastContainer';
 import ParticipantTable from './ParticipantTable';
 import ParticipantMap from './ParticipantMap';
 import ParticipantCard from './ParticipantCard';
@@ -22,9 +24,10 @@ const QsoDetailPage: React.FC = () => {
   });
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
-  
-  // Utiliser le hook de messages avec auto-hide
-  const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
+    // Utiliser le hook de messages avec auto-hide
+  const { errorMessage, setErrorMessage } = useMessages();
+    // Utiliser le hook de toasts pour les notifications
+  const { toasts, removeToast, showSuccess } = useToasts();
 
   // Variable pour déterminer si les onglets Table et Carte doivent être désactivés
   const shouldDisableQrzTabs = !canUserFetchQrzInfo(user);  useEffect(() => {
@@ -75,14 +78,11 @@ const QsoDetailPage: React.FC = () => {
     if (!qso || !newParticipant.callSign.trim()) return;    try {
       setIsAddingParticipant(true);
       setErrorMessage(null);
-      setSuccessMessage(null);
 
       const participantData: CreateParticipantRequest = {
         callSign: newParticipant.callSign
-      };
-
-      await qsoApiService.addParticipant(qso.id, participantData);
-      setSuccessMessage('Participant ajouté avec succès');
+      };      await qsoApiService.addParticipant(qso.id, participantData);
+      showSuccess('Participant ajouté avec succès');
 
       // Réinitialiser le formulaire de participant
       setNewParticipant({ callSign: '' });
@@ -100,14 +100,11 @@ const QsoDetailPage: React.FC = () => {
     
     if (!confirm(`Êtes-vous sûr de vouloir supprimer ${callSign} du QSO ?`)) {
       return;
-    }
-
-    try {
+    }    try {
       setErrorMessage(null);
-      setSuccessMessage(null);
 
       await qsoApiService.removeParticipant(qso.id, callSign);
-      setSuccessMessage(`Participant ${callSign} supprimé avec succès`);
+      showSuccess(`Participant ${callSign} supprimé avec succès`);
 
       // Recharger les données
       await loadQso();
@@ -122,12 +119,9 @@ const QsoDetailPage: React.FC = () => {
     if (!canUserReorderParticipants(user, qso)) {
       setErrorMessage('Seul le modérateur du QSO peut réordonner les participants.');
       return;
-    }
-
-    try {
+    }    try {
       setIsReordering(true);
       setErrorMessage(null);
-      setSuccessMessage(null);
 
       // Préparer la requête de réordonnancement
       const newOrders: { [callSign: string]: number } = {};
@@ -138,14 +132,13 @@ const QsoDetailPage: React.FC = () => {
       const reorderRequest = { newOrders };
 
       await qsoApiService.reorderParticipants(qso.id, reorderRequest);
-      
-      // Mettre à jour l'état local immédiatement pour une meilleure expérience utilisateur
+        // Mettre à jour l'état local immédiatement pour une meilleure expérience utilisateur
       setQso(prevQso => ({
         ...prevQso!,
         participants: reorderedParticipants
       }));
 
-      setSuccessMessage('Ordre des participants mis à jour avec succès');
+      showSuccess('Ordre des participants mis à jour avec succès');
       
       // Optionnel : Recharger les données pour s'assurer de la cohérence
       // await loadQso();
@@ -240,13 +233,7 @@ const QsoDetailPage: React.FC = () => {
         <div className="error-message" style={{ marginBottom: '1rem' }}>
           {errorMessage}
         </div>
-      )}
-
-      {successMessage && (
-        <div className="success-message" style={{ marginBottom: '1rem' }}>
-          {successMessage}
-        </div>
-      )}      <div className="qso-detail-content">
+      )}<div className="qso-detail-content">
         <div className="detail-section">
           <div className="detail-card">            <h2>
               {qso.name}
@@ -475,9 +462,11 @@ const QsoDetailPage: React.FC = () => {
                 <p>Aucun participant ajouté pour ce QSO</p>
               </div>
             )}
-          </div>
-        </div>
+          </div>        </div>
       </div>
+      
+      {/* Container pour les toasts */}
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };

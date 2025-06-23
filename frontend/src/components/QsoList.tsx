@@ -4,6 +4,8 @@ import { QsoAggregateDto } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { qsoApiService } from '../api/qsoApi';
 import { extractErrorMessage } from '../utils/errorUtils';
+import { useToasts } from '../hooks/useToasts';
+import ToastContainer from './ToastContainer';
 
 interface QsoListProps {
   qsos: QsoAggregateDto[];
@@ -16,6 +18,9 @@ const QsoList: React.FC<QsoListProps> = ({ qsos, isLoading, onRefresh }) => {
   const navigate = useNavigate();
   const [deletingQsoId, setDeletingQsoId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  
+  // Utiliser le hook de toasts pour les notifications
+  const { toasts, removeToast, showSuccess, showError } = useToasts();
 
   if (isLoading) {
     return (
@@ -67,14 +72,15 @@ Cette action est irréversible et supprimera également tous les participants as
     }
 
     setDeletingQsoId(qso.id);
-    setDeleteError(null);
-
-    try {
+    setDeleteError(null);    try {
       await qsoApiService.deleteQso(qso.id);
+      // Afficher un toast de confirmation
+      showSuccess(`QSO "${qso.name}" supprimé avec succès`);
       // Recharger la liste après suppression
       onRefresh();
     } catch (error: any) {
       console.error('Erreur lors de la suppression du QSO:', error);
+      showError(extractErrorMessage(error, 'Impossible de supprimer le QSO'));
       setDeleteError(extractErrorMessage(error, 'Impossible de supprimer le QSO'));
     } finally {
       setDeletingQsoId(null);
@@ -172,9 +178,11 @@ Cette action est irréversible et supprimera également tous les participants as
                 </td>
               )}
             </tr>
-          ))}
-        </tbody>
+          ))}        </tbody>
       </table>
+      
+      {/* Container pour les toasts */}
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };
