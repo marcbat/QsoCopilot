@@ -4,6 +4,8 @@ import { QsoAggregateDto, ParticipantDto, CreateParticipantRequest } from '../ty
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
+import { useToasts } from '../hooks/useToasts';
+import ToastContainer from './ToastContainer';
 import ParticipantTable from './ParticipantTable';
 import ParticipantMap from './ParticipantMap';
 import ParticipantCard from './ParticipantCard';
@@ -22,9 +24,10 @@ const QsoDetailPage: React.FC = () => {
   });
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
-  
-  // Utiliser le hook de messages avec auto-hide
+    // Utiliser le hook de messages avec auto-hide
   const { successMessage, errorMessage, setSuccessMessage, setErrorMessage } = useMessages();
+    // Utiliser le hook de toasts pour les notifications
+  const { toasts, removeToast, showSuccess } = useToasts();
 
   // Variable pour déterminer si les onglets Table et Carte doivent être désactivés
   const shouldDisableQrzTabs = !canUserFetchQrzInfo(user);  useEffect(() => {
@@ -79,10 +82,8 @@ const QsoDetailPage: React.FC = () => {
 
       const participantData: CreateParticipantRequest = {
         callSign: newParticipant.callSign
-      };
-
-      await qsoApiService.addParticipant(qso.id, participantData);
-      setSuccessMessage('Participant ajouté avec succès');
+      };      await qsoApiService.addParticipant(qso.id, participantData);
+      showSuccess('Participant ajouté avec succès');
 
       // Réinitialiser le formulaire de participant
       setNewParticipant({ callSign: '' });
@@ -475,9 +476,11 @@ const QsoDetailPage: React.FC = () => {
                 <p>Aucun participant ajouté pour ce QSO</p>
               </div>
             )}
-          </div>
-        </div>
+          </div>        </div>
       </div>
+      
+      {/* Container pour les toasts */}
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };
