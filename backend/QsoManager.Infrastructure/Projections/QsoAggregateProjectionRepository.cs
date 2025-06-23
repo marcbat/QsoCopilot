@@ -177,6 +177,30 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
         }
     }
 
+    public async Task<Validation<Error, IEnumerable<ApplicationModels.QsoAggregateProjectionDto>>> SearchByModeratorAsync(Guid moderatorId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var collection = GetCollection();
+            
+            _logger.LogInformation("Searching QSO projections moderated by user '{ModeratorId}'", moderatorId);
+            
+            var filter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Eq(x => x.ModeratorId, moderatorId);
+            
+            var results = await collection.Find(filter).ToListAsync(cancellationToken);
+            
+            _logger.LogInformation("Found {Count} QSO projections moderated by user '{ModeratorId}'", 
+                results.Count, moderatorId);
+            
+            return Success<Error, IEnumerable<ApplicationModels.QsoAggregateProjectionDto>>(results.Select(MapToDto).AsEnumerable());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching QsoAggregate projections by moderator '{ModeratorId}'", moderatorId);
+            return Error.New($"Failed to search QsoAggregate projections by moderator '{moderatorId}': {ex.Message}");
+        }
+    }
+
     public async Task<Validation<Error, bool>> ExistsWithNameAsync(string name, CancellationToken cancellationToken = default)
     {
         try

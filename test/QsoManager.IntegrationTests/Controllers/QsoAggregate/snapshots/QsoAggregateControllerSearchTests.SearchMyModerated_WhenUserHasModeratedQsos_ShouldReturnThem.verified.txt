@@ -1,0 +1,48 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: [
+      {
+        id: Guid_1,
+        name: QSO modéré 1,
+        description: Premier QSO modéré par moi,
+        moderatorId: Guid_2,
+        frequency: 14.205,
+        participants: [
+          {
+            callSign: F4MOD1,
+            order: 1,
+            country: null,
+            name: null,
+            qrzCallsignInfo: null,
+            qrzDxccInfo: null
+          }
+        ],
+        startDateTime: DateTimeOffset_1,
+        createdDate: DateTimeOffset_1
+      },
+      {
+        id: Guid_3,
+        name: QSO modéré 2,
+        description: Deuxième QSO modéré par moi,
+        moderatorId: Guid_2,
+        frequency: 7.04,
+        participants: [
+          {
+            callSign: F4MOD1,
+            order: 1,
+            country: null,
+            name: null,
+            qrzCallsignInfo: null,
+            qrzDxccInfo: null
+          }
+        ],
+        startDateTime: DateTimeOffset_2,
+        createdDate: DateTimeOffset_2
+      }
+    ]
+  }
+}

@@ -119,9 +119,96 @@ public class QsoAggregateControllerSearchTests : BaseIntegrationTest
         // Act - Test avec différentes variations de casse
         var responseSuper = await _client.GetAsync("/api/QsoAggregate/search?name=super");
         var responseSuper2 = await _client.GetAsync("/api/QsoAggregate/search?name=Super");
-        var responseSuPer = await _client.GetAsync("/api/QsoAggregate/search?name=SuPer");
+        var responseSuPer = await _client.GetAsync("/api/QsoAggregate/search?name=SuPer");        // Assert
+        await Verify(new { getAllResponse, responseSuper, responseSuper2, responseSuPer }, _verifySettings);
+    }
+
+    [Fact]
+    public async Task SearchMyModerated_WhenUserHasModeratedQsos_ShouldReturnThem()
+    {
+        // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4MOD1");
+        
+        // Créer des QSO modérés par cet utilisateur
+        var qso1 = new
+        {
+            Id = Guid.NewGuid(),
+            Name = "QSO modéré 1",
+            Description = "Premier QSO modéré par moi",
+            Frequency = 14.205m
+        };
+
+        var qso2 = new
+        {
+            Id = Guid.NewGuid(),
+            Name = "QSO modéré 2", 
+            Description = "Deuxième QSO modéré par moi",
+            Frequency = 7.040m
+        };
+
+        await _client.PostAsJsonAsync("/api/QsoAggregate", qso1);
+        await _client.PostAsJsonAsync("/api/QsoAggregate", qso2);
+        
+        // Créer un autre utilisateur et ses QSO
+        var (otherUserId, otherToken) = await CreateAndAuthenticateUserAsync("F4OTHER");
+        var otherQso = new
+        {
+            Id = Guid.NewGuid(),
+            Name = "QSO d'un autre modérateur",
+            Description = "QSO modéré par quelqu'un d'autre",
+            Frequency = 21.205m
+        };
+        await _client.PostAsJsonAsync("/api/QsoAggregate", otherQso);
+        
+        // Attendre que les projections soient mises à jour
+        await Task.Delay(500);        // Se reconnecter avec le premier utilisateur
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        // Act
+        var response = await _client.GetAsync("/api/QsoAggregate/my-moderated");
 
         // Assert
-        await Verify(new { getAllResponse, responseSuper, responseSuper2, responseSuPer }, _verifySettings);
+        await Verify(response, _verifySettings);
+    }
+
+    [Fact]
+    public async Task SearchMyModerated_WhenUserHasNoModeratedQsos_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var (userId, token) = await CreateAndAuthenticateUserAsync("F4NOMOD");
+        
+        // Créer un QSO avec un autre modérateur (simulé par un autre utilisateur)
+        var (otherUserId, otherToken) = await CreateAndAuthenticateUserAsync("F4OTHER2");
+        var otherQso = new
+        {
+            Id = Guid.NewGuid(),
+            Name = "QSO d'un autre modérateur",
+            Description = "QSO modéré par quelqu'un d'autre",
+            Frequency = 21.205m
+        };
+        await _client.PostAsJsonAsync("/api/QsoAggregate", otherQso);
+        
+        // Attendre que les projections soient mises à jour
+        await Task.Delay(500);        // Se reconnecter avec le premier utilisateur qui n'a pas de QSO modérés
+        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        // Act
+        var response = await _client.GetAsync("/api/QsoAggregate/my-moderated");
+
+        // Assert
+        await Verify(response, _verifySettings);
+    }
+
+    [Fact]
+    public async Task SearchMyModerated_WhenNotAuthenticated_ShouldReturnUnauthorized()
+    {
+        // Arrange
+        ClearAuthentication();
+
+        // Act
+        var response = await _client.GetAsync("/api/QsoAggregate/my-moderated");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }
