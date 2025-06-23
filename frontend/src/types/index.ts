@@ -88,6 +88,8 @@ export interface TokenDto {
   expiration: string;
   userId: string;
   userName: string;
+  email?: string;
+  qrzUsername?: string;
 }
 
 export interface User {

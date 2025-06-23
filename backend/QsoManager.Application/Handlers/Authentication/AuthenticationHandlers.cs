@@ -6,6 +6,7 @@ using QsoManager.Application.Commands.Authentication;
 using QsoManager.Application.Commands.ModeratorAggregate;
 using QsoManager.Application.DTOs.Authentication;
 using QsoManager.Application.Interfaces.Auth;
+using QsoManager.Domain.Repositories;
 using System.Security.Claims;
 
 namespace QsoManager.Application.Handlers.Authentication;
@@ -13,28 +14,48 @@ namespace QsoManager.Application.Handlers.Authentication;
 public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenDto>
 {
     private readonly IAuthenticationService _authenticationService;
+    private readonly IModeratorAggregateRepository _moderatorRepository;
     private readonly ILogger<LoginCommandHandler> _logger;
 
-    public LoginCommandHandler(IAuthenticationService authenticationService, ILogger<LoginCommandHandler> logger)
+    public LoginCommandHandler(
+        IAuthenticationService authenticationService, 
+        IModeratorAggregateRepository moderatorRepository,
+        ILogger<LoginCommandHandler> logger)
     {
         _authenticationService = authenticationService;
+        _moderatorRepository = moderatorRepository;
         _logger = logger;
-    }
-
-    public async Task<TokenDto> Handle(LoginCommand request, CancellationToken cancellationToken)
+    }    public async Task<TokenDto> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var userId = await _authenticationService.LoginAsyncByUserName(request.Username, request.Password);
 
-            // TODO: Récupérer les informations utilisateur et créer les claims appropriés
+            // Récupérer les informations du modérateur
+            var moderatorResult = await _moderatorRepository.GetByIdAsync(Guid.Parse(userId));
+
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, userId),
                 new(ClaimTypes.Name, request.Username)
             };
 
-            return _authenticationService.CreateToken(claims);
+            var token = _authenticationService.CreateToken(claims);
+              // Enrichir le TokenDto avec les informations du modérateur si disponibles
+            if (moderatorResult.IsSuccess)
+            {
+                moderatorResult.Match(
+                    moderator =>
+                    {
+                        token.Email = moderator.Email;
+                        token.QrzUsername = moderator.QrzUsername;
+                        return token;
+                    },
+                    _ => token
+                );
+            }
+
+            return token;
         }
         catch (Exception ex)
         {
@@ -47,11 +68,16 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, TokenDto>
 public class LoginByEmailCommandHandler : IRequestHandler<LoginByEmailCommand, TokenDto>
 {
     private readonly IAuthenticationService _authenticationService;
+    private readonly IModeratorAggregateRepository _moderatorRepository;
     private readonly ILogger<LoginByEmailCommandHandler> _logger;
 
-    public LoginByEmailCommandHandler(IAuthenticationService authenticationService, ILogger<LoginByEmailCommandHandler> logger)
+    public LoginByEmailCommandHandler(
+        IAuthenticationService authenticationService, 
+        IModeratorAggregateRepository moderatorRepository,
+        ILogger<LoginByEmailCommandHandler> logger)
     {
         _authenticationService = authenticationService;
+        _moderatorRepository = moderatorRepository;
         _logger = logger;
     }
 
@@ -61,14 +87,32 @@ public class LoginByEmailCommandHandler : IRequestHandler<LoginByEmailCommand, T
         {
             var userId = await _authenticationService.LoginAsyncByEmail(request.Email, request.Password);
 
-            // TODO: Récupérer les informations utilisateur et créer les claims appropriés
+            // Récupérer les informations du modérateur
+            var moderatorResult = await _moderatorRepository.GetByIdAsync(Guid.Parse(userId));
+
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, userId),
                 new(ClaimTypes.Email, request.Email)
             };
 
-            return _authenticationService.CreateToken(claims);
+            var token = _authenticationService.CreateToken(claims);
+            
+            // Enrichir le TokenDto avec les informations du modérateur si disponibles
+            if (moderatorResult.IsSuccess)
+            {
+                moderatorResult.Match(
+                    moderator =>
+                    {
+                        token.Email = moderator.Email;
+                        token.QrzUsername = moderator.QrzUsername;
+                        return token;
+                    },
+                    _ => token
+                );
+            }
+
+            return token;
         }
         catch (Exception ex)
         {

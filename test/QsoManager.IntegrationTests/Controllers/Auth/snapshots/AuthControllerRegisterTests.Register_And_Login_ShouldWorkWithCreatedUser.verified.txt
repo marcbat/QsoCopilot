@@ -19,7 +19,11 @@
       },
       Value: {
         token: {Scrubbed},
-        expiration: {Scrubbed}
+        expiration: {Scrubbed},
+        userId: Guid_1,
+        userName: F1STU,
+        email: f1stu@example.com,
+        qrzUsername: null
       }
     }
   }

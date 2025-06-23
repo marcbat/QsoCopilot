@@ -6,4 +6,6 @@ public class TokenDto
     public DateTime Expiration { get; set; }
     public string UserId { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
+    public string? Email { get; set; }
+    public string? QrzUsername { get; set; }
 }

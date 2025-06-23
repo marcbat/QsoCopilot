@@ -19,7 +19,11 @@
       },
       Value: {
         token: {Scrubbed},
-        expiration: {Scrubbed}
+        expiration: {Scrubbed},
+        userId: Guid_1,
+        userName: F1WORKFLOW,
+        email: f1workflow@example.com,
+        qrzUsername: null
       }
     }
   },
@@ -31,7 +35,11 @@
       },
       Value: {
         token: {Scrubbed},
-        expiration: {Scrubbed}
+        expiration: {Scrubbed},
+        userId: Guid_1,
+        userName: ,
+        email: f1workflow@example.com,
+        qrzUsername: null
       }
     }
   }

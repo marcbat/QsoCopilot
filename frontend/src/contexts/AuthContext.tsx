@@ -38,7 +38,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     setIsLoading(false);
   }, []);
-
   const login = async (credentials: LoginRequest): Promise<void> => {
     try {
       setIsLoading(true);
@@ -48,6 +47,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         id: response.userId,
         userName: response.userName,
         callSign: credentials.userName, // Supposer que userName = callSign
+        email: response.email,
+        qrzUsername: response.qrzUsername,
       };
 
       setToken(response.token);
@@ -62,7 +63,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-
   const loginByEmail = async (credentials: LoginByEmailRequest): Promise<void> => {
     try {
       setIsLoading(true);
@@ -71,7 +71,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const userData: User = {
         id: response.userId,
         userName: response.userName,
-        email: credentials.email,
+        email: response.email || credentials.email,
+        qrzUsername: response.qrzUsername,
       };
 
       setToken(response.token);
