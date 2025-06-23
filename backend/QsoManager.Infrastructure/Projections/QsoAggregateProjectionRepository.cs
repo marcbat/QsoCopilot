@@ -146,21 +146,33 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             _logger.LogError(ex, "Error deleting all QsoAggregate projections");
             return Error.New($"Failed to delete all QsoAggregate projections: {ex.Message}");
         }
-    }
-
-    public async Task<Validation<Error, IEnumerable<ApplicationModels.QsoAggregateProjectionDto>>> SearchByNameAsync(string name, CancellationToken cancellationToken = default)
+    }    public async Task<Validation<Error, IEnumerable<ApplicationModels.QsoAggregateProjectionDto>>> SearchByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         try
         {
             var collection = GetCollection();
-            var filter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Regex(x => x.Name, new MongoDB.Bson.BsonRegularExpression(name, "i"));
+            
+            _logger.LogInformation("Searching QSO projections containing '{SearchTerm}'", name);
+            
+            // Créer un pattern regex pour recherche partielle case-insensitive
+            // Nous construisons manuellement le pattern pour éviter l'échappement complet
+            var safeSearchTerm = name.Replace("\\", "\\\\").Replace(".", "\\.");
+            var regexPattern = $".*{safeSearchTerm}.*";
+            
+            var filter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Regex(
+                x => x.Name, 
+                new MongoDB.Bson.BsonRegularExpression(regexPattern, "i"));
+            
             var results = await collection.Find(filter).ToListAsync(cancellationToken);
-
+            
+            _logger.LogInformation("Found {Count} QSO projections containing '{SearchTerm}' using pattern '{Pattern}'", 
+                results.Count, name, regexPattern);
+            
             return Success<Error, IEnumerable<ApplicationModels.QsoAggregateProjectionDto>>(results.Select(MapToDto).AsEnumerable());
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error searching QsoAggregate projections by name {Name}", name);
+            _logger.LogError(ex, "Error searching QsoAggregate projections by name '{Name}'", name);
             return Error.New($"Failed to search QsoAggregate projections by name '{name}': {ex.Message}");
         }
     }

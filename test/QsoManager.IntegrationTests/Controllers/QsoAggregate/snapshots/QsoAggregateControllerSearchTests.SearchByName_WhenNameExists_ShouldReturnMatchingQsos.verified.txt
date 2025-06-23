@@ -4,6 +4,45 @@
     Headers: {
       Content-Type: application/json; charset=utf-8
     },
-    Value: []
+    Value: [
+      {
+        id: Guid_1,
+        name: Recherche Test QSO 1,
+        description: Premier QSO pour recherche,
+        moderatorId: Guid_2,
+        frequency: 14.205,
+        participants: [
+          {
+            callSign: F4TEST1,
+            order: 1,
+            country: null,
+            name: null,
+            qrzCallsignInfo: null,
+            qrzDxccInfo: null
+          }
+        ],
+        startDateTime: DateTimeOffset_1,
+        createdDate: DateTimeOffset_1
+      },
+      {
+        id: Guid_3,
+        name: Recherche Test QSO 2,
+        description: Deuxième QSO pour recherche,
+        moderatorId: Guid_2,
+        frequency: 7.04,
+        participants: [
+          {
+            callSign: F4TEST1,
+            order: 1,
+            country: null,
+            name: null,
+            qrzCallsignInfo: null,
+            qrzDxccInfo: null
+          }
+        ],
+        startDateTime: DateTimeOffset_2,
+        createdDate: DateTimeOffset_2
+      }
+    ]
   }
 }

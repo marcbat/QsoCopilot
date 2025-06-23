@@ -171,9 +171,7 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors de la récupération du QSO Aggregate {Id}", id);
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Recherche les QSO par nom
     /// </summary>
     [HttpGet("search")]
@@ -184,17 +182,32 @@ public class QsoAggregateController : ControllerBase
             if (string.IsNullOrWhiteSpace(name))
             {
                 return BadRequest(new { Message = "Name parameter is required" });
-            }            var query = new SearchQsoAggregatesByNameQuery(name, User);
+            }
+
+            _logger.LogInformation("Recherche de QSO avec le terme '{SearchTerm}'", name);
+            
+            var query = new SearchQsoAggregatesByNameQuery(name, User);
             var result = await _mediator.Send(query);
 
-            return Ok(result);
+            return result.Match<ActionResult<IEnumerable<QsoAggregateDto>>>(
+                success => 
+                {
+                    _logger.LogInformation("Controller returning {Count} QSO results for term '{SearchTerm}'", success.Count(), name);
+                    return Ok(success);
+                },
+                errors => 
+                {
+                    _logger.LogError("Search failed with errors: {Errors}", string.Join(", ", errors.Select(e => e.Message)));
+                    return StatusCode(500, new { Message = "Erreur lors de la recherche" });
+                }
+            );
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de la recherche des QSO par nom {Name}", name);
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
-    }    [HttpDelete("{aggregateId:guid}")]
+    }[HttpDelete("{aggregateId:guid}")]
     [Authorize]
     public async Task<ActionResult> DeleteQsoAggregate(Guid aggregateId)
     {
