@@ -12,39 +12,41 @@ const QsoManagerPage: React.FC = () => {
   const [qsos, setQsos] = useState<QsoAggregateDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showMyModeratedOnly, setShowMyModeratedOnly] = useState(false);
   
   // Utiliser le hook de messages avec auto-hide
   const { errorMessage, setErrorMessage } = useMessages();  // Charger la liste des QSO
   const loadQsos = async () => {
+    // Utiliser la fonction de recherche avec les paramètres actuels
+    searchQsos(searchTerm, showMyModeratedOnly);
+  };// Rechercher les QSO par nom et/ou par modérateur
+  const searchQsos = async (term: string, moderatedOnly: boolean = showMyModeratedOnly) => {
     try {
       setIsLoading(true);
       setErrorMessage(null);
-      const data = await qsoApiService.getAllQsoAggregates();      // Trier les QSO par date de début (plus récents en premier)
-      const sortedQsos = data.sort((a, b) => {
-        const dateA = new Date(a.startDateTime || a.createdDate || '');
-        const dateB = new Date(b.startDateTime || b.createdDate || '');
-        return dateB.getTime() - dateA.getTime(); // Tri décroissant (plus récents en premier)
-      });
-      setQsos(sortedQsos);
-    } catch (err: any) {
-      console.error('Erreur lors du chargement des QSO:', err);
-      setErrorMessage(extractErrorMessage(err, 'Erreur lors du chargement de la liste des QSO'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  // Rechercher les QSO par nom
-  const searchQsos = async (term: string) => {
-    if (!term.trim()) {
-      loadQsos();
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setErrorMessage(null);
-      const data = await qsoApiService.searchQsoByName(term);
-      // Trier les résultats de recherche par date (plus récents en premier)
+      
+      let data: QsoAggregateDto[];
+      
+      if (moderatedOnly && isAuthenticated) {
+        // Récupérer seulement les QSO modérés par l'utilisateur courant
+        const moderatedQsos = await qsoApiService.getMyModeratedQsos();
+          if (term.trim()) {
+          // Filtrer côté client par nom si un terme de recherche est fourni
+          data = moderatedQsos.filter((qso: QsoAggregateDto) => 
+            qso.name.toLowerCase().includes(term.toLowerCase())
+          );
+        } else {
+          data = moderatedQsos;
+        }
+      } else if (term.trim()) {
+        // Recherche par nom uniquement
+        data = await qsoApiService.searchQsoByName(term);
+      } else {
+        // Récupérer tous les QSO
+        data = await qsoApiService.getAllQsoAggregates();
+      }
+      
+      // Trier les résultats par date (plus récents en premier)
       const sortedQsos = data.sort((a, b) => {
         const dateA = new Date(a.startDateTime || a.createdDate || '');
         const dateB = new Date(b.startDateTime || b.createdDate || '');
@@ -63,11 +65,17 @@ const QsoManagerPage: React.FC = () => {
   useEffect(() => {
     loadQsos();
   }, []);
-
   // Gestionnaire pour la recherche
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    searchQsos(searchTerm);
+    searchQsos(searchTerm, showMyModeratedOnly);
+  };
+
+  // Gestionnaire pour le changement du filtre "Mes QSO modérés"
+  const handleModeratedFilterChange = (checked: boolean) => {
+    setShowMyModeratedOnly(checked);
+    // Relancer la recherche immédiatement avec le nouveau filtre
+    searchQsos(searchTerm, checked);
   };
   // Gestionnaire pour la création d'un nouveau QSO
   const handleQsoCreated = (_qsoId: string) => {
@@ -100,16 +108,29 @@ const QsoManagerPage: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Entrez le nom d'un QSO..."
             />
-          </div>          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          </div>          {/* Filtre pour les QSO modérés (uniquement pour les utilisateurs connectés) */}
+          {isAuthenticated && (
+            <div className="form-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={showMyModeratedOnly}
+                  onChange={(e) => handleModeratedFilterChange(e.target.checked)}
+                  className="checkbox-input"
+                />
+                <span className="checkbox-text">Afficher uniquement mes QSO</span>
+              </label>
+            </div>
+          )}<div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
             <button type="submit" className="btn btn-primary" disabled={isLoading}>
               {isLoading ? 'Recherche...' : 'Rechercher'}
-            </button>
-            <button 
+            </button>            <button 
               type="button" 
               className="btn btn-secondary" 
               onClick={() => {
                 setSearchTerm('');
-                loadQsos();
+                setShowMyModeratedOnly(false);
+                searchQsos('', false);
               }}
             >
               Effacer

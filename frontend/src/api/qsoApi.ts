@@ -88,9 +88,13 @@ export const qsoApiService = {
   async reorderParticipants(qsoId: string, reorderRequest: ReorderParticipantsRequest): Promise<void> {
     await apiClient.put(`/QsoAggregate/${qsoId}/participants/reorder`, reorderRequest);
   },
-
   async searchQsoByName(name: string): Promise<QsoAggregateDto[]> {
     const response: AxiosResponse<QsoAggregateDto[]> = await apiClient.get(`/QsoAggregate/search?name=${encodeURIComponent(name)}`);
+    return response.data;
+  },
+
+  async getMyModeratedQsos(): Promise<QsoAggregateDto[]> {
+    const response: AxiosResponse<QsoAggregateDto[]> = await apiClient.get('/QsoAggregate/my-moderated');
     return response.data;
   },
 
