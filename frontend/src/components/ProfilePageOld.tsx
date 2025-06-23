@@ -1,74 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { UpdateProfileRequest } from '../types';
-import { authApiService } from '../api';
 
 const ProfilePage: React.FC = () => {
-  // Récupérer les données utilisateur depuis localStorage directement
-  const userString = localStorage.getItem('user');
-  const user = userString ? JSON.parse(userString) : null;
-    // États du formulaire - initialisés directement avec les valeurs utilisateur
-  const [email, setEmail] = useState(user?.email || '');
-  const [qrzUsername, setQrzUsername] = useState(user?.qrzUsername || '');
-  const [qrzPassword, setQrzPassword] = useState('');
+  const { user, updateProfile, isLoading } = useAuth();
+  const [formData, setFormData] = useState<UpdateProfileRequest>({
+    email: '',
+    qrzUsername: '',
+    qrzPassword: ''
+  });
+
+  // Initialiser les données du formulaire une seule fois
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        email: user.email || '',
+        qrzUsername: user.qrzUsername || '',
+        qrzPassword: ''
+      });
+    }  }, [user?.id]); // Ne se déclenche que si l'ID utilisateur change
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // États pour les messages
+    // États pour les messages - directement dans le composant
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Auto-masquer le message de succès après 10 secondes
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+  // Log pour déboguer l'état des messages
+  console.log('Rendu ProfilePage - successMessage:', successMessage, 'errorMessage:', errorMessage);
+  console.log('user?.id:', user?.id, 'user?.email:', user?.email);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Effacer seulement les messages d'erreur lors de la modification
+    if (errorMessage) setErrorMessage(null);
+  };  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-    setSuccessMessage(null);
-    setIsLoading(true);
+    // Ne pas effacer le message de succès ici
 
     try {
-      // Construire les données à mettre à jour
+      // Ne pas envoyer les champs vides
       const updateData: UpdateProfileRequest = {};
-      if (email && email !== user?.email) {
-        updateData.email = email;
+      if (formData.email && formData.email !== user?.email) {
+        updateData.email = formData.email;
       }
-      if (qrzUsername && qrzUsername !== user?.qrzUsername) {
-        updateData.qrzUsername = qrzUsername;
+      if (formData.qrzUsername && formData.qrzUsername !== user?.qrzUsername) {
+        updateData.qrzUsername = formData.qrzUsername;
       }
-      if (qrzPassword) {
-        updateData.qrzPassword = qrzPassword;
+      if (formData.qrzPassword) {
+        updateData.qrzPassword = formData.qrzPassword;
       }
 
       // Vérifier qu'il y a au moins un champ à mettre à jour
       if (Object.keys(updateData).length === 0) {
-        setErrorMessage('Aucune modification détectée');
-        return;
-      }      // Appel API direct (sans passer par AuthContext)
-      const response = await authApiService.updateProfile(updateData);
-      
-      const confirmationMessage = response.message || 'Profil mis à jour avec succès';
+        setErrorMessage('Aucune modification détectée');        return;
+      }      const confirmationMessage = await updateProfile(updateData);
+      console.log('Message de confirmation reçu:', confirmationMessage);
+      console.log('Type du message:', typeof confirmationMessage);
+      console.log('Avant setSuccessMessage - successMessage actuel:', successMessage);
       setSuccessMessage(confirmationMessage);
-      
-      // Mettre à jour le localStorage directement
-      if (user) {
-        const updatedUser = {
-          ...user,
-          email: updateData.email || user.email,
-          qrzUsername: updateData.qrzUsername || user.qrzUsername,
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      }
-      
-      // Réinitialiser le mot de passe
-      setQrzPassword('');
-      
-      // Auto-masquer le message après 10 secondes
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 10000);
-      
-    } catch (err) {
+      console.log('Message de succès défini avec:', confirmationMessage);
+      console.log('Après setSuccessMessage appelé');
+      // Réinitialiser le mot de passe après mise à jour réussie
+      setFormData(prev => ({ ...prev, qrzPassword: '' }));    } catch (err) {
       console.error('Erreur lors de la mise à jour du profil:', err);
+      console.log('Type d\'erreur:', typeof err);
+      console.log('Détails de l\'erreur:', err);
       setErrorMessage('Erreur lors de la mise à jour du profil. Veuillez réessayer.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -91,15 +101,17 @@ const ProfilePage: React.FC = () => {
         <div className="profile-info">
           <p><strong>Nom d'utilisateur :</strong> {user.userName}</p>
           <p><strong>Indicatif :</strong> {user.callSign || 'Non défini'}</p>
-        </div>        <form onSubmit={handleSubmit} className="auth-form">
+        </div>
+
+        <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
               name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
               placeholder="Votre adresse email"
             />
           </div>
@@ -110,8 +122,8 @@ const ProfilePage: React.FC = () => {
               type="text"
               id="qrzUsername"
               name="qrzUsername"
-              value={qrzUsername}
-              onChange={(e) => setQrzUsername(e.target.value)}
+              value={formData.qrzUsername}
+              onChange={handleChange}
               placeholder="Votre nom d'utilisateur QRZ.com"
             />
           </div>
@@ -123,8 +135,8 @@ const ProfilePage: React.FC = () => {
                 type={showPassword ? 'text' : 'password'}
                 id="qrzPassword"
                 name="qrzPassword"
-                value={qrzPassword}
-                onChange={(e) => setQrzPassword(e.target.value)}
+                value={formData.qrzPassword}
+                onChange={handleChange}
                 placeholder="Votre mot de passe QRZ.com"
               />
               <button
@@ -139,9 +151,7 @@ const ProfilePage: React.FC = () => {
             <small className="form-help">
               Laissez vide pour ne pas modifier le mot de passe actuel
             </small>
-          </div>
-
-          {errorMessage && <div className="error-message">{errorMessage}</div>}
+          </div>          {errorMessage && <div className="error-message">{errorMessage}</div>}
           {successMessage && <div className="success-message">{successMessage}</div>}
 
           <button 

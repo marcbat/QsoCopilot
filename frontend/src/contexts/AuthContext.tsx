@@ -118,8 +118,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       
       // Retourner le message de confirmation
-      return response.message;
-    } catch (error) {
+      return response.message || 'Profil mis à jour avec succès';    } catch (error) {
       console.error('Erreur de mise à jour du profil:', error);
       throw error;
     } finally {

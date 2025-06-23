@@ -10,12 +10,11 @@ interface UseMessagesResult {
 
 export const useMessages = (autoHideDelay: number = 5000): UseMessagesResult => {
   const [successMessage, setSuccessMessageState] = useState<string | null>(null);
-  const [errorMessage, setErrorMessageState] = useState<string | null>(null);
-    // Références pour pouvoir annuler les timeouts précédents
-  const successTimeoutRef = useRef<number | null>(null);
-  const errorTimeoutRef = useRef<number | null>(null);
-
+  const [errorMessage, setErrorMessageState] = useState<string | null>(null);  // Références pour pouvoir annuler les timeouts précédents
+  const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const errorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setSuccessMessage = useCallback((message: string | null) => {
+    console.log('useMessages.setSuccessMessage appelé avec:', message);
     // Annuler le timeout précédent s'il existe
     if (successTimeoutRef.current) {
       clearTimeout(successTimeoutRef.current);
@@ -23,10 +22,13 @@ export const useMessages = (autoHideDelay: number = 5000): UseMessagesResult => 
     }
 
     setSuccessMessageState(message);
+    console.log('État du message de succès mis à jour à:', message);
 
     // Si on définit un message, programmer sa disparition
     if (message) {
+      console.log('Programmation de la disparition du message dans', autoHideDelay, 'ms');
       successTimeoutRef.current = setTimeout(() => {
+        console.log('Masquage automatique du message de succès');
         setSuccessMessageState(null);
         successTimeoutRef.current = null;
       }, autoHideDelay);

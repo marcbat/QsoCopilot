@@ -2,20 +2,28 @@ import React, { useState } from 'react';
 import { UpdateProfileRequest } from '../types';
 import { authApiService } from '../api';
 
-const ProfilePage: React.FC = () => {
+const ProfilePageDirect: React.FC = () => {
   // Récupérer les données utilisateur depuis localStorage directement
   const userString = localStorage.getItem('user');
   const user = userString ? JSON.parse(userString) : null;
-    // États du formulaire - initialisés directement avec les valeurs utilisateur
-  const [email, setEmail] = useState(user?.email || '');
-  const [qrzUsername, setQrzUsername] = useState(user?.qrzUsername || '');
+  
+  // États du formulaire
+  const [email, setEmail] = useState('');
+  const [qrzUsername, setQrzUsername] = useState('');
   const [qrzPassword, setQrzPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // États pour les messages
+    // États pour les messages
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Initialiser les champs une seule fois
+  const initializeFields = () => {
+    if (user && !email && !qrzUsername) {
+      setEmail(user.email || '');
+      setQrzUsername(user.qrzUsername || '');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +99,13 @@ const ProfilePage: React.FC = () => {
         <div className="profile-info">
           <p><strong>Nom d'utilisateur :</strong> {user.userName}</p>
           <p><strong>Indicatif :</strong> {user.callSign || 'Non défini'}</p>
-        </div>        <form onSubmit={handleSubmit} className="auth-form">
+        </div>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <button type="button" onClick={initializeFields} className="btn btn-secondary" style={{marginBottom: '1rem'}}>
+            Remplir avec les valeurs actuelles
+          </button>
+          
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -157,4 +171,4 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage;
+export default ProfilePageDirect;
