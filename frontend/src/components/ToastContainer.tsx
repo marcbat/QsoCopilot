@@ -9,15 +9,23 @@ interface ToastContainerProps {
 
 const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemoveToast }) => {
   return (
-    <>
-      {toasts.map((toast, index) => (
-        <div
+    <div
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column-reverse', // Les nouveaux toasts apparaissent en bas
+        gap: '10px', // Espacement entre les toasts
+        pointerEvents: 'none' // Permet au clic de passer à travers le conteneur
+      }}
+    >
+      {toasts.map((toast) => (        <div
           key={toast.id}
           style={{
-            position: 'fixed',
-            bottom: `${20 + (index * 70)}px`, // Empiler les toasts verticalement
-            right: '20px',
-            zIndex: 1000 + index
+            pointerEvents: 'auto', // Réactive les interactions sur les toasts individuels
+            transition: 'all 0.3s ease-in-out' // Animation fluide pour le réarrangement
           }}
         >
           <Toast
@@ -28,7 +36,7 @@ const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemoveToast }
           />
         </div>
       ))}
-    </>
+    </div>
   );
 };
 
