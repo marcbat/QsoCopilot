@@ -17,5 +17,6 @@ public interface IProjectionRepository<T> where T : class
 public interface IQsoAggregateProjectionRepository : IProjectionRepository<QsoAggregateProjectionDto>
 {
     Task<Validation<Error, IEnumerable<QsoAggregateProjectionDto>>> SearchByNameAsync(string name, CancellationToken cancellationToken = default);
+    Task<Validation<Error, IEnumerable<QsoAggregateProjectionDto>>> SearchByModeratorAsync(Guid moderatorId, CancellationToken cancellationToken = default);
     Task<Validation<Error, bool>> ExistsWithNameAsync(string name, CancellationToken cancellationToken = default);
 }

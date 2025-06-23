@@ -80,9 +80,13 @@ export const qsoApiService = {
   async removeParticipant(qsoId: string, callSign: string): Promise<void> {
     await apiClient.delete(`/QsoAggregate/${qsoId}/participants/${callSign}`);
   },
-
   async searchQsoByName(name: string): Promise<QsoAggregateDto[]> {
     const response: AxiosResponse<QsoAggregateDto[]> = await apiClient.get(`/QsoAggregate/search?name=${encodeURIComponent(name)}`);
+    return response.data;
+  },
+
+  async getMyModeratedQsos(): Promise<QsoAggregateDto[]> {
+    const response: AxiosResponse<QsoAggregateDto[]> = await apiClient.get('/QsoAggregate/my-moderated');
     return response.data;
   },
 

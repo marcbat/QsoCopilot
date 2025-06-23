@@ -207,6 +207,46 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors de la recherche des QSO par nom {Name}", name);
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
+    }
+
+    /// <summary>
+    /// Recherche les QSO modérés par l'utilisateur courant
+    /// </summary>
+    [HttpGet("my-moderated")]
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<QsoAggregateDto>>> SearchMyModerated()
+    {        try
+        {
+            // Récupérer l'ID de l'utilisateur courant depuis les claims
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return BadRequest(new { Message = "Unable to identify current user" });
+            }
+
+            _logger.LogInformation("Recherche des QSO modérés par l'utilisateur '{UserId}'", userId);
+            
+            var query = new SearchQsoAggregatesByModeratorQuery(userId, User);
+            var result = await _mediator.Send(query);
+
+            return result.Match<ActionResult<IEnumerable<QsoAggregateDto>>>(
+                success => 
+                {
+                    _logger.LogInformation("Controller returning {Count} QSO results for moderator '{UserId}'", success.Count(), userId);
+                    return Ok(success);
+                },
+                errors => 
+                {
+                    _logger.LogError("Search by moderator failed with errors: {Errors}", string.Join(", ", errors.Select(e => e.Message)));
+                    return StatusCode(500, new { Message = "Erreur lors de la recherche des QSO modérés" });
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la recherche des QSO modérés par l'utilisateur courant");
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });
+        }
     }[HttpDelete("{aggregateId:guid}")]
     [Authorize]
     public async Task<ActionResult> DeleteQsoAggregate(Guid aggregateId)
