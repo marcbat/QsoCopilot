@@ -87,15 +87,9 @@ Cette action est irréversible.`;
       setDeletingQsoId(null);
     }
   };
-
   return (
     <div className="qso-list-paginated">
-      <div className="table-header" style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '1rem' 
-      }}>
+      <div className="qso-list-header">
         <span>
           {pagedResult.totalCount} QSO(s) trouvé(s) 
           {pagedResult.totalPages > 1 && (
@@ -104,9 +98,29 @@ Cette action est irréversible.`;
             </span>
           )}
         </span>
-        <button onClick={onRefresh} className="btn btn-secondary btn-sm" disabled={isLoading}>
-          Actualiser
-        </button>
+        
+        <div className="qso-list-controls">
+          <div className="page-size-selector-header">
+            <label>Par page :</label>
+            <select
+              value={pagedResult.pageSize}
+              onChange={(e) => onPageSizeChange(Number(e.target.value))}
+              disabled={isLoading}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+            </select>
+          </div>
+          
+          <button 
+            onClick={onRefresh} 
+            className="qso-list-refresh-btn" 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Actualisation...' : 'Actualiser'}
+          </button>
+        </div>
       </div>
 
       {deleteError && (
@@ -214,16 +228,13 @@ Cette action est irréversible.`;
               </tr>
             ))}
           </tbody>
-        </table>
-
-        {/* Composant de pagination */}
+        </table>        {/* Composant de pagination */}
         <Pagination
           currentPage={pagedResult.pageNumber}
           totalPages={pagedResult.totalPages}
           onPageChange={onPageChange}
-          pageSize={pagedResult.pageSize}
-          onPageSizeChange={onPageSizeChange}
           totalCount={pagedResult.totalCount}
+          pageSize={pagedResult.pageSize}
           isLoading={isLoading}
         />
       </div>
