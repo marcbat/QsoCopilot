@@ -7,6 +7,7 @@ using QsoManager.Application.Commands.QsoAggregate;
 using QsoManager.Application.Common;
 using QsoManager.Application.DTOs;
 using QsoManager.Application.Queries.QsoAggregate;
+using QsoManager.Api.Services;
 
 namespace QsoManager.Api.Controllers;
 
@@ -16,14 +17,17 @@ public class QsoAggregateController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<QsoAggregateController> _logger;
+    private readonly IQsoNotificationService _notificationService;
 
     public QsoAggregateController(
         IMediator mediator, 
-        ILogger<QsoAggregateController> logger)
+        ILogger<QsoAggregateController> logger,
+        IQsoNotificationService notificationService)
     {
         _mediator = mediator;
         _logger = logger;
-    }    [HttpPost]
+        _notificationService = notificationService;
+    }[HttpPost]
     [Authorize]
     public async Task<ActionResult<QsoAggregateDto>> Create([FromBody] CreateQsoAggregateRequest request)
     {
@@ -48,19 +52,34 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors de la création du QSO Aggregate");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
-    }    
-      [HttpPost("{aggregateId:guid}/participants")]
+    }        [HttpPost("{aggregateId:guid}/participants")]
     [Authorize]
     public async Task<ActionResult<QsoAggregateDto>> AddParticipant(Guid aggregateId, [FromBody] AddParticipantRequest request)
     {
         try
         {
             var command = new AddParticipantCommand(aggregateId, request.CallSign, User);
-            var result = await _mediator.Send(command);
-
-            return result.Match<ActionResult<QsoAggregateDto>>(
-                qsoDto => Ok(qsoDto),
-                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            var result = await _mediator.Send(command);            return await result.Match<Task<ActionResult<QsoAggregateDto>>>(
+                async qsoDto =>
+                {                    // Envoyer une notification SignalR
+                    var newParticipant = qsoDto.Participants.FirstOrDefault(p => p.CallSign.Equals(request.CallSign, StringComparison.OrdinalIgnoreCase));
+                    if (newParticipant != null)
+                    {
+                        await _notificationService.NotifyQsoParticipantsChanged(
+                            aggregateId, 
+                            "added", 
+                            newParticipant.CallSign, 
+                            $"{newParticipant.CallSign} a rejoint le QSO"
+                        );
+                    }
+                    
+                    return Ok(qsoDto);
+                },
+                async errors => 
+                {
+                    await Task.CompletedTask;
+                    return BadRequest(new { Errors = errors.Select(e => e.Message) });
+                }
             );
         }
         catch (Exception ex)
@@ -68,9 +87,7 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors de l'ajout du participant");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
-    }
-
-    [HttpDelete("{aggregateId:guid}/participants/{callSign}")]
+    }    [HttpDelete("{aggregateId:guid}/participants/{callSign}")]
     public async Task<ActionResult> RemoveParticipant(Guid aggregateId, string callSign)
     {
         try
@@ -78,9 +95,22 @@ public class QsoAggregateController : ControllerBase
             var command = new RemoveParticipantCommand(aggregateId, callSign);
             var result = await _mediator.Send(command);
 
-            return result.Match<ActionResult>(
-                _ => NoContent(),
-                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            return await result.Match<Task<ActionResult>>(
+                async _ => 
+                {                    // Envoyer une notification SignalR
+                    await _notificationService.NotifyQsoParticipantsChanged(
+                        aggregateId, 
+                        "removed", 
+                        callSign, 
+                        $"{callSign} a quitté le QSO"
+                    );
+                    return NoContent();
+                },
+                async errors => 
+                {
+                    await Task.CompletedTask;
+                    return BadRequest(new { Errors = errors.Select(e => e.Message) });
+                }
             );
         }
         catch (Exception ex)
@@ -88,18 +118,31 @@ public class QsoAggregateController : ControllerBase
             _logger.LogError(ex, "Erreur lors de la suppression du participant");
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
-    }    [HttpPut("{aggregateId:guid}/participants/reorder")]
+    }[HttpPut("{aggregateId:guid}/participants/reorder")]
     [Authorize]
     public async Task<ActionResult> ReorderParticipants(Guid aggregateId, [FromBody] ReorderParticipantsRequest request)
     {
         try
-        {
-            var command = new ReorderParticipantsCommand(aggregateId, request.NewOrders, User);
+        {            var command = new ReorderParticipantsCommand(aggregateId, request.NewOrders, User);
             var result = await _mediator.Send(command);
 
-            return result.Match<ActionResult>(
-                _ => NoContent(),
-                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            return await result.Match<Task<ActionResult>>(
+                async _ => 
+                {
+                    // Envoyer une notification SignalR
+                    await _notificationService.NotifyQsoParticipantsChanged(
+                        aggregateId, 
+                        "reordered", 
+                        null, 
+                        "L'ordre des participants a été mis à jour"
+                    );
+                    return NoContent();
+                },
+                async errors => 
+                {
+                    await Task.CompletedTask;
+                    return BadRequest(new { Errors = errors.Select(e => e.Message) });
+                }
             );
         }
         catch (Exception ex)
@@ -113,13 +156,26 @@ public class QsoAggregateController : ControllerBase
     public async Task<ActionResult> MoveParticipant(Guid aggregateId, string callSign, [FromBody] MoveParticipantRequest request)
     {
         try
-        {
-            var command = new MoveParticipantToPositionCommand(aggregateId, callSign, request.NewPosition);
+        {            var command = new MoveParticipantToPositionCommand(aggregateId, callSign, request.NewPosition);
             var result = await _mediator.Send(command);
 
-            return result.Match<ActionResult>(
-                _ => NoContent(),
-                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            return await result.Match<Task<ActionResult>>(
+                async _ => 
+                {
+                    // Envoyer une notification SignalR
+                    await _notificationService.NotifyQsoParticipantsChanged(
+                        aggregateId, 
+                        "reordered", 
+                        callSign, 
+                        $"{callSign} a été déplacé dans la liste"
+                    );
+                    return NoContent();
+                },
+                async errors => 
+                {
+                    await Task.CompletedTask;
+                    return BadRequest(new { Errors = errors.Select(e => e.Message) });
+                }
             );
         }
         catch (Exception ex)

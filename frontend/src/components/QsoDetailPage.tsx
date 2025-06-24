@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QsoAggregateDto, ParticipantDto, CreateParticipantRequest } from '../types';
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
 import { useToasts } from '../hooks/useToasts';
+import { useQsoSignalR } from '../hooks/useQsoSignalR';
 import ToastContainer from './ToastContainer';
 import ParticipantTable from './ParticipantTable';
 import ParticipantMap from './ParticipantMap';
@@ -28,9 +29,47 @@ const QsoDetailPage: React.FC = () => {
   const { errorMessage, setErrorMessage } = useMessages();
   // Utiliser le hook de toasts pour les notifications
   const { toasts, removeToast, showSuccess, showError } = useToasts();
-
   // Variable pour déterminer si les onglets Table et Carte doivent être désactivés
-  const shouldDisableQrzTabs = !canUserFetchQrzInfo(user);  useEffect(() => {
+  const shouldDisableQrzTabs = !canUserFetchQrzInfo(user);
+  // Handler unifié pour tous les changements de participants
+  const handleQsoParticipantsChanged = useCallback(async (data: any) => {
+    const receivedQsoId = data.qsoId;
+    const actionType = data.actionType;
+    const participantCallSign = data.participantCallSign;
+      if (receivedQsoId === id && id) {
+      try {        // Rafraîchir la liste complète des participants depuis l'API
+        const updatedQso = await qsoApiService.getQso(id);
+        setQso(updatedQso);
+        
+        // Afficher le toast approprié selon le type d'action
+        switch (actionType) {
+          case 'added':
+            if (participantCallSign) {
+              showSuccess(`${participantCallSign} a rejoint le QSO`);
+            }
+            break;
+          case 'removed':
+            if (participantCallSign) {
+              showSuccess(`${participantCallSign} a quitté le QSO`);
+            }
+            break;
+          case 'reordered':
+            showSuccess('Ordre des participants mis à jour');
+            break;
+          default:
+            showSuccess('Liste des participants mise à jour');
+        }
+      } catch (error) {
+        console.error('Erreur lors du rafraîchissement des participants:', error);
+        showError('Erreur lors de la mise à jour des participants');
+      }
+    }
+  }, [id, showSuccess, showError]);// Configurer SignalR
+  const { connectionState } = useQsoSignalR(id || null, {
+    onQsoParticipantsChanged: handleQsoParticipantsChanged
+  });
+
+  useEffect(() => {
     if (!id) {
       setErrorMessage('ID du QSO manquant');
       setIsLoading(false);
@@ -71,29 +110,31 @@ const QsoDetailPage: React.FC = () => {
   const handleParticipantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setNewParticipant({ callSign: value });
-  };
-
-  const handleAddParticipant = async (e: React.FormEvent) => {
+  };  const handleAddParticipant = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!qso || !newParticipant.callSign.trim()) return;    try {
+    if (!qso || !newParticipant.callSign.trim()) return;
+
+    try {
       setIsAddingParticipant(true);
       setErrorMessage(null);
 
       const participantData: CreateParticipantRequest = {
         callSign: newParticipant.callSign
-      };      await qsoApiService.addParticipant(qso.id, participantData);
-      showSuccess('Participant ajouté avec succès');
+      };
 
+      await qsoApiService.addParticipant(qso.id, participantData);
+      
       // Réinitialiser le formulaire de participant
       setNewParticipant({ callSign: '' });
 
-      // Recharger les données
-      await loadQso();    } catch (err: any) {
+      // Recharger les données (fallback jusqu'à ce que SignalR soit complètement opérationnel)
+      await loadQso();
+
+    } catch (err: any) {
       console.error('Erreur lors de l\'ajout du participant:', err);
-      // Utiliser un toast d'erreur au lieu de setErrorMessage pour les erreurs d'ajout de participant
       const errorMessage = extractErrorMessage(err, 'Impossible d\'ajouter le participant');
       showError(errorMessage);
-    }finally {
+    } finally {
       setIsAddingParticipant(false);
     }
   };
@@ -221,17 +262,23 @@ const QsoDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="page-container">      <div className="page-header">
         <button onClick={handleBack} className="btn btn-secondary">
           ← Retour
         </button>
-        <h1>Détails du QSO</h1>
+        <div className="page-title-section">
+          <h1>Détails du QSO</h1>          {/* Indicateur de connexion SignalR */}
+          <div className={`signalr-status ${connectionState.toLowerCase()}`} title={`SignalR: ${connectionState}`}>
+            <span className="status-dot"></span>
+            <span className="status-text">Temps réel ({connectionState})</span>
+          </div>
+        </div>
         {isAuthenticated && (
           <button onClick={handleEdit} className="btn btn-primary">
             Éditer
-          </button>        )}
-      </div>      {errorMessage && (
+          </button>
+        )}
+      </div>{errorMessage && (
         <div className="error-message" style={{ marginBottom: '1rem' }}>
           {errorMessage}
         </div>
@@ -264,17 +311,16 @@ const QsoDetailPage: React.FC = () => {
                   <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Date de fin :</label>
                   <span>{formatDate(qso.endDateTime)}</span>
                 </div>
-              )}
-
-              {qso.mode && (
+              )}              {qso.mode && (
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                   <label style={{ fontWeight: '600', fontSize: '0.875rem' }}>Mode :</label>
                   <span>{qso.mode}</span>
-                </div>
-              )}
+                </div>              )}
             </div>
           </div>
-        </div>        {/* Section participants */}
+        </div>
+
+        {/* Section participants */}
         <div className="detail-section">
           <div className="detail-card">            <div style={{ 
               display: 'flex', 
