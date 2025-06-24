@@ -26,8 +26,8 @@ const QsoDetailPage: React.FC = () => {
   const [isReordering, setIsReordering] = useState(false);
     // Utiliser le hook de messages avec auto-hide
   const { errorMessage, setErrorMessage } = useMessages();
-    // Utiliser le hook de toasts pour les notifications
-  const { toasts, removeToast, showSuccess } = useToasts();
+  // Utiliser le hook de toasts pour les notifications
+  const { toasts, removeToast, showSuccess, showError } = useToasts();
 
   // Variable pour déterminer si les onglets Table et Carte doivent être désactivés
   const shouldDisableQrzTabs = !canUserFetchQrzInfo(user);  useEffect(() => {
@@ -90,7 +90,9 @@ const QsoDetailPage: React.FC = () => {
       // Recharger les données
       await loadQso();    } catch (err: any) {
       console.error('Erreur lors de l\'ajout du participant:', err);
-      setErrorMessage(extractErrorMessage(err, 'Impossible d\'ajouter le participant'));
+      // Utiliser un toast d'erreur au lieu de setErrorMessage pour les erreurs d'ajout de participant
+      const errorMessage = extractErrorMessage(err, 'Impossible d\'ajouter le participant');
+      showError(errorMessage);
     }finally {
       setIsAddingParticipant(false);
     }
