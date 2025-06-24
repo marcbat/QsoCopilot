@@ -1360,4 +1360,67 @@ body {
   .qso-list-controls {
     justify-content: center;
   }
+  
+  .page-title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* Indicateur de connexion SignalR */
+.page-title-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.signalr-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.signalr-status .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+.signalr-status.connected .status-dot {
+  background-color: var(--success-color);
+}
+
+.signalr-status.connecting .status-dot {
+  background-color: var(--warning-color);
+}
+
+.signalr-status.disconnected .status-dot {
+  background-color: var(--error-color);
+}
+
+.signalr-status.reconnecting .status-dot {
+  background-color: var(--warning-color);
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }

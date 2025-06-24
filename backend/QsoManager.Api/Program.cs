@@ -3,6 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using QsoManager.Application;
 using QsoManager.Infrastructure;
 using QsoManager.Domain.Services;
+using QsoManager.Api.Hubs;
+using QsoManager.Api.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,6 +56,12 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Add SignalR
+builder.Services.AddSignalR();
+
+// Add notification service
+builder.Services.AddScoped<IQsoNotificationService, QsoNotificationService>();
+
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "JWTAuthenticationHIGHsecuredPasswordVVVp1OH7Xzyr";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "http://localhost:5000";
@@ -77,9 +85,33 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtIssuer,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
+    
+    // Configuration pour SignalR avec JWT
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/qsohub"))
+            {
+                context.Token = accessToken;
+            }
+            
+            return Task.CompletedTask;
+        }
+    };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Permettre l'accès anonyme au hub SignalR
+    options.AddPolicy("AllowAnonymous", policy =>
+    {
+        policy.RequireAssertion(_ => true);
+    });
+});
 
 // Domain services
 builder.Services.AddScoped<IQsoAggregateService, QsoAggregateService>();
@@ -89,9 +121,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Development", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:4200", "http://localhost:3000")
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials(); // Important pour SignalR
     });
 });
 
@@ -113,6 +146,9 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Map SignalR hub avec accès anonyme
+app.MapHub<QsoHub>("/qsohub").AllowAnonymous();
 
 app.Run();
 
