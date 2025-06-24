@@ -10,7 +10,9 @@ import {
   LoginByEmailRequest,
   RegisterRequest,
   TokenDto,
-  ParticipantQrzInfoDto
+  ParticipantQrzInfoDto,
+  PagedResult,
+  PaginationParameters
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5041/api';
@@ -95,6 +97,28 @@ export const qsoApiService = {
 
   async getMyModeratedQsos(): Promise<QsoAggregateDto[]> {
     const response: AxiosResponse<QsoAggregateDto[]> = await apiClient.get('/QsoAggregate/my-moderated');
+    return response.data;
+  },
+
+  // QSO Aggregates avec pagination
+  async getAllQsosPaginated(pageNumber: number = 1, pageSize: number = 20): Promise<PagedResult<QsoAggregateDto>> {
+    const response: AxiosResponse<PagedResult<QsoAggregateDto>> = await apiClient.get(
+      `/QsoAggregate/paginated?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    );
+    return response.data;
+  },
+
+  async searchQsoByNamePaginated(name: string, pageNumber: number = 1, pageSize: number = 20): Promise<PagedResult<QsoAggregateDto>> {
+    const response: AxiosResponse<PagedResult<QsoAggregateDto>> = await apiClient.get(
+      `/QsoAggregate/search/paginated?name=${encodeURIComponent(name)}&pageNumber=${pageNumber}&pageSize=${pageSize}`
+    );
+    return response.data;
+  },
+
+  async getMyModeratedQsosPaginated(pageNumber: number = 1, pageSize: number = 20): Promise<PagedResult<QsoAggregateDto>> {
+    const response: AxiosResponse<PagedResult<QsoAggregateDto>> = await apiClient.get(
+      `/QsoAggregate/my-moderated/paginated?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    );
     return response.data;
   },
 
