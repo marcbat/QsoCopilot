@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { QsoAggregateDto, PagedResult } from '../types';
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
-import { useMessages } from '../hooks/useMessages';
+import { useToasts } from '../hooks/useToasts';
 import CreateQsoForm from './CreateQsoForm';
 import QsoListPaginated from './QsoListPaginated';
+import ToastContainer from './ToastContainer';
 import { extractErrorMessage } from '../utils/errorUtils';
 
 const QsoManagerPagePaginated: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [pagedResult, setPagedResult] = useState<PagedResult<QsoAggregateDto> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');  const [showMyModeratedOnly, setShowMyModeratedOnly] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');  const [showMyModeratedOnly, setShowMyModeratedOnly] = useState(false);  const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5); // Taille de page plus petite pour tester
   
-  // Utiliser le hook de messages avec auto-hide
-  const { errorMessage, setErrorMessage } = useMessages();
+  // Utiliser le hook de toasts pour toutes les notifications
+  const { toasts, removeToast, showError } = useToasts();
 
   // Charger la liste des QSO avec pagination
   const loadQsos = async (
@@ -24,10 +24,8 @@ const QsoManagerPagePaginated: React.FC = () => {
     size: number = pageSize,
     term: string = searchTerm,
     moderatedOnly: boolean = showMyModeratedOnly
-  ) => {
-    try {
+  ) => {    try {
       setIsLoading(true);
-      setErrorMessage(null);
       
       let data: PagedResult<QsoAggregateDto>;
       
@@ -56,11 +54,10 @@ const QsoManagerPagePaginated: React.FC = () => {
         // Récupérer tous les QSO avec pagination
         data = await qsoApiService.getAllQsosPaginated(page, size);
       }
-      
-      setPagedResult(data);
+        setPagedResult(data);
     } catch (err: any) {
       console.error('Erreur lors du chargement des QSO:', err);
-      setErrorMessage(extractErrorMessage(err, 'Erreur lors du chargement des QSO'));
+      showError(extractErrorMessage(err, 'Erreur lors du chargement des QSO'));
       setPagedResult(null);
     } finally {
       setIsLoading(false);
@@ -178,14 +175,7 @@ const QsoManagerPagePaginated: React.FC = () => {
             >
               Effacer
             </button>
-          </div>
-        </form>
-
-        {errorMessage && (
-          <div className="alert alert-error" style={{ margin: '0 1rem 1rem 1rem' }}>
-            {errorMessage}
-          </div>
-        )}
+          </div>        </form>
 
         {/* Liste des QSO avec pagination */}
         <QsoListPaginated 
@@ -196,6 +186,9 @@ const QsoManagerPagePaginated: React.FC = () => {
           onPageSizeChange={handlePageSizeChange}
         />
       </div>
+      
+      {/* Container pour les toasts */}
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };

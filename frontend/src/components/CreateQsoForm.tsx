@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { CreateQsoRequest } from '../types';
 import { qsoApiService } from '../api';
-import { useMessages } from '../hooks/useMessages';
 import { useToasts } from '../hooks/useToasts';
 import ToastContainer from './ToastContainer';
 import { extractErrorMessage } from '../utils/errorUtils';
@@ -15,13 +14,10 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
     description: '',
     frequency: 0
   });
-
   const [isLoading, setIsLoading] = useState(false);
-    // Utiliser le hook de messages avec auto-hide
-  const { errorMessage, setErrorMessage } = useMessages();
   
-  // Utiliser le hook de toasts pour les notifications de succès
-  const { toasts, removeToast, showSuccess } = useToasts();
+  // Utiliser le hook de toasts pour toutes les notifications
+  const { toasts, removeToast, showSuccess, showError } = useToasts();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -32,7 +28,6 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
   };  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorMessage(null);
 
     try {
       const qsoData = await qsoApiService.createQsoAggregate(formData);
@@ -48,16 +43,16 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
       // Notifier le parent
       onQsoCreated(qsoData.id);
     } catch (err: any) {
-      setErrorMessage(extractErrorMessage(err, 'Erreur lors de la création du QSO'));
+      showError(extractErrorMessage(err, 'Erreur lors de la création du QSO'));
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
-    <div className="create-qso-form">      <div className="card-header">
+    <div className="create-qso-form">
+      <div className="card-header">
         <h2 className="card-title">🚀 Créer un nouveau QSO</h2>
-      </div>        {errorMessage && <div className="alert alert-error">{errorMessage}</div>}
+      </div>
 
       <form onSubmit={handleSubmit} className="qso-form-horizontal">
         <div className="form-group">
