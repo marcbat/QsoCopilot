@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { QsoAggregateDto, ParticipantDto, UpdateQsoRequest } from '../types';
+import { QsoAggregateDto, UpdateQsoRequest } from '../types';
 import { qsoApiService } from '../api/qsoApi';
 import { useAuth } from '../contexts/AuthContext';
 import { useMessages } from '../hooks/useMessages';
@@ -225,28 +225,8 @@ const QsoEditPage: React.FC = () => {
             <button type="submit" className="btn btn-primary" disabled={isSaving}>
               {isSaving ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
             </button>
-          </form>
-        </div>        {/* Section participants */}
-        <div className="edit-section">
-          <h2>Participants ({qso?.participants?.length || 0})</h2>
-          
-          {/* Liste des participants existants */}
-          {qso?.participants && qso.participants.length > 0 && (
-            <div className="existing-participants">
-              <h3>Participants actuels</h3>
-              <div className="participants-grid">
-                {qso.participants.map((participant: ParticipantDto, index: number) => (                  <div key={index} className="participant-card">
-                    <h4>{participant.callSign}</h4>
-                    {participant.name && <p><strong>Nom :</strong> {participant.name}</p>}
-                    {participant.location && <p><strong>Localisation :</strong> {participant.location}</p>}
-                    {participant.signalReport && <p><strong>Rapport :</strong> {participant.signalReport}</p>}
-                    {participant.notes && <p><strong>Notes :</strong> {participant.notes}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>          )}
-        </div>
-      </div>      {/* Container pour les toasts */}
+          </form>        </div>
+      </div>{/* Container pour les toasts */}
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
