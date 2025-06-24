@@ -178,3 +178,19 @@ export interface ParticipantQrzInfoDto {
   qrzCallsignInfo?: QrzCallsignInfo;
   qrzDxccInfo?: QrzDxccInfo;
 }
+
+// Types pour la pagination
+export interface PagedResult<T> {
+  items: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface PaginationParameters {
+  pageNumber: number;
+  pageSize: number;
+}

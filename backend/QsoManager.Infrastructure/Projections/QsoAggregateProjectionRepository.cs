@@ -3,6 +3,7 @@ using LanguageExt.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using QsoManager.Application.Common;
 using QsoManager.Application.Projections.Interfaces;
 using ApplicationModels = QsoManager.Application.Projections.Models;
 using InfrastructureModels = QsoManager.Infrastructure.Projections.Models;
@@ -197,7 +198,127 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error searching QsoAggregate projections by moderator '{ModeratorId}'", moderatorId);
-            return Error.New($"Failed to search QsoAggregate projections by moderator '{moderatorId}': {ex.Message}");
+            return Error.New($"Failed to search QsoAggregate projections by moderator '{moderatorId}': {ex.Message}");        }
+    }
+
+    public async Task<Validation<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>> GetAllPaginatedAsync(PaginationParameters pagination, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!pagination.IsValid)
+                return Error.New("Invalid pagination parameters");
+
+            var collection = GetCollection();
+            
+            // Compter le total d'éléments
+            var totalCount = await collection.CountDocumentsAsync(_ => true, cancellationToken: cancellationToken);
+            
+            // Récupérer les éléments paginés
+            var results = await collection
+                .Find(_ => true)
+                .Skip(pagination.Skip)
+                .Limit(pagination.PageSize)
+                .ToListAsync(cancellationToken);
+
+            var mappedResults = results.Select(MapToDto);
+            var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
+                mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
+
+            _logger.LogInformation("Retrieved page {PageNumber} of {TotalPages} with {ItemCount} items (total: {TotalCount})",
+                pagedResult.PageNumber, pagedResult.TotalPages, results.Count, totalCount);
+
+            return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving paginated QsoAggregate projections");
+            return Error.New($"Failed to retrieve paginated QsoAggregate projections: {ex.Message}");
+        }
+    }
+
+    public async Task<Validation<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>> SearchByNamePaginatedAsync(string name, PaginationParameters pagination, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!pagination.IsValid)
+                return Error.New("Invalid pagination parameters");
+
+            var collection = GetCollection();
+            
+            _logger.LogInformation("Searching paginated QSO projections containing '{SearchTerm}' (page {PageNumber}, size {PageSize})", 
+                name, pagination.PageNumber, pagination.PageSize);
+            
+            // Créer un pattern regex pour recherche partielle case-insensitive
+            var safeSearchTerm = name.Replace("\\", "\\\\").Replace(".", "\\.");
+            var regexPattern = $".*{safeSearchTerm}.*";
+            
+            var filter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Regex(
+                x => x.Name, 
+                new MongoDB.Bson.BsonRegularExpression(regexPattern, "i"));
+            
+            // Compter le total d'éléments correspondant au filtre
+            var totalCount = await collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+            
+            // Récupérer les éléments paginés
+            var results = await collection
+                .Find(filter)
+                .Skip(pagination.Skip)
+                .Limit(pagination.PageSize)
+                .ToListAsync(cancellationToken);
+            
+            var mappedResults = results.Select(MapToDto);
+            var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
+                mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
+
+            _logger.LogInformation("Found page {PageNumber} of {TotalPages} with {ItemCount} items containing '{SearchTerm}' (total: {TotalCount})", 
+                pagedResult.PageNumber, pagedResult.TotalPages, results.Count, name, totalCount);
+            
+            return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching paginated QsoAggregate projections by name '{Name}'", name);
+            return Error.New($"Failed to search paginated QsoAggregate projections by name '{name}': {ex.Message}");
+        }
+    }
+
+    public async Task<Validation<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>> SearchByModeratorPaginatedAsync(Guid moderatorId, PaginationParameters pagination, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!pagination.IsValid)
+                return Error.New("Invalid pagination parameters");
+
+            var collection = GetCollection();
+            
+            _logger.LogInformation("Searching paginated QSO projections moderated by user '{ModeratorId}' (page {PageNumber}, size {PageSize})", 
+                moderatorId, pagination.PageNumber, pagination.PageSize);
+            
+            var filter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Eq(x => x.ModeratorId, moderatorId);
+            
+            // Compter le total d'éléments correspondant au filtre
+            var totalCount = await collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+            
+            // Récupérer les éléments paginés
+            var results = await collection
+                .Find(filter)
+                .Skip(pagination.Skip)
+                .Limit(pagination.PageSize)
+                .ToListAsync(cancellationToken);
+            
+            var mappedResults = results.Select(MapToDto);
+            var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
+                mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
+
+            _logger.LogInformation("Found page {PageNumber} of {TotalPages} with {ItemCount} items moderated by user '{ModeratorId}' (total: {TotalCount})", 
+                pagedResult.PageNumber, pagedResult.TotalPages, results.Count, moderatorId, totalCount);
+            
+            return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching paginated QsoAggregate projections by moderator '{ModeratorId}'", moderatorId);
+            return Error.New($"Failed to search paginated QsoAggregate projections by moderator '{moderatorId}': {ex.Message}");
         }
     }
 

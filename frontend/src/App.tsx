@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/Header';
-import QsoManagerPage from './components/QsoManagerPage';
+import QsoManagerPagePaginated from './components/QsoManagerPagePaginated';
 import QsoDetailPage from './components/QsoDetailPage';
 import QsoEditPage from './components/QsoEditPage';
 import LoginPage from './components/LoginPage';
@@ -19,7 +19,7 @@ const App: React.FC = () => {
         <div className="app">
           <Header />
           <main className="main-content">            <Routes>
-              <Route path="/" element={<QsoManagerPage />} />
+              <Route path="/" element={<QsoManagerPagePaginated />} />
               <Route path="/qso/:id" element={<QsoDetailPage />} />
               <Route path="/qso/:id/edit" element={<QsoEditPage />} />
               <Route path="/login" element={<LoginPage />} />
