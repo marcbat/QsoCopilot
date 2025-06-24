@@ -130,11 +130,9 @@ Cette action est irréversible.`;
       )}
 
       <div className="card">
-        <table className="table">
-          <thead>
+        <table className="table">          <thead>
             <tr>
               <th>Nom</th>
-              <th>Description</th>
               <th>Fréquence</th>
               <th>Participants</th>
               <th>Date de début</th>
@@ -157,18 +155,7 @@ Cette action est irréversible.`;
                     title="Cliquez pour voir les détails"
                   >
                     {qso.name}
-                  </div>
-                </td>
-                <td>
-                  <div className="qso-description" style={{ 
-                    maxWidth: '300px', 
-                    overflow: 'hidden', 
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}>
-                    {qso.description || 'Aucune description'}
-                  </div>
-                </td>
+                  </div>                </td>
                 <td>
                   <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>
                     {qso.frequency ? `${qso.frequency.toFixed(3)} MHz` : 'Non définie'}

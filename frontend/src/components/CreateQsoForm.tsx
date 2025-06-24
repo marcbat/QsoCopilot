@@ -11,7 +11,6 @@ interface CreateQsoFormProps {
 
 const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  const [formData, setFormData] = useState<CreateQsoRequest>({
     name: '',
-    description: '',
     frequency: 0
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -32,11 +31,9 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
     try {
       const qsoData = await qsoApiService.createQsoAggregate(formData);
       showSuccess(`QSO créé avec succès: ${qsoData.name}`);
-      
-      // Réinitialiser le formulaire
+        // Réinitialiser le formulaire
       setFormData({
         name: '',
-        description: '',
         frequency: 0
       });
       
@@ -52,10 +49,8 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
     <div className="create-qso-form">
       <div className="card-header">
         <h2 className="card-title">🚀 Créer un nouveau QSO</h2>
-      </div>
-
-      <form onSubmit={handleSubmit} className="qso-form-horizontal">
-        <div className="form-group">
+      </div>      <form onSubmit={handleSubmit} className="qso-form-horizontal">
+        <div className="form-group" style={{ flex: '2', marginRight: '1rem' }}>
           <label htmlFor="name" className="form-label">Nom du QSO *</label>
           <input
             type="text"
@@ -69,20 +64,7 @@ const CreateQsoForm: React.FC<CreateQsoFormProps> = ({ onQsoCreated }) => {  con
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="description" className="form-label">Description</label>
-          <input
-            type="text"
-            id="description"
-            name="description"
-            className="form-input"
-            value={formData.description}
-            onChange={handleInputChange}
-            placeholder="Description du QSO..."
-          />
-        </div>
-
-        <div className="form-group">
+        <div className="form-group" style={{ flex: '1' }}>
           <label htmlFor="frequency" className="form-label">Fréquence (MHz) *</label>
           <input
             type="number"
