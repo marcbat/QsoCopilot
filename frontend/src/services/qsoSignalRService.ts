@@ -1,11 +1,8 @@
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { ParticipantDto } from '../types';
 
 export interface QsoSignalREvents {
-    onParticipantAdded: (data: { qsoId: string; participant: ParticipantDto }) => void;
-    onParticipantRemoved: (data: { qsoId: string; callSign: string }) => void;
-    onParticipantsReordered: (data: { qsoId: string; participants: ParticipantDto[] }) => void;
     onQsoUpdated: (data: { qsoId: string; qso: any }) => void;
+    onQsoParticipantsChanged: (data: { qsoId: string; actionType: string; participantCallSign?: string; message?: string }) => void;
 }
 
 class QsoSignalRService {
@@ -40,41 +37,19 @@ class QsoSignalRService {
         // Configurer les gestionnaires d'événements
         this.setupEventHandlers();
     }    private setupEventHandlers() {
-        if (!this.connection) return;
-
-        // Événement: Participant ajouté
-        this.connection.on('ParticipantAdded', (data: any) => {
-            if (this.events.onParticipantAdded) {
-                this.events.onParticipantAdded(data);
-            }
-        });
-
-        // Événement: Participant supprimé
-        this.connection.on('ParticipantRemoved', (data: any) => {
-            if (this.events.onParticipantRemoved) {
-                this.events.onParticipantRemoved(data);
-            }
-        });
-
-        // Événement: Participants réordonnés
-        this.connection.on('ParticipantsReordered', (data: any) => {
-            if (this.events.onParticipantsReordered) {
-                this.events.onParticipantsReordered(data);
-            }
-        });
-
-        // Événement: QSO mis à jour
+        if (!this.connection) return;        // Événement: QSO mis à jour
         this.connection.on('QsoUpdated', (data: any) => {
             if (this.events.onQsoUpdated) {
                 this.events.onQsoUpdated(data);
             }
         });
-        this.connection.on('QsoUpdated', (data: any) => {
-            console.log('SignalR: QSO mis à jour', data);
-            if (this.events.onQsoUpdated) {
-                this.events.onQsoUpdated(data);
+
+        // Événement: Participants du QSO changés (événement unifié)
+        this.connection.on('QsoParticipantsChanged', (data: any) => {
+            if (this.events.onQsoParticipantsChanged) {
+                this.events.onQsoParticipantsChanged(data);
             }
-        });        // Gestionnaires de connexion
+        });// Gestionnaires de connexion
         this.connection.onreconnecting((error: any) => {
             console.warn('SignalR: Reconnexion en cours...', error?.message);
         });

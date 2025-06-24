@@ -65,7 +65,12 @@ public class QsoAggregateController : ControllerBase
                     var newParticipant = qsoDto.Participants.FirstOrDefault(p => p.CallSign.Equals(request.CallSign, StringComparison.OrdinalIgnoreCase));
                     if (newParticipant != null)
                     {
-                        await _notificationService.NotifyParticipantAdded(aggregateId, newParticipant);
+                        await _notificationService.NotifyQsoParticipantsChanged(
+                            aggregateId, 
+                            "added", 
+                            newParticipant.CallSign, 
+                            $"{newParticipant.CallSign} a rejoint le QSO"
+                        );
                     }
                     
                     return Ok(qsoDto);
@@ -92,9 +97,13 @@ public class QsoAggregateController : ControllerBase
 
             return await result.Match<Task<ActionResult>>(
                 async _ => 
-                {
-                    // Envoyer une notification SignalR
-                    await _notificationService.NotifyParticipantRemoved(aggregateId, callSign);
+                {                    // Envoyer une notification SignalR
+                    await _notificationService.NotifyQsoParticipantsChanged(
+                        aggregateId, 
+                        "removed", 
+                        callSign, 
+                        $"{callSign} a quitté le QSO"
+                    );
                     return NoContent();
                 },
                 async errors => 
@@ -114,13 +123,26 @@ public class QsoAggregateController : ControllerBase
     public async Task<ActionResult> ReorderParticipants(Guid aggregateId, [FromBody] ReorderParticipantsRequest request)
     {
         try
-        {
-            var command = new ReorderParticipantsCommand(aggregateId, request.NewOrders, User);
+        {            var command = new ReorderParticipantsCommand(aggregateId, request.NewOrders, User);
             var result = await _mediator.Send(command);
 
-            return result.Match<ActionResult>(
-                _ => NoContent(),
-                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            return await result.Match<Task<ActionResult>>(
+                async _ => 
+                {
+                    // Envoyer une notification SignalR
+                    await _notificationService.NotifyQsoParticipantsChanged(
+                        aggregateId, 
+                        "reordered", 
+                        null, 
+                        "L'ordre des participants a été mis à jour"
+                    );
+                    return NoContent();
+                },
+                async errors => 
+                {
+                    await Task.CompletedTask;
+                    return BadRequest(new { Errors = errors.Select(e => e.Message) });
+                }
             );
         }
         catch (Exception ex)
@@ -134,13 +156,26 @@ public class QsoAggregateController : ControllerBase
     public async Task<ActionResult> MoveParticipant(Guid aggregateId, string callSign, [FromBody] MoveParticipantRequest request)
     {
         try
-        {
-            var command = new MoveParticipantToPositionCommand(aggregateId, callSign, request.NewPosition);
+        {            var command = new MoveParticipantToPositionCommand(aggregateId, callSign, request.NewPosition);
             var result = await _mediator.Send(command);
 
-            return result.Match<ActionResult>(
-                _ => NoContent(),
-                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            return await result.Match<Task<ActionResult>>(
+                async _ => 
+                {
+                    // Envoyer une notification SignalR
+                    await _notificationService.NotifyQsoParticipantsChanged(
+                        aggregateId, 
+                        "reordered", 
+                        callSign, 
+                        $"{callSign} a été déplacé dans la liste"
+                    );
+                    return NoContent();
+                },
+                async errors => 
+                {
+                    await Task.CompletedTask;
+                    return BadRequest(new { Errors = errors.Select(e => e.Message) });
+                }
             );
         }
         catch (Exception ex)

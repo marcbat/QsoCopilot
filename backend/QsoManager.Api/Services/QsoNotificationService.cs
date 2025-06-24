@@ -10,24 +10,14 @@ namespace QsoManager.Api.Services;
 public interface IQsoNotificationService
 {
     /// <summary>
-    /// Notifier qu'un participant a été ajouté à un QSO
-    /// </summary>
-    Task NotifyParticipantAdded(Guid qsoId, ParticipantDto participant);
-
-    /// <summary>
-    /// Notifier qu'un participant a été supprimé d'un QSO
-    /// </summary>
-    Task NotifyParticipantRemoved(Guid qsoId, string callSign);
-
-    /// <summary>
-    /// Notifier que l'ordre des participants a changé
-    /// </summary>
-    Task NotifyParticipantsReordered(Guid qsoId, List<ParticipantDto> participants);
-
-    /// <summary>
     /// Notifier qu'un QSO a été mis à jour
     /// </summary>
     Task NotifyQsoUpdated(Guid qsoId, QsoAggregateDto qso);
+
+    /// <summary>
+    /// Notifier qu'il y a eu un changement dans les participants d'un QSO
+    /// </summary>
+    Task NotifyQsoParticipantsChanged(Guid qsoId, string actionType, string? participantCallSign = null, string? message = null);
 }
 
 public class QsoNotificationService : IQsoNotificationService
@@ -41,58 +31,9 @@ public class QsoNotificationService : IQsoNotificationService
     {
         _hubContext = hubContext;
         _logger = logger;
-    }
-
-    public async Task NotifyParticipantAdded(Guid qsoId, ParticipantDto participant)
-    {        try
-        {
-            var groupName = $"qso_{qsoId}";
-            await _hubContext.Clients.Group(groupName).SendAsync("ParticipantAdded", new
-            {
-                QsoId = qsoId,
-                Participant = participant
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erreur lors de l'envoi de la notification ParticipantAdded pour QSO {QsoId}", qsoId);
-        }
-    }
-
-    public async Task NotifyParticipantRemoved(Guid qsoId, string callSign)
-    {        try
-        {
-            var groupName = $"qso_{qsoId}";
-            await _hubContext.Clients.Group(groupName).SendAsync("ParticipantRemoved", new
-            {
-                QsoId = qsoId,
-                CallSign = callSign
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erreur lors de l'envoi de la notification ParticipantRemoved pour QSO {QsoId}", qsoId);
-        }
-    }
-
-    public async Task NotifyParticipantsReordered(Guid qsoId, List<ParticipantDto> participants)
-    {        try
-        {
-            var groupName = $"qso_{qsoId}";
-            await _hubContext.Clients.Group(groupName).SendAsync("ParticipantsReordered", new
-            {
-                QsoId = qsoId,
-                Participants = participants
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erreur lors de l'envoi de la notification ParticipantsReordered pour QSO {QsoId}", qsoId);
-        }
-    }
-
-    public async Task NotifyQsoUpdated(Guid qsoId, QsoAggregateDto qso)
-    {        try
+    }    public async Task NotifyQsoUpdated(Guid qsoId, QsoAggregateDto qso)
+    {
+        try
         {
             var groupName = $"qso_{qsoId}";
             await _hubContext.Clients.Group(groupName).SendAsync("QsoUpdated", new
@@ -104,6 +45,25 @@ public class QsoNotificationService : IQsoNotificationService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de l'envoi de la notification QsoUpdated pour QSO {QsoId}", qsoId);
+        }
+    }
+
+    public async Task NotifyQsoParticipantsChanged(Guid qsoId, string actionType, string? participantCallSign = null, string? message = null)
+    {
+        try
+        {
+            var groupName = $"qso_{qsoId}";
+            await _hubContext.Clients.Group(groupName).SendAsync("QsoParticipantsChanged", new
+            {
+                QsoId = qsoId,
+                ActionType = actionType,
+                ParticipantCallSign = participantCallSign,
+                Message = message
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de l'envoi de la notification QsoParticipantsChanged pour QSO {QsoId}", qsoId);
         }
     }
 }

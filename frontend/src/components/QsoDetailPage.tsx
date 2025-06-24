@@ -31,58 +31,42 @@ const QsoDetailPage: React.FC = () => {
   const { toasts, removeToast, showSuccess, showError } = useToasts();
   // Variable pour déterminer si les onglets Table et Carte doivent être désactivés
   const shouldDisableQrzTabs = !canUserFetchQrzInfo(user);
-
-  // Callbacks pour les événements SignalR
-  const handleParticipantAdded = useCallback((data: any) => {
+  // Handler unifié pour tous les changements de participants
+  const handleQsoParticipantsChanged = useCallback(async (data: any) => {
     const receivedQsoId = data.qsoId;
-    const participant = data.participant;
-    
-    if (receivedQsoId === id && qso && qso.participants) {
-      // Vérifier si le participant n'existe pas déjà dans la liste
-      const participantExists = qso.participants.some(p => 
-        p.callSign?.toLowerCase() === participant.callSign?.toLowerCase()
-      );
-      
-      if (!participantExists) {
-        const updatedQso = {
-          ...qso,
-          participants: [...qso.participants, participant]
-        };
+    const actionType = data.actionType;
+    const participantCallSign = data.participantCallSign;
+      if (receivedQsoId === id && id) {
+      try {        // Rafraîchir la liste complète des participants depuis l'API
+        const updatedQso = await qsoApiService.getQso(id);
         setQso(updatedQso);
-        showSuccess(`${participant.callSign} a rejoint le QSO`);
+        
+        // Afficher le toast approprié selon le type d'action
+        switch (actionType) {
+          case 'added':
+            if (participantCallSign) {
+              showSuccess(`${participantCallSign} a rejoint le QSO`);
+            }
+            break;
+          case 'removed':
+            if (participantCallSign) {
+              showSuccess(`${participantCallSign} a quitté le QSO`);
+            }
+            break;
+          case 'reordered':
+            showSuccess('Ordre des participants mis à jour');
+            break;
+          default:
+            showSuccess('Liste des participants mise à jour');
+        }
+      } catch (error) {
+        console.error('Erreur lors du rafraîchissement des participants:', error);
+        showError('Erreur lors de la mise à jour des participants');
       }
     }
-  }, [id, qso, showSuccess]);  const handleParticipantRemoved = useCallback((data: any) => {
-    const receivedQsoId = data.qsoId;
-    const callSign = data.callSign;
-    
-    if (receivedQsoId === id && qso && qso.participants) {
-      const updatedQso = {
-        ...qso,
-        participants: qso.participants.filter(p => 
-          p.callSign?.toLowerCase() !== callSign?.toLowerCase()
-        )
-      };
-      setQso(updatedQso);
-      showSuccess(`${callSign} a quitté le QSO`);
-    }
-  }, [id, qso, showSuccess]);
-
-  const handleParticipantsReordered = useCallback((data: any) => {
-    const receivedQsoId = data.qsoId; // qsoId au lieu de QsoId
-    const participants = data.participants; // participants au lieu de Participants
-    
-    if (receivedQsoId === id && qso) {
-      const updatedQso = {
-        ...qso,
-        participants: participants
-      };
-      setQso(updatedQso);
-    }
-  }, [id, qso]);// Configurer SignalR
+  }, [id, showSuccess, showError]);// Configurer SignalR
   const { connectionState } = useQsoSignalR(id || null, {
-    onParticipantAdded: handleParticipantAdded,    onParticipantRemoved: handleParticipantRemoved,
-    onParticipantsReordered: handleParticipantsReordered
+    onQsoParticipantsChanged: handleQsoParticipantsChanged
   });
 
   useEffect(() => {
