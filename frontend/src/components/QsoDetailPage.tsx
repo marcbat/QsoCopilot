@@ -217,10 +217,9 @@ const QsoDetailPage: React.FC = () => {
         message: 'ℹ️ Pour afficher les détails complets des participants (nom, localisation, etc.) et accéder aux onglets "Table" et "Carte", veuillez vous connecter et configurer vos identifiants QRZ.com dans votre profil.'
       };
     }
-    
-    if (!canUserFetchQrzInfo(user)) {
+      if (!canUserFetchQrzInfo(user)) {
       return {
-        type: 'warning', 
+        type: 'info', 
         message: '⚠️ Pour afficher les détails complets des participants et accéder aux onglets "Table" et "Carte", vous devez configurer vos identifiants QRZ.com dans votre profil.'
       };
     }
@@ -336,13 +335,12 @@ const QsoDetailPage: React.FC = () => {
               const qrzMessage = getQrzInfoMessage();
               if (!qrzMessage) return null;
               
-              return (
-                <div className="qrz-info-message" style={{ 
+              return (                <div className="qrz-info-message" style={{ 
                   marginBottom: '1rem', 
                   padding: '0.75rem',
-                  backgroundColor: qrzMessage.type === 'warning' ? 'var(--alert-warning-bg)' : 'var(--alert-success-bg)',
-                  color: qrzMessage.type === 'warning' ? 'var(--alert-warning-color)' : 'var(--alert-success-color)',
-                  border: `1px solid ${qrzMessage.type === 'warning' ? 'var(--alert-warning-border)' : 'var(--alert-success-border)'}`,
+                  backgroundColor: qrzMessage.type === 'warning' ? 'var(--alert-warning-bg)' : 'var(--alert-info-bg)',
+                  color: qrzMessage.type === 'warning' ? 'var(--alert-warning-color)' : 'var(--alert-info-color)',
+                  border: `1px solid ${qrzMessage.type === 'warning' ? 'var(--alert-warning-border)' : 'var(--alert-info-border)'}`,
                   borderRadius: 'var(--border-radius)',
                   fontSize: '0.875rem'
                 }}>
