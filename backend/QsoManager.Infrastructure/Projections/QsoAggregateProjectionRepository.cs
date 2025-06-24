@@ -212,10 +212,10 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             
             // Compter le total d'éléments
             var totalCount = await collection.CountDocumentsAsync(_ => true, cancellationToken: cancellationToken);
-            
-            // Récupérer les éléments paginés
+              // Récupérer les éléments paginés triés par date de création décroissante (plus récent en premier)
             var results = await collection
                 .Find(_ => true)
+                .SortByDescending(x => x.CreatedAt)
                 .Skip(pagination.Skip)
                 .Limit(pagination.PageSize)
                 .ToListAsync(cancellationToken);
@@ -255,13 +255,13 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             var filter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Regex(
                 x => x.Name, 
                 new MongoDB.Bson.BsonRegularExpression(regexPattern, "i"));
-            
-            // Compter le total d'éléments correspondant au filtre
+              // Compter le total d'éléments correspondant au filtre
             var totalCount = await collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
             
-            // Récupérer les éléments paginés
+            // Récupérer les éléments paginés triés par date de création décroissante (plus récent en premier)
             var results = await collection
                 .Find(filter)
+                .SortByDescending(x => x.CreatedAt)
                 .Skip(pagination.Skip)
                 .Limit(pagination.PageSize)
                 .ToListAsync(cancellationToken);
@@ -298,10 +298,10 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             
             // Compter le total d'éléments correspondant au filtre
             var totalCount = await collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
-            
-            // Récupérer les éléments paginés
+              // Récupérer les éléments paginés triés par date de création décroissante (plus récent en premier)
             var results = await collection
                 .Find(filter)
+                .SortByDescending(x => x.CreatedAt)
                 .Skip(pagination.Skip)
                 .Limit(pagination.PageSize)
                 .ToListAsync(cancellationToken);
