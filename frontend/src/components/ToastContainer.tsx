@@ -1,6 +1,31 @@
-import React from 'react';
+import React, { memo } from 'react';
 import Toast from './Toast';
 import { ToastData } from '../hooks/useToasts';
+
+interface ToastWrapperProps {
+  toast: ToastData;
+  onRemoveToast: (id: string) => void;
+}
+
+const ToastWrapper: React.FC<ToastWrapperProps> = memo(({ toast, onRemoveToast }) => {
+  const handleClose = () => onRemoveToast(toast.id);
+  
+  return (
+    <div
+      style={{
+        pointerEvents: 'auto', // Réactive les interactions sur les toasts individuels
+        transition: 'all 0.3s ease-in-out' // Animation fluide pour le réarrangement
+      }}
+    >
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        duration={toast.duration}
+        onClose={handleClose}
+      />
+    </div>
+  );
+});
 
 interface ToastContainerProps {
   toasts: ToastData[];
@@ -21,20 +46,12 @@ const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onRemoveToast }
         pointerEvents: 'none' // Permet au clic de passer à travers le conteneur
       }}
     >
-      {toasts.map((toast) => (        <div
+      {toasts.map((toast) => (
+        <ToastWrapper
           key={toast.id}
-          style={{
-            pointerEvents: 'auto', // Réactive les interactions sur les toasts individuels
-            transition: 'all 0.3s ease-in-out' // Animation fluide pour le réarrangement
-          }}
-        >
-          <Toast
-            message={toast.message}
-            type={toast.type}
-            duration={toast.duration}
-            onClose={() => onRemoveToast(toast.id)}
-          />
-        </div>
+          toast={toast}
+          onRemoveToast={onRemoveToast}
+        />
       ))}
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 
 interface ToastProps {
   message: string;
@@ -11,6 +11,17 @@ const Toast: React.FC<ToastProps> = ({ message, type, duration = 4000, onClose }
   const [isVisible, setIsVisible] = useState(true);
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const [isAnimatingIn, setIsAnimatingIn] = useState(true);
+  
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  const handleClose = useCallback(() => {
+    setIsAnimatingOut(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      onCloseRef.current();
+    }, 300);
+  }, []);
 
   useEffect(() => {
     // Animation d'entrée
@@ -18,20 +29,16 @@ const Toast: React.FC<ToastProps> = ({ message, type, duration = 4000, onClose }
       setIsAnimatingIn(false);
     }, 50);
 
-    // Animation de sortie
+    // Animation de sortie automatique
     const timer = setTimeout(() => {
-      setIsAnimatingOut(true);
-      setTimeout(() => {
-        setIsVisible(false);
-        onClose();
-      }, 300); // Durée de l'animation de sortie
+      handleClose();
     }, duration);
 
     return () => {
       clearTimeout(enterTimer);
       clearTimeout(timer);
     };
-  }, [duration, onClose]);
+  }, [duration, handleClose]);
 
   if (!isVisible) return null;  const getToastStyles = () => {
     const baseStyles = {
@@ -73,15 +80,8 @@ const Toast: React.FC<ToastProps> = ({ message, type, duration = 4000, onClose }
   return (
     <div style={getToastStyles()}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span>{message}</span>
-        <button
-          onClick={() => {
-            setIsAnimatingOut(true);
-            setTimeout(() => {
-              setIsVisible(false);
-              onClose();
-            }, 300);
-          }}
+        <span>{message}</span>        <button
+          onClick={handleClose}
           style={{
             marginLeft: '12px',
             background: 'none',
