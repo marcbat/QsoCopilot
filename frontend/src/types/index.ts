@@ -11,6 +11,7 @@ export interface QsoAggregateDto {
   createdDate?: string;
   mode?: string;
   participants?: ParticipantDto[];
+  history?: { [key: string]: string };
 }
 
 export interface ParticipantDto {

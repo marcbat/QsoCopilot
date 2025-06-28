@@ -38,9 +38,7 @@ public class SearchQsoAggregatesByModeratorWithPaginationQueryHandler : IQueryHa
                     {
                         // Créer les participants de base sans enrichissement QRZ
                         var participants = projection.Participants?.Select(p => new ParticipantDto(p.CallSign, p.Order))
-                            .ToList() ?? new List<ParticipantDto>();
-
-                        return new QsoAggregateDto(
+                            .ToList() ?? new List<ParticipantDto>();                        return new QsoAggregateDto(
                             projection.Id,
                             projection.Name,
                             projection.Description,
@@ -48,7 +46,8 @@ public class SearchQsoAggregatesByModeratorWithPaginationQueryHandler : IQueryHa
                             projection.Frequency,
                             participants.AsReadOnly(),
                             projection.StartDateTime,
-                            projection.CreatedAt
+                            projection.CreatedAt,
+                            projection.History?.AsReadOnly()
                         );
                     }).ToList();
 

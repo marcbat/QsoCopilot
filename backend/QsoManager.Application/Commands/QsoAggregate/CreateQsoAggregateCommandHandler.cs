@@ -108,8 +108,7 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
                                         .ToArray();
 
                                     _logger.LogInformation("CreateQsoAggregateCommand exécutée avec succès pour l'agrégat {AggregateId} avec {ParticipantCount} participants", 
-                                        finalAggregate.Id, participantDtos.Length);
-                                      return Validation<Error, QsoAggregateDto>.Success(
+                                        finalAggregate.Id, participantDtos.Length);                                      return Validation<Error, QsoAggregateDto>.Success(
                                         new QsoAggregateDto(
                                             finalAggregate.Id, 
                                             finalAggregate.Name, 
@@ -118,7 +117,8 @@ public class CreateQsoAggregateCommandHandler : BaseCommandHandler<CreateQsoAggr
                                             finalAggregate.Frequency,
                                             participantDtos,
                                             finalAggregate.StartDateTime,
-                                            finalAggregate.CreatedDate
+                                            finalAggregate.CreatedDate,
+                                            null // L'historique sera mis à jour par la projection
                                         ));
                                 },
                                 errors => 

@@ -464,6 +464,28 @@ public class QsoAggregateController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erreur lors de la suppression du QSO Aggregate {AggregateId}", aggregateId);
+            return StatusCode(500, new { Message = "Erreur interne du serveur" });        }
+    }
+
+    /// <summary>
+    /// Récupère l'historique d'un QSO spécifique
+    /// </summary>
+    [HttpGet("{aggregateId:guid}/history")]
+    public async Task<ActionResult<Dictionary<DateTime, string>>> GetQsoHistory(Guid aggregateId)
+    {
+        try
+        {
+            var query = new GetQsoAggregateByIdQuery(aggregateId);
+            var result = await _mediator.Send(query);
+
+            return result.Match<ActionResult<Dictionary<DateTime, string>>>(
+                qso => Ok(qso.History?.ToDictionary(h => h.Key, h => h.Value) ?? new Dictionary<DateTime, string>()),
+                errors => BadRequest(new { Errors = errors.Select(e => e.Message) })
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la récupération de l'historique du QSO {AggregateId}", aggregateId);
             return StatusCode(500, new { Message = "Erreur interne du serveur" });
         }
     }

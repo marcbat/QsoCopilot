@@ -27,16 +27,12 @@ public class GetQsoAggregateByIdQueryHandler : IQueryHandler<GetQsoAggregateById
         {
             _logger.LogInformation("Récupération du QSO Aggregate avec l'ID {Id}", request.Id);
 
-            var result = await _projectionRepository.GetByIdAsync(request.Id, cancellationToken);
-
-            return result.Match(
+            var result = await _projectionRepository.GetByIdAsync(request.Id, cancellationToken);            return result.Match(
                 projection =>
                 {
                     // Créer les participants de base sans enrichissement QRZ
                     var participants = projection.Participants?.Select(p => new ParticipantDto(p.CallSign, p.Order))
-                        .ToList() ?? new List<ParticipantDto>();
-
-                    return Validation<Error, QsoAggregateDto>.Success(new QsoAggregateDto(
+                        .ToList() ?? new List<ParticipantDto>();                    return Validation<Error, QsoAggregateDto>.Success(new QsoAggregateDto(
                         projection.Id,
                         projection.Name,
                         projection.Description,
@@ -44,7 +40,8 @@ public class GetQsoAggregateByIdQueryHandler : IQueryHandler<GetQsoAggregateById
                         projection.Frequency,
                         participants.AsReadOnly(),
                         projection.StartDateTime,
-                        projection.CreatedAt
+                        projection.CreatedAt,
+                        projection.History?.AsReadOnly()
                     ));
                 },
                 errors => Validation<Error, QsoAggregateDto>.Fail(errors)

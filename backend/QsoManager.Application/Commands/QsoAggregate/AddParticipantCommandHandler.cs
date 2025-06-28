@@ -67,7 +67,9 @@ public class AddParticipantCommandHandler : BaseCommandHandler<AddParticipantCom
                                         updatedAggregate.Frequency,
                                         participantDtos,
                                         updatedAggregate.StartDateTime,
-                                        updatedAggregate.CreatedDate);
+                                        updatedAggregate.CreatedDate,
+                                        null // L'historique sera mis à jour par la projection
+                                    );
 
                                     return Validation<Error, QsoAggregateDto>.Success(qsoDto);
                                 },                                errors =>

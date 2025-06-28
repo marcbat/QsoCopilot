@@ -11,6 +11,7 @@ public class QsoAggregateProjectionDto
     public List<ParticipantProjectionDto> Participants { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public Dictionary<DateTime, string> History { get; set; } = new();
 }
 
 public class ParticipantProjectionDto

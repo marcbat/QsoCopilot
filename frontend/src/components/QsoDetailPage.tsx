@@ -19,7 +19,7 @@ const QsoDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();const [qso, setQso] = useState<QsoAggregateDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);  const [activeTab, setActiveTab] = useState<'details' | 'table' | 'map'>('details');
+  const [isLoading, setIsLoading] = useState(true);  const [activeTab, setActiveTab] = useState<'details' | 'table' | 'map' | 'history'>('details');
   const [newParticipant, setNewParticipant] = useState({
     callSign: ''
   });
@@ -228,7 +228,7 @@ const QsoDetailPage: React.FC = () => {
   };
 
   // Fonction pour gérer le changement d'onglet avec validation
-  const handleTabChange = (tab: 'details' | 'table' | 'map') => {
+  const handleTabChange = (tab: 'details' | 'table' | 'map' | 'history') => {
     if ((tab === 'table' || tab === 'map') && shouldDisableQrzTabs) {
       // Ne pas permettre de changer vers un onglet désactivé
       return;
@@ -456,9 +456,26 @@ const QsoDetailPage: React.FC = () => {
                     marginBottom: '-2px',
                     transition: 'all 0.2s ease',
                     opacity: shouldDisableQrzTabs ? 0.5 : 1
+                  }}                >
+                  Carte
+                </button>
+                <button
+                  className={`tab-button ${activeTab === 'history' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('history')}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: activeTab === 'history' ? '600' : '400',
+                    color: activeTab === 'history' ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    borderBottom: activeTab === 'history' ? '2px solid var(--primary-color)' : '2px solid transparent',
+                    marginBottom: '-2px',
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  Carte
+                  Historique
                 </button>
               </div>
             </div>            {/* Contenu des onglets */}
@@ -491,14 +508,78 @@ const QsoDetailPage: React.FC = () => {
                         />
                       ))}
                     </div>
-                  )
-                ) : activeTab === 'table' ? (
+                  )                ) : activeTab === 'table' ? (
                   /* Affichage en table */
                   <ParticipantTable
                     participants={qso.participants}
                     onRemove={canUserModifyQso(user, qso) ? handleRemoveParticipant : undefined}
                     showRemoveButton={canUserModifyQso(user, qso)}
                   />
+                ) : activeTab === 'history' ? (
+                  /* Affichage de l'historique */
+                  <div className="history-content">
+                    <h3 style={{ 
+                      marginBottom: '1rem', 
+                      color: 'var(--text-primary)',
+                      fontSize: '1.2rem'
+                    }}>
+                      Chronologie des événements
+                    </h3>
+                    {qso.history && Object.keys(qso.history).length > 0 ? (
+                      <div className="history-timeline" style={{
+                        maxHeight: '60vh',
+                        overflowY: 'auto',
+                        padding: '1rem',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '8px',
+                        backgroundColor: 'var(--background-secondary)'
+                      }}>
+                        {Object.entries(qso.history)
+                          .sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime()) // Trier par date décroissante
+                          .map(([date, message]) => (
+                            <div key={date} style={{
+                              padding: '1rem',
+                              marginBottom: '0.5rem',
+                              backgroundColor: 'var(--background-primary)',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '6px',
+                              borderLeft: '4px solid var(--primary-color)'
+                            }}>
+                              <div style={{
+                                fontSize: '0.9rem',
+                                color: 'var(--text-secondary)',
+                                marginBottom: '0.25rem'
+                              }}>
+                                {new Date(date).toLocaleString('fr-FR', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  second: '2-digit'
+                                })}
+                              </div>
+                              <div style={{
+                                color: 'var(--text-primary)',
+                                fontSize: '1rem'
+                              }}>
+                                {message}
+                              </div>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    ) : (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '2rem',
+                        color: 'var(--text-secondary)',
+                        fontStyle: 'italic'
+                      }}>
+                        Aucun historique disponible pour ce QSO
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   /* Affichage sur carte */
                   <ParticipantMap

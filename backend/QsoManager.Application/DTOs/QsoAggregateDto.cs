@@ -20,5 +20,6 @@ public record QsoAggregateDto(
     decimal Frequency,
     IReadOnlyList<ParticipantDto> Participants,
     DateTime? StartDateTime = null,
-    DateTime? CreatedDate = null
+    DateTime? CreatedDate = null,
+    IReadOnlyDictionary<DateTime, string>? History = null
 );

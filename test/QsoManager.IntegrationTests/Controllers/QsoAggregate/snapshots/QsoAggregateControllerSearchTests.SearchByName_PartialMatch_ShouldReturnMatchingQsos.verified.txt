@@ -23,7 +23,11 @@
             }
           ],
           startDateTime: DateTimeOffset_1,
-          createdDate: DateTimeOffset_1
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'Mon Super QSO 2',
+            DateTimeOffset_3: Ajout du participant F4TEST2 à la position 1
+          }
         },
         {
           id: Guid_3,
@@ -41,8 +45,12 @@
               qrzDxccInfo: null
             }
           ],
-          startDateTime: DateTimeOffset_2,
-          createdDate: DateTimeOffset_2
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'Un autre QSO super',
+            DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+          }
         },
         {
           id: Guid_4,
@@ -60,8 +68,12 @@
               qrzDxccInfo: null
             }
           ],
-          startDateTime: DateTimeOffset_3,
-          createdDate: DateTimeOffset_3
+          startDateTime: DateTimeOffset_7,
+          createdDate: DateTimeOffset_7,
+          history: {
+            DateTimeOffset_8: Création du QSO 'QSO normal',
+            DateTimeOffset_9: Ajout du participant F4TEST2 à la position 1
+          }
         }
       ]
     }
@@ -90,7 +102,11 @@
             }
           ],
           startDateTime: DateTimeOffset_1,
-          createdDate: DateTimeOffset_1
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'Mon Super QSO 2',
+            DateTimeOffset_3: Ajout du participant F4TEST2 à la position 1
+          }
         },
         {
           id: Guid_3,
@@ -108,8 +124,12 @@
               qrzDxccInfo: null
             }
           ],
-          startDateTime: DateTimeOffset_2,
-          createdDate: DateTimeOffset_2
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'Un autre QSO super',
+            DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+          }
         }
       ]
     }
@@ -138,7 +158,11 @@
             }
           ],
           startDateTime: DateTimeOffset_1,
-          createdDate: DateTimeOffset_1
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'Mon Super QSO 2',
+            DateTimeOffset_3: Ajout du participant F4TEST2 à la position 1
+          }
         },
         {
           id: Guid_3,
@@ -156,8 +180,12 @@
               qrzDxccInfo: null
             }
           ],
-          startDateTime: DateTimeOffset_2,
-          createdDate: DateTimeOffset_2
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'Un autre QSO super',
+            DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+          }
         }
       ]
     }
@@ -186,7 +214,11 @@
             }
           ],
           startDateTime: DateTimeOffset_1,
-          createdDate: DateTimeOffset_1
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'Mon Super QSO 2',
+            DateTimeOffset_3: Ajout du participant F4TEST2 à la position 1
+          }
         },
         {
           id: Guid_3,
@@ -204,8 +236,12 @@
               qrzDxccInfo: null
             }
           ],
-          startDateTime: DateTimeOffset_2,
-          createdDate: DateTimeOffset_2
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'Un autre QSO super',
+            DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+          }
         }
       ]
     }

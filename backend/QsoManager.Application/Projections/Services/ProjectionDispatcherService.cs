@@ -67,21 +67,20 @@ public class ProjectionDispatcherService
             Participants = new List<ParticipantProjectionDto>(),
             CreatedAt = e.DateEvent,
             UpdatedAt = e.DateEvent
-        };
+        };        projection.History.Add(e.DateEvent, $"Création du QSO '{e.Name}'");
 
         return await _qsoProjectionRepository.SaveAsync(projection, cancellationToken)
             .Map(_ => (Event)e);
-    }
-
-    private async Task<Validation<Error, Event>> HandleQsoAggregateDeleted(QsoAggregate.Events.Deleted e, CancellationToken cancellationToken)
+    }    private async Task<Validation<Error, Event>> HandleQsoAggregateDeleted(QsoAggregate.Events.Deleted e, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Deleting QSO projection {AggregateId}", e.AggregateId);
 
+        // Avant de supprimer, on peut ajouter un message d'historique si nécessaire
+        // Mais comme on supprime la projection, l'historique disparaitra aussi
+        // Donc on se contente de supprimer directement
         return await _qsoProjectionRepository.DeleteAsync(e.AggregateId, cancellationToken)
             .Map(_ => (Event)e);
-    }
-
-    private async Task<Validation<Error, Event>> HandleParticipantAdded(QsoAggregate.Events.ParticipantAdded e, CancellationToken cancellationToken)
+    }private async Task<Validation<Error, Event>> HandleParticipantAdded(QsoAggregate.Events.ParticipantAdded e, CancellationToken cancellationToken)
     {
         var projectionResult = await _qsoProjectionRepository.GetByIdAsync(e.AggregateId, cancellationToken);
         
@@ -96,16 +95,15 @@ public class ProjectionDispatcherService
                 };
 
                 projection.Participants.Add(newParticipant);
-                projection.UpdatedAt = e.DateEvent;
+                projection.UpdatedAt = e.DateEvent;                // Ajouter un message d'historique
+                projection.History.Add(e.DateEvent, $"Ajout du participant {e.CallSign} à la position {e.Order}");
 
                 var updateResult = await _qsoProjectionRepository.UpdateAsync(projection.Id, projection, cancellationToken);
                 return updateResult.Map(_ => (Event)e);
             },
             errors => Task.FromResult(Fail<Error, Event>(errors.Head))
         );
-    }
-
-    private async Task<Validation<Error, Event>> HandleParticipantRemoved(QsoAggregate.Events.ParticipantRemoved e, CancellationToken cancellationToken)
+    }    private async Task<Validation<Error, Event>> HandleParticipantRemoved(QsoAggregate.Events.ParticipantRemoved e, CancellationToken cancellationToken)
     {
         var projectionResult = await _qsoProjectionRepository.GetByIdAsync(e.AggregateId, cancellationToken);
 
@@ -128,6 +126,9 @@ public class ProjectionDispatcherService
                     {
                         participant.Order--;
                     }
+                    
+                    // Ajouter un message d'historique
+                    projection.History.Add(e.DateEvent, $"Suppression du participant {e.CallSign}");
                 }
 
                 projection.UpdatedAt = e.DateEvent;
@@ -137,24 +138,34 @@ public class ProjectionDispatcherService
             },
             errors => Task.FromResult(Fail<Error, Event>(errors.Head))
         );
-    }
-
-    private async Task<Validation<Error, Event>> HandleParticipantsReordered(QsoAggregate.Events.ParticipantsReordered e, CancellationToken cancellationToken)
+    }    private async Task<Validation<Error, Event>> HandleParticipantsReordered(QsoAggregate.Events.ParticipantsReordered e, CancellationToken cancellationToken)
     {
         var projectionResult = await _qsoProjectionRepository.GetByIdAsync(e.AggregateId, cancellationToken);
 
         return await projectionResult.Match(
             async projection =>
             {
+                var reorderedParticipants = new List<string>();
+                
                 foreach (var participant in projection.Participants)
                 {
                     if (e.NewOrders.TryGetValue(participant.CallSign, out var newOrder))
                     {
+                        if (participant.Order != newOrder)
+                        {
+                            reorderedParticipants.Add($"{participant.CallSign} (position {newOrder})");
+                        }
                         participant.Order = newOrder;
                     }
                 }
 
                 projection.UpdatedAt = e.DateEvent;
+                
+                // Ajouter un message d'historique
+                if (reorderedParticipants.Any())
+                {
+                    projection.History.Add(e.DateEvent, $"Réorganisation des participants : {string.Join(", ", reorderedParticipants)}");
+                }
 
                 var updateResult = await _qsoProjectionRepository.UpdateAsync(projection.Id, projection, cancellationToken);
                 return updateResult.Map(_ => (Event)e);
