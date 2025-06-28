@@ -15,7 +15,8 @@ public static class QsoAggregateMapper
             aggregate.Frequency,
             aggregate.Participants.Select(p => p.ToDto()).ToList().AsReadOnly(),
             aggregate.StartDateTime,
-            aggregate.CreatedDate
+            aggregate.CreatedDate,
+            null // L'historique n'est pas disponible dans l'agrégat, seulement dans la projection
         );
     }public static ParticipantDto ToDto(this Participant participant)
     {

@@ -38,9 +38,7 @@ public class SearchQsoAggregatesByNameQueryHandler : IQueryHandler<SearchQsoAggr
                         
                         // Créer les participants de base sans enrichissement QRZ
                         var participants = projection.Participants?.Select(p => new ParticipantDto(p.CallSign, p.Order))
-                            .ToList() ?? new List<ParticipantDto>();
-
-                        var dto = new QsoAggregateDto(
+                            .ToList() ?? new List<ParticipantDto>();                        var dto = new QsoAggregateDto(
                             projection.Id,
                             projection.Name,
                             projection.Description,
@@ -48,7 +46,8 @@ public class SearchQsoAggregatesByNameQueryHandler : IQueryHandler<SearchQsoAggr
                             projection.Frequency,
                             participants.AsReadOnly(),
                             projection.StartDateTime,
-                            projection.CreatedAt
+                            projection.CreatedAt,
+                            projection.History?.AsReadOnly()
                         );
                         
                         _logger.LogInformation("Created DTO: {Id} - {Name}", dto.Id, dto.Name);

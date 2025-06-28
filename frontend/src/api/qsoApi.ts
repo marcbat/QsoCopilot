@@ -118,6 +118,10 @@ export const qsoApiService = {
     const response: AxiosResponse<PagedResult<QsoAggregateDto>> = await apiClient.get(
       `/QsoAggregate/my-moderated/paginated?pageNumber=${pageNumber}&pageSize=${pageSize}`
     );
+    return response.data;  },
+
+  async getQsoHistory(id: string): Promise<{ [key: string]: string }> {
+    const response: AxiosResponse<{ [key: string]: string }> = await apiClient.get(`/QsoAggregate/${id}/history`);
     return response.data;
   },
 
