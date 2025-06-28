@@ -27,9 +27,7 @@ public class GetQsoAggregateByIdQueryHandler : IQueryHandler<GetQsoAggregateById
         {
             _logger.LogInformation("Récupération du QSO Aggregate avec l'ID {Id}", request.Id);
 
-            var result = await _projectionRepository.GetByIdAsync(request.Id, cancellationToken);
-
-            return result.Match(
+            var result = await _projectionRepository.GetByIdAsync(request.Id, cancellationToken);            return result.Match(
                 projection =>
                 {
                     // Créer les participants de base sans enrichissement QRZ

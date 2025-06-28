@@ -23,7 +23,11 @@
             }
           ],
           startDateTime: DateTimeOffset_1,
-          createdDate: DateTimeOffset_1
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'QSO Test Visibility After Delete',
+            DateTimeOffset_3: Ajout du participant F4TEST5 à la position 1
+          }
         }
       ]
     }

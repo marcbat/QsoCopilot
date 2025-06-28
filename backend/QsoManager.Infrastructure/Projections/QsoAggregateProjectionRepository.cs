@@ -349,8 +349,24 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             StartDateTime = model.StartDateTime,
             Participants = model.Participants.Select(MapParticipantToDto).ToList(),
             CreatedAt = model.CreatedAt,
-            UpdatedAt = model.UpdatedAt
+            UpdatedAt = model.UpdatedAt,
+            History = ConvertHistoryToDto(model.History)
         };
+    }
+
+    private Dictionary<DateTime, string> ConvertHistoryToDto(Dictionary<string, string> infraHistory)
+    {
+        if (infraHistory == null) return new Dictionary<DateTime, string>();
+        
+        var result = new Dictionary<DateTime, string>();
+        foreach (var entry in infraHistory)
+        {
+            if (DateTime.TryParse(entry.Key, out var date))
+            {
+                result[date] = entry.Value;
+            }
+        }
+        return result;
     }
 
     private ApplicationModels.ParticipantProjectionDto MapParticipantToDto(InfrastructureModels.ParticipantProjection model)
@@ -373,8 +389,21 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             StartDateTime = dto.StartDateTime,
             Participants = dto.Participants.Select(MapParticipantToModel).ToList(),
             CreatedAt = dto.CreatedAt,
-            UpdatedAt = dto.UpdatedAt
+            UpdatedAt = dto.UpdatedAt,
+            History = ConvertHistoryToModel(dto.History)
         };
+    }
+
+    private Dictionary<string, string> ConvertHistoryToModel(Dictionary<DateTime, string> dtoHistory)
+    {
+        if (dtoHistory == null) return new Dictionary<string, string>();
+        
+        var result = new Dictionary<string, string>();
+        foreach (var entry in dtoHistory)
+        {
+            result[entry.Key.ToString("O")] = entry.Value; // Format ISO 8601
+        }
+        return result;
     }
 
     private InfrastructureModels.ParticipantProjection MapParticipantToModel(ApplicationModels.ParticipantProjectionDto dto)

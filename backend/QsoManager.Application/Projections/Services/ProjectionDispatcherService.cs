@@ -67,9 +67,7 @@ public class ProjectionDispatcherService
             Participants = new List<ParticipantProjectionDto>(),
             CreatedAt = e.DateEvent,
             UpdatedAt = e.DateEvent
-        };
-
-        projection.History.Add(e.DateEvent, $"Création du QSO {e}");
+        };        projection.History.Add(e.DateEvent, $"Création du QSO '{e.Name}'");
 
         return await _qsoProjectionRepository.SaveAsync(projection, cancellationToken)
             .Map(_ => (Event)e);
@@ -97,9 +95,7 @@ public class ProjectionDispatcherService
                 };
 
                 projection.Participants.Add(newParticipant);
-                projection.UpdatedAt = e.DateEvent;
-                
-                // Ajouter un message d'historique
+                projection.UpdatedAt = e.DateEvent;                // Ajouter un message d'historique
                 projection.History.Add(e.DateEvent, $"Ajout du participant {e.CallSign} à la position {e.Order}");
 
                 var updateResult = await _qsoProjectionRepository.UpdateAsync(projection.Id, projection, cancellationToken);

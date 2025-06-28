@@ -22,7 +22,11 @@
           }
         ],
         startDateTime: DateTimeOffset_1,
-        createdDate: DateTimeOffset_1
+        createdDate: DateTimeOffset_1,
+        history: {
+          DateTimeOffset_2: Création du QSO 'QSO Test 1',
+          DateTimeOffset_3: Ajout du participant F4TEST1 à la position 1
+        }
       },
       {
         id: Guid_3,
@@ -40,8 +44,12 @@
             qrzDxccInfo: null
           }
         ],
-        startDateTime: DateTimeOffset_2,
-        createdDate: DateTimeOffset_2
+        startDateTime: DateTimeOffset_4,
+        createdDate: DateTimeOffset_4,
+        history: {
+          DateTimeOffset_5: Création du QSO 'QSO Test 2',
+          DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+        }
       }
     ]
   }

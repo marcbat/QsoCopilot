@@ -8,10 +8,10 @@
       items: [
         {
           id: Guid_1,
-          name: QSO Test Alpha,
-          description: First test QSO for pagination,
+          name: QSO Test Delta,
+          description: Fifth test QSO for pagination,
           moderatorId: Guid_2,
-          frequency: 14.205,
+          frequency: 28.405,
           participants: [
             {
               callSign: F4TEST,
@@ -23,14 +23,18 @@
             }
           ],
           startDateTime: DateTimeOffset_1,
-          createdDate: DateTimeOffset_1
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'QSO Test Delta',
+            DateTimeOffset_3: Ajout du participant F4TEST à la position 1
+          }
         },
         {
           id: Guid_3,
-          name: QSO Test Beta,
-          description: Second test QSO for pagination,
+          name: Another QSO,
+          description: Fourth test QSO with different name pattern,
           moderatorId: Guid_2,
-          frequency: 7.04,
+          frequency: 21.205,
           participants: [
             {
               callSign: F4TEST,
@@ -41,8 +45,12 @@
               qrzDxccInfo: null
             }
           ],
-          startDateTime: DateTimeOffset_2,
-          createdDate: DateTimeOffset_2
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'Another QSO',
+            DateTimeOffset_6: Ajout du participant F4TEST à la position 1
+          }
         },
         {
           id: Guid_4,
@@ -60,15 +68,19 @@
               qrzDxccInfo: null
             }
           ],
-          startDateTime: DateTimeOffset_3,
-          createdDate: DateTimeOffset_3
+          startDateTime: DateTimeOffset_7,
+          createdDate: DateTimeOffset_7,
+          history: {
+            DateTimeOffset_8: Création du QSO 'QSO Test Gamma',
+            DateTimeOffset_9: Ajout du participant F4TEST à la position 1
+          }
         },
         {
           id: Guid_5,
-          name: Another QSO,
-          description: Fourth test QSO with different name pattern,
+          name: QSO Test Beta,
+          description: Second test QSO for pagination,
           moderatorId: Guid_2,
-          frequency: 21.205,
+          frequency: 7.04,
           participants: [
             {
               callSign: F4TEST,
@@ -79,15 +91,19 @@
               qrzDxccInfo: null
             }
           ],
-          startDateTime: DateTimeOffset_4,
-          createdDate: DateTimeOffset_4
+          startDateTime: DateTimeOffset_10,
+          createdDate: DateTimeOffset_10,
+          history: {
+            DateTimeOffset_11: Création du QSO 'QSO Test Beta',
+            DateTimeOffset_12: Ajout du participant F4TEST à la position 1
+          }
         },
         {
           id: Guid_6,
-          name: QSO Test Delta,
-          description: Fifth test QSO for pagination,
+          name: QSO Test Alpha,
+          description: First test QSO for pagination,
           moderatorId: Guid_2,
-          frequency: 28.405,
+          frequency: 14.205,
           participants: [
             {
               callSign: F4TEST,
@@ -98,8 +114,12 @@
               qrzDxccInfo: null
             }
           ],
-          startDateTime: DateTimeOffset_5,
-          createdDate: DateTimeOffset_5
+          startDateTime: DateTimeOffset_13,
+          createdDate: DateTimeOffset_13,
+          history: {
+            DateTimeOffset_14: Création du QSO 'QSO Test Alpha',
+            DateTimeOffset_15: Ajout du participant F4TEST à la position 1
+          }
         }
       ],
       pageNumber: 1,

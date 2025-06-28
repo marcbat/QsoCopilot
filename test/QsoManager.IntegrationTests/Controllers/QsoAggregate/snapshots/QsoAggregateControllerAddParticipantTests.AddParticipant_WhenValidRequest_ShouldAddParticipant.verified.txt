@@ -29,7 +29,8 @@
         }
       ],
       startDateTime: DateTimeOffset_1,
-      createdDate: DateTimeOffset_1
+      createdDate: DateTimeOffset_1,
+      history: null
     }
   }
 }

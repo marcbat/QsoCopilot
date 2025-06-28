@@ -25,12 +25,13 @@ public class QsoAggregateProjection
     
     [BsonElement("participants")]
     public List<ParticipantProjection> Participants { get; set; } = new();
-    
-    [BsonElement("createdAt")]
+      [BsonElement("createdAt")]
     public DateTime CreatedAt { get; set; }
-    
-    [BsonElement("updatedAt")]
+      [BsonElement("updatedAt")]
     public DateTime UpdatedAt { get; set; }
+    
+    [BsonElement("history")]
+    public Dictionary<string, string> History { get; set; } = new();
 }
 
 public class ParticipantProjection
