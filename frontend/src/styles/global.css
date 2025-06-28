@@ -454,6 +454,12 @@ body {
   margin-bottom: var(--spacing-xl);
   padding-bottom: var(--spacing-md);
   border-bottom: 1px solid var(--border-color);
+  gap: var(--spacing-md); /* Ajout d'un gap pour espacer les éléments */
+}
+
+.page-header-left {
+  display: flex;
+  align-items: center;
 }
 
 .page-header h1 {

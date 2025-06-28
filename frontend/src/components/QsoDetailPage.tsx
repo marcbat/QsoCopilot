@@ -261,10 +261,12 @@ const QsoDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="page-container">      <div className="page-header">
-        <button onClick={handleBack} className="btn btn-secondary">
-          ← Retour
-        </button>
+    <div className="page-container">        <div className="page-header">
+        <div className="page-header-left">
+          <button onClick={handleBack} className="btn btn-secondary">
+            ← Retour
+          </button>
+        </div>
         <div className="page-title-section">
           <h1>Détails du QSO</h1>          {/* Indicateur de connexion SignalR */}
           <div className={`signalr-status ${connectionState.toLowerCase()}`} title={`SignalR: ${connectionState}`}>

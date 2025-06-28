@@ -26,11 +26,13 @@ public class ProjectionDispatcherService
         _channel = channel;
         _qsoProjectionRepository = qsoProjectionRepository;
         _logger = logger;
-    }    public async Task<Validation<Error, Event>> DispatchAsync(IEvent @event, CancellationToken cancellationToken)
+    }   
+    
+    public async Task<Validation<Error, Event>> DispatchAsync(IEvent @event, CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Dispatching event {EventName} with content {@Event}", @event.GetType().Name, @event);            var result = @event switch
+            _logger.LogInformation("Dispatching event {EventName} with content {@Event}", @event.GetType().Name, @event); var result = @event switch
             {
                 QsoAggregate.Events.Created e => await HandleQsoAggregateCreated(e, cancellationToken),
                 QsoAggregate.Events.Deleted e => await HandleQsoAggregateDeleted(e, cancellationToken),
@@ -50,8 +52,11 @@ public class ProjectionDispatcherService
             _logger.LogError(ex, "Error while dispatching event {EventType}", @event.GetType().Name);
             return Error.New($"Failed to dispatch event: {ex.Message}");
         }
-    }    private async Task<Validation<Error, Event>> HandleQsoAggregateCreated(QsoAggregate.Events.Created e, CancellationToken cancellationToken)
-    {        var projection = new QsoAggregateProjectionDto
+    }
+
+    private async Task<Validation<Error, Event>> HandleQsoAggregateCreated(QsoAggregate.Events.Created e, CancellationToken cancellationToken)
+    {
+        var projection = new QsoAggregateProjectionDto
         {
             Id = e.AggregateId,
             Name = e.Name,
@@ -66,10 +71,12 @@ public class ProjectionDispatcherService
 
         return await _qsoProjectionRepository.SaveAsync(projection, cancellationToken)
             .Map(_ => (Event)e);
-    }    private async Task<Validation<Error, Event>> HandleQsoAggregateDeleted(QsoAggregate.Events.Deleted e, CancellationToken cancellationToken)
+    }
+
+    private async Task<Validation<Error, Event>> HandleQsoAggregateDeleted(QsoAggregate.Events.Deleted e, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Deleting QSO projection {AggregateId}", e.AggregateId);
-        
+
         return await _qsoProjectionRepository.DeleteAsync(e.AggregateId, cancellationToken)
             .Map(_ => (Event)e);
     }
@@ -96,10 +103,12 @@ public class ProjectionDispatcherService
             },
             errors => Task.FromResult(Fail<Error, Event>(errors.Head))
         );
-    }    private async Task<Validation<Error, Event>> HandleParticipantRemoved(QsoAggregate.Events.ParticipantRemoved e, CancellationToken cancellationToken)
+    }
+
+    private async Task<Validation<Error, Event>> HandleParticipantRemoved(QsoAggregate.Events.ParticipantRemoved e, CancellationToken cancellationToken)
     {
         var projectionResult = await _qsoProjectionRepository.GetByIdAsync(e.AggregateId, cancellationToken);
-        
+
         return await projectionResult.Match(
             async projection =>
             {
@@ -109,7 +118,7 @@ public class ProjectionDispatcherService
                 if (participantToRemove != null)
                 {
                     projection.Participants.Remove(participantToRemove);
-                    
+
                     // Réajuster les ordres des participants restants
                     var participantsToReorder = projection.Participants
                         .Where(p => p.Order > participantToRemove.Order)
@@ -128,10 +137,12 @@ public class ProjectionDispatcherService
             },
             errors => Task.FromResult(Fail<Error, Event>(errors.Head))
         );
-    }    private async Task<Validation<Error, Event>> HandleParticipantsReordered(QsoAggregate.Events.ParticipantsReordered e, CancellationToken cancellationToken)
+    }
+
+    private async Task<Validation<Error, Event>> HandleParticipantsReordered(QsoAggregate.Events.ParticipantsReordered e, CancellationToken cancellationToken)
     {
         var projectionResult = await _qsoProjectionRepository.GetByIdAsync(e.AggregateId, cancellationToken);
-        
+
         return await projectionResult.Match(
             async projection =>
             {
