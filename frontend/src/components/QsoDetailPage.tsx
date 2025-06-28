@@ -379,21 +379,6 @@ const QsoDetailPage: React.FC = () => {
               </div>
             )}
 
-            {/* Message informatif pour les non-modérateurs */}
-            {isAuthenticated && !canUserModifyQso(user, qso) && (
-              <div className="info-message" style={{ 
-                marginBottom: '1rem', 
-                padding: '0.75rem',
-                backgroundColor: 'var(--alert-warning-bg)',
-                color: 'var(--alert-warning-color)',
-                border: '1px solid var(--alert-warning-border)',
-                borderRadius: 'var(--border-radius)',
-                fontSize: '0.875rem'
-              }}>
-                ℹ️ Seul le modérateur du QSO peut ajouter, supprimer ou réordonner les participants.
-              </div>
-            )}
-
             {/* Onglets */}
             <div className="tabs-container" style={{ marginBottom: '1rem' }}>
               <div className="tabs-header" style={{ 

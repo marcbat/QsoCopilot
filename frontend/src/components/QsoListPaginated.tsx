@@ -21,10 +21,15 @@ const QsoListPaginated: React.FC<QsoListPaginatedProps> = ({
   onPageChange, 
   onPageSizeChange 
 }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [deletingQsoId, setDeletingQsoId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Fonction pour vérifier si l'utilisateur actuel peut supprimer un QSO
+  const canDeleteQso = (qso: QsoAggregateDto): boolean => {
+    return isAuthenticated && user !== null && user.id === qso.moderatorId;
+  };
 
   if (isLoading) {
     return (
@@ -195,20 +200,31 @@ Cette action est irréversible.`;
                       alignItems: 'center' 
                     }}>
                       <button 
-                        className="btn btn-sm btn-secondary"
-                        onClick={() => handleEdit(qso.id)}
-                        title="Éditer ce QSO"
+                        className="btn btn-sm btn-primary"
+                        onClick={() => handleViewDetails(qso.id)}
+                        title="Voir les détails de ce QSO"
                       >
-                        Éditer
+                        Détails
                       </button>
-                      <button 
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleDeleteQso(qso)}
-                        disabled={deletingQsoId === qso.id}
-                        title="Supprimer ce QSO"
-                      >
-                        {deletingQsoId === qso.id ? 'Suppression...' : 'Supprimer'}
-                      </button>
+                      {canDeleteQso(qso) && (
+                        <>
+                          <button 
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => handleEdit(qso.id)}
+                            title="Éditer ce QSO"
+                          >
+                            Éditer
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-danger"
+                            onClick={() => handleDeleteQso(qso)}
+                            disabled={deletingQsoId === qso.id}
+                            title="Supprimer ce QSO"
+                          >
+                            {deletingQsoId === qso.id ? 'Suppression...' : 'Supprimer'}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 )}
