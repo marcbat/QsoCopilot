@@ -116,12 +116,21 @@ builder.Services.AddAuthorization(options =>
 // Domain services
 builder.Services.AddScoped<IQsoAggregateService, QsoAggregateService>();
 
-// CORS policy for development
+// CORS policy for development and production
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Development", policy =>
     {
         policy.WithOrigins("http://localhost:4200", "http://localhost:3000")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); // Important pour SignalR
+    });
+    
+    options.AddPolicy("Production", policy =>
+    {
+        policy.WithOrigins("https://*.azurecontainerapps.io")
+              .SetIsOriginAllowedToAllowWildcardSubdomains()
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials(); // Important pour SignalR
@@ -140,6 +149,10 @@ if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docke
         c.RoutePrefix = "swagger"; // Swagger sera accessible à /swagger
     });
     app.UseCors("Development");
+}
+else if (app.Environment.IsProduction())
+{
+    app.UseCors("Production");
 }
 
 app.UseHttpsRedirection();
