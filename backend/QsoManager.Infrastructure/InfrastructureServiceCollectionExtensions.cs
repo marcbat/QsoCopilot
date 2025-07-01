@@ -22,7 +22,7 @@ public static class InfrastructureServiceCollectionExtensions
     {
         // Get MongoDB connection string
         var mongoConnectionString = configuration.GetConnectionString("MongoDB") ?? "mongodb://localhost:27017";
-        var mongoDatabaseName = configuration["Mongo:Database"] ?? "QsoManagerDb";
+        var mongoDatabaseName = configuration["Mongo:Database"] ?? "QsoManager";
         
         // MongoDB
         services.AddSingleton<IMongoClient>(provider =>

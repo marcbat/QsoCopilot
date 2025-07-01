@@ -25,7 +25,7 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
     {
         _mongoClient = mongoClient;
         _logger = logger;
-        _databaseName = configuration["Mongo:Database"] ?? "QsoManagerProjections";
+        _databaseName = configuration["Mongo:Database"] ?? "QsoManager";
     }
 
     private IMongoCollection<InfrastructureModels.QsoAggregateProjection> GetCollection()
