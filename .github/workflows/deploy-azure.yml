@@ -88,4 +88,4 @@ jobs:
         az containerapp update \
           --name qso-frontend \
           --resource-group ${{ env.RESOURCE_GROUP }} \
-          --set-env-vars REACT_APP_API_URL=https://$BACKEND_URL
+          --set-env-vars VITE_API_URL=https://$BACKEND_URL

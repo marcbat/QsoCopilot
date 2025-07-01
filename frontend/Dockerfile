@@ -25,10 +25,14 @@ FROM nginx:alpine
 # Copier la configuration nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copier le script d'entrée
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Copier les fichiers buildés
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Exposer le port
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/entrypoint.sh"]
