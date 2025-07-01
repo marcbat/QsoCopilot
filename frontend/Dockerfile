@@ -15,7 +15,6 @@ RUN npm ci
 COPY src/ ./src/
 COPY public/ ./public/
 COPY index.html ./
-COPY .env ./
 
 # Build l'application
 RUN npm run build
