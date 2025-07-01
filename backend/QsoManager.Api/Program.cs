@@ -138,6 +138,22 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// MIDDLEWARE CORS EN PREMIER - AVANT TOUT LE RESTE
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+    context.Response.Headers["Access-Control-Allow-Headers"] = "*";
+    
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 200;
+        return;
+    }
+    
+    await next();
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -148,13 +164,11 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "swagger"; // Swagger sera accessible à /swagger
     });
     Console.WriteLine("Using Development CORS policy");
-    app.UseCors("Development");
 }
 else
 {
     // En production ou dans Docker (Azure Container Apps)
-    Console.WriteLine("Using Production CORS policy - DISABLED FOR TESTING");
-    // CORS complètement désactivé pour tester
+    Console.WriteLine("Using Production CORS policy - FORCED CORS HEADERS");
 }
 
 app.UseHttpsRedirection();
