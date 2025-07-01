@@ -153,8 +153,8 @@ if (app.Environment.IsDevelopment())
 else
 {
     // En production ou dans Docker (Azure Container Apps)
-    Console.WriteLine("Using Production CORS policy");
-    app.UseCors("Production");
+    Console.WriteLine("Using Production CORS policy - DISABLED FOR TESTING");
+    // CORS complètement désactivé pour tester
 }
 
 app.UseHttpsRedirection();
