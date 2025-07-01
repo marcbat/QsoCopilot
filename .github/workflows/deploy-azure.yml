@@ -36,10 +36,11 @@ jobs:
         docker build -t ${{ env.REGISTRY_NAME }}.azurecr.io/qso-backend:${{ github.sha }} ./backend
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/qso-backend:${{ github.sha }}
 
-    - name: Build and push Frontend Docker image
+    - name: Build and push Frontend Docker image (temporary)
       run: |
-        docker build -t ${{ env.REGISTRY_NAME }}.azurecr.io/qso-frontend:${{ github.sha }} ./frontend
-        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/qso-frontend:${{ github.sha }}
+        # Build frontend avec placeholder pour commencer
+        docker build -t ${{ env.REGISTRY_NAME }}.azurecr.io/qso-frontend:${{ github.sha }}-temp ./frontend
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/qso-frontend:${{ github.sha }}-temp
 
     - name: Create Container Apps Environment
       run: |
@@ -70,7 +71,7 @@ jobs:
           --name qso-frontend \
           --resource-group ${{ env.RESOURCE_GROUP }} \
           --environment ${{ env.CONTAINER_APP_ENV }} \
-          --image ${{ env.REGISTRY_NAME }}.azurecr.io/qso-frontend:${{ github.sha }} \
+          --image ${{ env.REGISTRY_NAME }}.azurecr.io/qso-frontend:${{ github.sha }}-temp \
           --registry-server ${{ env.REGISTRY_NAME }}.azurecr.io \
           --registry-username ${{ secrets.ACR_USERNAME }} \
           --registry-password ${{ secrets.ACR_PASSWORD }} \
@@ -79,13 +80,20 @@ jobs:
           --cpu 0.25 \
           --memory 0.5Gi
 
-    - name: Update Frontend with Backend URL
+    - name: Rebuild and Update Frontend with correct Backend URL
       run: |
+        # Récupérer l'URL réelle du backend
         BACKEND_URL=$(az containerapp show --name qso-backend --resource-group ${{ env.RESOURCE_GROUP }} --query properties.configuration.ingress.fqdn -o tsv)
-        echo "Backend URL: https://$BACKEND_URL"
+        echo "Real Backend URL: https://$BACKEND_URL"
         
-        # Update frontend container app with backend URL
+        # Rebuilder le frontend avec la vraie URL
+        cd frontend
+        sed -i "s|__API_URL_PLACEHOLDER__|https://$BACKEND_URL|g" .env.production
+        docker build -t ${{ env.REGISTRY_NAME }}.azurecr.io/qso-frontend:${{ github.sha }} .
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/qso-frontend:${{ github.sha }}
+        
+        # Mettre à jour le Container App avec la nouvelle image
         az containerapp update \
           --name qso-frontend \
           --resource-group ${{ env.RESOURCE_GROUP }} \
-          --set-env-vars VITE_API_URL=https://$BACKEND_URL
+          --image ${{ env.REGISTRY_NAME }}.azurecr.io/qso-frontend:${{ github.sha }}

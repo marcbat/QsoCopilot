@@ -17,7 +17,7 @@ class QsoSignalRService {
         this.setupConnection();
     }    private setupConnection() {
         // Construire la connexion SignalR
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5041/api';
+        const apiUrl = (window as any).ENV?.VITE_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:5041/api';
         const apiBaseUrl = apiUrl.replace('/api', ''); // Retirer /api pour obtenir l'URL de base
         const hubUrl = `${apiBaseUrl}/qsohub`;
         
