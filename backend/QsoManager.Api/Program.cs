@@ -129,12 +129,10 @@ builder.Services.AddCors(options =>
     
     options.AddPolicy("Production", policy =>
     {
-        policy.SetIsOriginAllowed(origin => 
-            origin.Contains("azurecontainerapps.io") && 
-            (origin.StartsWith("https://") || origin.StartsWith("http://")))
+        policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials(); // Important pour SignalR
+              .AllowAnyHeader();
+        // Note: On ne peut pas utiliser AllowCredentials() avec AllowAnyOrigin()
     });
 });
 
@@ -149,11 +147,13 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "QSO Manager API v1");
         c.RoutePrefix = "swagger"; // Swagger sera accessible à /swagger
     });
+    Console.WriteLine("Using Development CORS policy");
     app.UseCors("Development");
 }
 else
 {
     // En production ou dans Docker (Azure Container Apps)
+    Console.WriteLine("Using Production CORS policy");
     app.UseCors("Production");
 }
 
