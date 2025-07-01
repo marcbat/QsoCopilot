@@ -60,10 +60,12 @@ jobs:
           --registry-username ${{ secrets.ACR_USERNAME }} \
           --registry-password ${{ secrets.ACR_PASSWORD }} \
           --target-port 8080 \
-          --ingress internal \
+          --ingress external \
           --env-vars ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_URLS=http://+:8080 ConnectionStrings__MongoDB="${{ secrets.MONGODB_CONNECTION_STRING }}" \
           --cpu 0.5 \
-          --memory 1.0Gi
+          --memory 1.0Gi \
+          --min-replicas 1 \
+          --max-replicas 3
 
     - name: Deploy Frontend Container App
       run: |
