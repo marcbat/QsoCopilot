@@ -129,8 +129,9 @@ builder.Services.AddCors(options =>
     
     options.AddPolicy("Production", policy =>
     {
-        policy.WithOrigins("https://*.azurecontainerapps.io")
-              .SetIsOriginAllowedToAllowWildcardSubdomains()
+        policy.SetIsOriginAllowed(origin => 
+            origin.Contains("azurecontainerapps.io") && 
+            (origin.StartsWith("https://") || origin.StartsWith("http://")))
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials(); // Important pour SignalR
@@ -140,7 +141,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
@@ -150,8 +151,9 @@ if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docke
     });
     app.UseCors("Development");
 }
-else if (app.Environment.IsProduction())
+else
 {
+    // En production ou dans Docker (Azure Container Apps)
     app.UseCors("Production");
 }
 
