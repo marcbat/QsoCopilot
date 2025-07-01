@@ -1,0 +1,64 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      items: [
+        {
+          id: Guid_1,
+          name: QSO Test Beta,
+          description: Second test QSO for pagination,
+          moderatorId: Guid_2,
+          frequency: 7.04,
+          participants: [
+            {
+              callSign: F4TEST,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_1,
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'QSO Test Beta',
+            DateTimeOffset_3: Ajout du participant F4TEST à la position 1
+          }
+        },
+        {
+          id: Guid_3,
+          name: QSO Test Alpha,
+          description: First test QSO for pagination,
+          moderatorId: Guid_2,
+          frequency: 14.205,
+          participants: [
+            {
+              callSign: F4TEST,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'QSO Test Alpha',
+            DateTimeOffset_6: Ajout du participant F4TEST à la position 1
+          }
+        }
+      ],
+      pageNumber: 2,
+      pageSize: 3,
+      totalCount: 5,
+      totalPages: 2,
+      hasPreviousPage: true,
+      hasNextPage: false
+    }
+  }
+}

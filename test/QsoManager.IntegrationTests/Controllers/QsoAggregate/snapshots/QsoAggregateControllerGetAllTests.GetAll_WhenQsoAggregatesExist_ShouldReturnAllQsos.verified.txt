@@ -1,0 +1,56 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: [
+      {
+        id: Guid_1,
+        name: QSO Test 1,
+        description: Premier QSO pour test GetAll,
+        moderatorId: Guid_2,
+        frequency: 14.205,
+        participants: [
+          {
+            callSign: F4TEST1,
+            order: 1,
+            country: null,
+            name: null,
+            qrzCallsignInfo: null,
+            qrzDxccInfo: null
+          }
+        ],
+        startDateTime: DateTimeOffset_1,
+        createdDate: DateTimeOffset_1,
+        history: {
+          DateTimeOffset_2: Création du QSO 'QSO Test 1',
+          DateTimeOffset_3: Ajout du participant F4TEST1 à la position 1
+        }
+      },
+      {
+        id: Guid_3,
+        name: QSO Test 2,
+        description: Deuxième QSO pour test GetAll,
+        moderatorId: Guid_4,
+        frequency: 7.04,
+        participants: [
+          {
+            callSign: F4TEST2,
+            order: 1,
+            country: null,
+            name: null,
+            qrzCallsignInfo: null,
+            qrzDxccInfo: null
+          }
+        ],
+        startDateTime: DateTimeOffset_4,
+        createdDate: DateTimeOffset_4,
+        history: {
+          DateTimeOffset_5: Création du QSO 'QSO Test 2',
+          DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+        }
+      }
+    ]
+  }
+}

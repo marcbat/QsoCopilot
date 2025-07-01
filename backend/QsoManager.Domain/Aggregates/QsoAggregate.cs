@@ -7,79 +7,39 @@ using static LanguageExt.Prelude;
 namespace QsoManager.Domain.Aggregates;
 
 public class QsoAggregate : AggregateRoot
-{
-    public static class Events
+{    public static class Events
     {
-        public class Created : Event
-        {
-            public override string EventType => nameof(Created);
-            public string Name { get; }
-            public string Description { get; }
-
-            public Created(Guid aggregateId, DateTime dateEvent, string name, string description) 
-                : base(aggregateId, dateEvent)
-            {
-                Name = name;
-                Description = description;
-            }
-        }
-
-        public class ParticipantAdded : Event
-        {
-            public override string EventType => nameof(ParticipantAdded);
-            public string CallSign { get; }
-            public int Order { get; }
-
-            public ParticipantAdded(Guid aggregateId, DateTime dateEvent, string callSign, int order) 
-                : base(aggregateId, dateEvent)
-            {
-                CallSign = callSign;
-                Order = order;
-            }
-        }
-
-        public class ParticipantRemoved : Event
-        {
-            public override string EventType => nameof(ParticipantRemoved);
-            public string CallSign { get; }
-
-            public ParticipantRemoved(Guid aggregateId, DateTime dateEvent, string callSign) 
-                : base(aggregateId, dateEvent)
-            {
-                CallSign = callSign;
-            }
-        }
-
-        public class ParticipantsReordered : Event
-        {
-            public override string EventType => nameof(ParticipantsReordered);
-            public Dictionary<string, int> NewOrders { get; }
-
-            public ParticipantsReordered(Guid aggregateId, DateTime dateEvent, Dictionary<string, int> newOrders) 
-                : base(aggregateId, dateEvent)
-            {
-                NewOrders = newOrders;
-            }
-        }
+        public record Created(Guid AggregateId, DateTime DateEvent, string Name, string? Description, Guid ModeratorId, decimal Frequency, DateTime? StartDateTime = null) : Event(AggregateId, DateEvent);
+        public record ParticipantAdded(Guid AggregateId, DateTime DateEvent, string CallSign, int Order) : Event(AggregateId, DateEvent);
+        public record ParticipantRemoved(Guid AggregateId, DateTime DateEvent, string CallSign) : Event(AggregateId, DateEvent);
+        public record ParticipantsReordered(Guid AggregateId, DateTime DateEvent, Dictionary<string, int> NewOrders) : Event(AggregateId, DateEvent);
+        public record StartDateTimeUpdated(Guid AggregateId, DateTime DateEvent, DateTime? StartDateTime) : Event(AggregateId, DateEvent);
+        public record FrequencyUpdated(Guid AggregateId, DateTime DateEvent, decimal Frequency) : Event(AggregateId, DateEvent);
+        public record Deleted(Guid AggregateId, DateTime DateEvent, Guid DeletedBy) : Event(AggregateId, DateEvent);
     }
 
     internal readonly List<Participant> _participants = [];
 
     protected QsoAggregate()
     {
-    }
-
-    internal QsoAggregate(Guid id, string name, string description) : base(id)
+    }    internal QsoAggregate(Guid id, string name, string? description, Guid moderatorId, decimal frequency, DateTime? startDateTime = null) : base(id)
     {
         Name = name;
         Description = description;
+        ModeratorId = moderatorId;
+        Frequency = frequency;
+        StartDateTime = startDateTime ?? DateTime.Now; // Si pas de date de début spécifiée, utiliser maintenant
+        CreatedDate = DateTime.Now;
     }
 
-    protected static Validation<Error, QsoAggregate> Create() => new QsoAggregate();    public static Validation<Error, QsoAggregate> Create(Guid id, string name, string description)
+    protected static Validation<Error, QsoAggregate> Create() => new QsoAggregate();    public static Validation<Error, QsoAggregate> Create(Guid id, string name, string? description, Guid moderatorId, decimal frequency, DateTime? startDateTime = null)
     {
-        return (ValidateId(id), ValidateName(name), ValidateDescription(description))
-            .Apply((vid, vname, vdesc) => new QsoAggregate(vid, vname, vdesc))
-            .Bind(aggregate => aggregate.Apply(new Events.Created(id, DateTime.Now, name, description))
+        var createdAt = DateTime.Now;
+        var actualStartDateTime = startDateTime ?? createdAt; // Date de début = date de création si pas spécifiée
+        
+        return (ValidateId(id), ValidateName(name), ValidateDescription(description), ValidateId(moderatorId), ValidateFrequency(frequency))
+            .Apply((vid, vname, vdesc, vModeratorId, vfrequency) => new QsoAggregate(vid, vname, vdesc, vModeratorId, vfrequency, actualStartDateTime))
+            .Bind(aggregate => aggregate.Apply(new Events.Created(id, createdAt, name, description, moderatorId, frequency, actualStartDateTime))
                 .Map(_ => aggregate));
     }
 
@@ -88,10 +48,15 @@ public class QsoAggregate : AggregateRoot
         return Create()
             .Bind(aggregate => aggregate.Load(history)
                 .Map(_ => aggregate));
-    }
-
-    public string Name { get; protected set; } = string.Empty;
-    public string Description { get; protected set; } = string.Empty;
+    }    public string Name { get; protected set; } = string.Empty;
+    public string? Description { get; protected set; } = string.Empty;
+    public Guid ModeratorId { get; protected set; }
+    public decimal Frequency { get; protected set; }
+    public DateTime? StartDateTime { get; protected set; }
+    public DateTime CreatedDate { get; protected set; }
+    public bool IsDeleted { get; protected set; }
+    public DateTime? DeletedDate { get; protected set; }
+    public Guid? DeletedBy { get; protected set; }
     public IReadOnlyList<Participant> Participants => _participants.AsReadOnly();
 
     protected static Validation<Error, string> ValidateName(string name)
@@ -99,13 +64,17 @@ public class QsoAggregate : AggregateRoot
         if (string.IsNullOrWhiteSpace(name))
             return Error.New("Le nom ne peut pas être vide");
         return name;
+    }    protected static Validation<Error, string> ValidateDescription(string? description)
+    {
+        // La description est maintenant facultative
+        return description ?? string.Empty;
     }
 
-    protected static Validation<Error, string> ValidateDescription(string description)
+    protected static Validation<Error, decimal> ValidateFrequency(decimal frequency)
     {
-        if (string.IsNullOrWhiteSpace(description))
-            return Error.New("La description ne peut pas être vide");
-        return description;
+        if (frequency <= 0)
+            return Error.New("La fréquence doit être supérieure à 0");
+        return frequency;
     }
 
     protected static Validation<Error, string> ValidateCallSign(string callSign)
@@ -132,7 +101,7 @@ public class QsoAggregate : AggregateRoot
     public Validation<Error, QsoAggregate> RemoveParticipant(string callSign)
     {
         var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
-        if (participant == null)
+        if (participant is null)
             return Error.New($"Le participant avec l'indicatif {callSign} n'existe pas");
 
         return ValidateCallSign(callSign)
@@ -161,11 +130,13 @@ public class QsoAggregate : AggregateRoot
 
         return Apply(new Events.ParticipantsReordered(Id, DateTime.Now, newOrders))
             .Map(x => this);
-    }    // Méthode pour déplacer un participant à une position spécifique
+    }
+
+    // Méthode pour déplacer un participant à une position spécifique
     public Validation<Error, QsoAggregate> MoveParticipantToPosition(string callSign, int newPosition)
     {
         var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
-        if (participant == null)
+        if (participant is null)
             return Error.New($"Le participant avec l'indicatif {callSign} n'existe pas");
 
         if (newPosition < 1 || newPosition > _participants.Count)
@@ -203,38 +174,128 @@ public class QsoAggregate : AggregateRoot
                 }
                 newOrders[p.CallSign] = adjustedPosition;
             }
-        }
+        }        return ReorderParticipants(newOrders);
+    }
 
-        return ReorderParticipants(newOrders);
-    }// Application des événements (méthode requise par AggregateRoot)
-    protected override Validation<Error, Event> When(IEvent @event)
+    // Mettre à jour la date/heure de début
+    public Validation<Error, QsoAggregate> UpdateStartDateTime(DateTime? startDateTime)
     {
-        return @event switch
+        return Apply(new Events.StartDateTimeUpdated(Id, DateTime.Now, startDateTime))
+            .Map(x => this);
+    }
+
+    // Mettre à jour la fréquence
+    public Validation<Error, QsoAggregate> UpdateFrequency(decimal frequency)
+    {
+        return ValidateFrequency(frequency)
+            .Bind(vfrequency => Apply(new Events.FrequencyUpdated(Id, DateTime.Now, vfrequency)))
+            .Map(x => this);
+    }
+
+    // Mettre à jour le pays d'un participant
+    public Validation<Error, QsoAggregate> UpdateParticipantCountry(string callSign, string? country)
+    {
+        var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
+        if (participant is null)
+            return Error.New($"Le participant avec l'indicatif {callSign} n'existe pas");
+
+        return ValidateCallSign(callSign)
+            .Bind(vCallSign => participant.UpdateCountry(Id, country)
+                .Match(
+                    evt => Apply(evt).Map(_ => this),
+                    () => this
+                ));
+    }
+
+    // Mettre à jour le pays d'un participant par Id
+    public Validation<Error, QsoAggregate> UpdateParticipantCountry(Guid participantId, string? country)
+    {
+        var participant = _participants.FirstOrDefault(p => p.Id == participantId);
+        if (participant is null)
+            return Error.New($"Le participant avec l'ID {participantId} n'existe pas");
+
+        return participant.UpdateCountry(Id, country)
+            .Match(
+                evt => Apply(evt).Map(_ => this),
+                () => this
+            );
+    }
+
+    // Mettre à jour le nom d'un participant
+    public Validation<Error, QsoAggregate> UpdateParticipantName(string callSign, string? name)
+    {
+        var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(callSign, StringComparison.OrdinalIgnoreCase));
+        if (participant is null)
+            return Error.New($"Le participant avec l'indicatif {callSign} n'existe pas");
+
+        return ValidateCallSign(callSign)
+            .Bind(vCallSign => participant.UpdateName(Id, name)
+                .Match(
+                    evt => Apply(evt).Map(_ => this),
+                    () => this
+                ));
+    }    // Mettre à jour le nom d'un participant par Id
+    public Validation<Error, QsoAggregate> UpdateParticipantName(Guid participantId, string? name)
+    {
+        var participant = _participants.FirstOrDefault(p => p.Id == participantId);
+        if (participant is null)
+            return Error.New($"Le participant avec l'ID {participantId} n'existe pas");
+
+        return participant.UpdateName(Id, name)
+            .Match(
+                evt => Apply(evt).Map(_ => this),
+                () => this
+            );
+    }
+
+    // Supprimer le QSO (seul le modérateur peut le faire)
+    public Validation<Error, QsoAggregate> Delete(Guid deletedBy)
+    {
+        if (IsDeleted)
+            return Error.New("Le QSO est déjà supprimé");
+            
+        if (deletedBy != ModeratorId)
+            return Error.New("Seul le modérateur peut supprimer ce QSO");
+
+        return Apply(new Events.Deleted(Id, DateTime.Now, deletedBy))
+            .Map(_ => this);
+    }
+
+    // Application des événements (méthode requise par AggregateRoot)
+    protected override Validation<Error, Event> When(IEvent @event)
+    {        return @event switch
         {
             Events.Created e => QsoAggregateCreatedEventHandler(e),
             Events.ParticipantAdded e => ParticipantAddedEventHandler(e),
             Events.ParticipantRemoved e => ParticipantRemovedEventHandler(e),
             Events.ParticipantsReordered e => ParticipantsReorderedEventHandler(e),
+            Events.StartDateTimeUpdated e => StartDateTimeUpdatedEventHandler(e),
+            Events.FrequencyUpdated e => FrequencyUpdatedEventHandler(e),
+            Events.Deleted e => QsoAggregateDeletedEventHandler(e),
+            Participant.Events.CountryUpdated e => ParticipantCountryUpdatedEventHandler(e),
+            Participant.Events.NameUpdated e => ParticipantNameUpdatedEventHandler(e),
             _ => Error.New($"Event type {@event.GetType().Name} is not supported")
         };
-    }
-
-    private Validation<Error, Event> QsoAggregateCreatedEventHandler(Events.Created e)
+    }    private Validation<Error, Event> QsoAggregateCreatedEventHandler(Events.Created e)
     {
         Id = e.AggregateId;
         Name = e.Name;
         Description = e.Description;
+        ModeratorId = e.ModeratorId;
+        Frequency = e.Frequency;
+        StartDateTime = e.StartDateTime;
+        CreatedDate = e.DateEvent;
         return Success<Error, Event>(e);
-    }    private Validation<Error, Event> ParticipantAddedEventHandler(Events.ParticipantAdded e)
+    }private Validation<Error, Event> ParticipantAddedEventHandler(Events.ParticipantAdded e)
     {
-        _participants.Add(new Participant(e.CallSign, e.Order));
+        _participants.Add(new Participant(e.CallSign, e.Order, null, null));
         return Success<Error, Event>(e);
     }
 
     private Validation<Error, Event> ParticipantRemovedEventHandler(Events.ParticipantRemoved e)
     {
         var participant = _participants.FirstOrDefault(p => p.CallSign.Equals(e.CallSign, StringComparison.OrdinalIgnoreCase));
-        if (participant != null)
+        if (participant is not null)
         {
             _participants.Remove(participant);
             
@@ -251,9 +312,7 @@ public class QsoAggregate : AggregateRoot
             }
         }
         return Success<Error, Event>(e);
-    }
-
-    private Validation<Error, Event> ParticipantsReorderedEventHandler(Events.ParticipantsReordered e)
+    }    private Validation<Error, Event> ParticipantsReorderedEventHandler(Events.ParticipantsReordered e)
     {
         foreach (var participant in _participants.ToList())
         {
@@ -263,6 +322,42 @@ public class QsoAggregate : AggregateRoot
                 _participants.Add(new Participant(participant.CallSign, newOrder));
             }
         }
+        return Success<Error, Event>(e);
+    }    private Validation<Error, Event> ParticipantCountryUpdatedEventHandler(Participant.Events.CountryUpdated e)
+    {
+        var participant = _participants.FirstOrDefault(p => p.Id == e.ParticipantId);
+        if (participant is not null)
+        {
+            _participants.Remove(participant);
+            _participants.Add(new Participant(participant.Id, participant.CallSign, participant.Order, e.Country, participant.Name));
+        }
+        return Success<Error, Event>(e);
+    }    private Validation<Error, Event> ParticipantNameUpdatedEventHandler(Participant.Events.NameUpdated e)
+    {
+        var participant = _participants.FirstOrDefault(p => p.Id == e.ParticipantId);
+        if (participant is not null)
+        {
+            _participants.Remove(participant);
+            _participants.Add(new Participant(participant.Id, participant.CallSign, participant.Order, participant.Country, e.Name));
+        }
+        return Success<Error, Event>(e);
+    }
+
+    private Validation<Error, Event> StartDateTimeUpdatedEventHandler(Events.StartDateTimeUpdated e)
+    {
+        StartDateTime = e.StartDateTime;
+        return Success<Error, Event>(e);
+    }    private Validation<Error, Event> FrequencyUpdatedEventHandler(Events.FrequencyUpdated e)
+    {
+        Frequency = e.Frequency;
+        return Success<Error, Event>(e);
+    }
+
+    private Validation<Error, Event> QsoAggregateDeletedEventHandler(Events.Deleted e)
+    {
+        IsDeleted = true;
+        DeletedDate = e.DateEvent;
+        DeletedBy = e.DeletedBy;
         return Success<Error, Event>(e);
     }
 }

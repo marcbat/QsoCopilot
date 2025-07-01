@@ -1,17 +1,20 @@
 using LanguageExt;
 using LanguageExt.Common;
+using Microsoft.Extensions.Logging;
 using QsoManager.Domain.Common;
 using System.Threading.Channels;
 
 namespace QsoManager.Application;
 
-public abstract class BaseCommandHandler
+public abstract class BaseCommandHandler<T>
 {
     private readonly Channel<IEvent> _channel;
+    protected readonly ILogger<T> _logger;
 
-    protected BaseCommandHandler(Channel<IEvent> channel)
+    protected BaseCommandHandler(Channel<IEvent> channel, ILogger<T> logger)
     {
         _channel = channel;
+        _logger = logger;
     }
 
     protected virtual Validation<Error, IEnumerable<IEvent>> DispatchEventsAsync(IEnumerable<IEvent> events, CancellationToken cancellationToken)

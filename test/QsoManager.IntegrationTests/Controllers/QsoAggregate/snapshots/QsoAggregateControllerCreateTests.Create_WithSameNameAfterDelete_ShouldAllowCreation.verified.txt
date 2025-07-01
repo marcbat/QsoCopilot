@@ -1,0 +1,28 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      id: Guid_1,
+      name: QSO Test Same Name After Delete,
+      description: Nouveau QSO avec le même nom,
+      moderatorId: Guid_2,
+      frequency: 145.6,
+      participants: [
+        {
+          callSign: F4TEST7,
+          order: 1,
+          country: null,
+          name: null,
+          qrzCallsignInfo: null,
+          qrzDxccInfo: null
+        }
+      ],
+      startDateTime: DateTimeOffset_1,
+      createdDate: DateTimeOffset_1,
+      history: null
+    }
+  }
+}

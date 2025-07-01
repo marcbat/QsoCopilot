@@ -1,0 +1,36 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      id: Guid_1,
+      name: QSO Test Participants,
+      description: QSO pour test des participants,
+      moderatorId: Guid_2,
+      frequency: 145.5,
+      participants: [
+        {
+          callSign: F4TEST1,
+          order: 1,
+          country: null,
+          name: null,
+          qrzCallsignInfo: null,
+          qrzDxccInfo: null
+        },
+        {
+          callSign: F4ABC,
+          order: 2,
+          country: null,
+          name: null,
+          qrzCallsignInfo: null,
+          qrzDxccInfo: null
+        }
+      ],
+      startDateTime: DateTimeOffset_1,
+      createdDate: DateTimeOffset_1,
+      history: null
+    }
+  }
+}

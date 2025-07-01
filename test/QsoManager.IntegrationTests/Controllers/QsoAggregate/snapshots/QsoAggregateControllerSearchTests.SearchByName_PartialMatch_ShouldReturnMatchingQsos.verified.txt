@@ -1,0 +1,249 @@
+﻿{
+  getAllResponse: {
+    Status: 200 OK,
+    Content: {
+      Headers: {
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: [
+        {
+          id: Guid_1,
+          name: Mon Super QSO 2,
+          description: QSO avec Super dans le nom,
+          moderatorId: Guid_2,
+          frequency: 14.205,
+          participants: [
+            {
+              callSign: F4TEST2,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_1,
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'Mon Super QSO 2',
+            DateTimeOffset_3: Ajout du participant F4TEST2 à la position 1
+          }
+        },
+        {
+          id: Guid_3,
+          name: Un autre QSO super,
+          description: Encore un QSO avec super,
+          moderatorId: Guid_2,
+          frequency: 7.04,
+          participants: [
+            {
+              callSign: F4TEST2,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'Un autre QSO super',
+            DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+          }
+        },
+        {
+          id: Guid_4,
+          name: QSO normal,
+          description: QSO sans le mot recherché,
+          moderatorId: Guid_2,
+          frequency: 21.205,
+          participants: [
+            {
+              callSign: F4TEST2,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_7,
+          createdDate: DateTimeOffset_7,
+          history: {
+            DateTimeOffset_8: Création du QSO 'QSO normal',
+            DateTimeOffset_9: Ajout du participant F4TEST2 à la position 1
+          }
+        }
+      ]
+    }
+  },
+  responseSuper: {
+    Status: 200 OK,
+    Content: {
+      Headers: {
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: [
+        {
+          id: Guid_1,
+          name: Mon Super QSO 2,
+          description: QSO avec Super dans le nom,
+          moderatorId: Guid_2,
+          frequency: 14.205,
+          participants: [
+            {
+              callSign: F4TEST2,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_1,
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'Mon Super QSO 2',
+            DateTimeOffset_3: Ajout du participant F4TEST2 à la position 1
+          }
+        },
+        {
+          id: Guid_3,
+          name: Un autre QSO super,
+          description: Encore un QSO avec super,
+          moderatorId: Guid_2,
+          frequency: 7.04,
+          participants: [
+            {
+              callSign: F4TEST2,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'Un autre QSO super',
+            DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+          }
+        }
+      ]
+    }
+  },
+  responseSuper2: {
+    Status: 200 OK,
+    Content: {
+      Headers: {
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: [
+        {
+          id: Guid_1,
+          name: Mon Super QSO 2,
+          description: QSO avec Super dans le nom,
+          moderatorId: Guid_2,
+          frequency: 14.205,
+          participants: [
+            {
+              callSign: F4TEST2,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_1,
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'Mon Super QSO 2',
+            DateTimeOffset_3: Ajout du participant F4TEST2 à la position 1
+          }
+        },
+        {
+          id: Guid_3,
+          name: Un autre QSO super,
+          description: Encore un QSO avec super,
+          moderatorId: Guid_2,
+          frequency: 7.04,
+          participants: [
+            {
+              callSign: F4TEST2,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'Un autre QSO super',
+            DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+          }
+        }
+      ]
+    }
+  },
+  responseSuPer: {
+    Status: 200 OK,
+    Content: {
+      Headers: {
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: [
+        {
+          id: Guid_1,
+          name: Mon Super QSO 2,
+          description: QSO avec Super dans le nom,
+          moderatorId: Guid_2,
+          frequency: 14.205,
+          participants: [
+            {
+              callSign: F4TEST2,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_1,
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'Mon Super QSO 2',
+            DateTimeOffset_3: Ajout du participant F4TEST2 à la position 1
+          }
+        },
+        {
+          id: Guid_3,
+          name: Un autre QSO super,
+          description: Encore un QSO avec super,
+          moderatorId: Guid_2,
+          frequency: 7.04,
+          participants: [
+            {
+              callSign: F4TEST2,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_4,
+          createdDate: DateTimeOffset_4,
+          history: {
+            DateTimeOffset_5: Création du QSO 'Un autre QSO super',
+            DateTimeOffset_6: Ajout du participant F4TEST2 à la position 1
+          }
+        }
+      ]
+    }
+  }
+}

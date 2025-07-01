@@ -1,0 +1,16 @@
+﻿{
+  Status: 200 OK,
+  Content: {
+    Headers: {
+      Content-Type: application/json; charset=utf-8
+    },
+    Value: {
+      pageNumber: 999,
+      pageSize: 20,
+      totalCount: 5,
+      totalPages: 1,
+      hasPreviousPage: true,
+      hasNextPage: false
+    }
+  }
+}

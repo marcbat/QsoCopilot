@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="QsoManager.Domain.Aggregates.ModeratorAggregate">
+    <Position X="0.75" Y="8.25" Width="2.75" />
+    <NestedTypes>
+      <Class Name="QsoManager.Domain.Aggregates.ModeratorAggregate.Events" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Aggregates\ModeratorAggregate.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AABAAAAAgDAAAAAAAAAAAAAAAAAAAEAAAAQAAAAABAA=</HashCode>
+      <FileName>Aggregates\ModeratorAggregate.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="QsoManager.Domain.Aggregates.QsoAggregate">
+    <Position X="4.25" Y="8.25" Width="2.75" />
+    <NestedTypes>
+      <Class Name="QsoManager.Domain.Aggregates.QsoAggregate.Events" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Aggregates\QsoAggregate.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>IAMAAAABACAgAIAEAAACAAQQAAAAAkAAICACAAAABAA=</HashCode>
+      <FileName>Aggregates\QsoAggregate.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Participants" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="QsoManager.Domain.Entities.Participant">
+    <Position X="7.75" Y="4.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAAgAAAAAAAAAAAAIAAAAQAAAAAAAA=</HashCode>
+      <FileName>Entities\Participant.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="QsoManager.Domain.Common.AggregateRoot">
+    <Position X="2.75" Y="4.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>IAAAgAAAADAAQAAAAAAIAAAAAAIAAAAAAAAAIAAAAAA=</HashCode>
+      <FileName>Common\AggregateRoot.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="QsoManager.Domain.Common.Entity">
+    <Position X="4.75" Y="0.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAACIAAAAAAAAAAAgAAAAAAAIAAAAIAAAAAAAAAAAiA=</HashCode>
+      <FileName>Common\Entity.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

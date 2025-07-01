@@ -1,0 +1,37 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: qso-manager-mongodb-dev
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: QsoManager
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    command: mongod --auth --bind_ip_all
+    networks:
+      - qso-network-dev
+
+  qso-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qso-manager-api-dev
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__MongoDB=mongodb://admin:password123@mongodb:27017/QsoManager?authSource=admin
+    ports:
+      - "5041:8080"
+    depends_on:
+      - mongodb
+    networks:
+      - qso-network-dev
+
+networks:
+  qso-network-dev:
+    driver: bridge

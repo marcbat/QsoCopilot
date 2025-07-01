@@ -1,0 +1,160 @@
+{
+  "folders": [
+    {
+      "name": "QSO Manager - Root",
+      "path": "."
+    },
+    {
+      "name": "Frontend",
+      "path": "./frontend"
+    },
+    {
+      "name": "Backend",
+      "path": "./backend"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "typescript.suggest.autoImports": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    },
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/bin": true,
+      "**/obj": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/bin": true,
+      "**/obj": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-typescript-next",
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode",
+      "ms-dotnettools.csharp",
+      "ms-vscode.powershell",
+      "ms-azuretools.vscode-docker"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Start Dev Backend",
+        "type": "shell",
+        "command": ".\\start-dev-backend.ps1",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Start Dev Frontend",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "dev"],
+        "options": {
+          "cwd": "${workspaceFolder}/frontend"
+        },
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Start Full Dev Environment",
+        "type": "shell",
+        "command": ".\\start-dev.ps1",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": true,
+          "panel": "new"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Stop Dev Environment",
+        "type": "shell",
+        "command": ".\\stop-dev.ps1",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Build Frontend",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "build"],
+        "options": {
+          "cwd": "${workspaceFolder}/frontend"
+        },
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        },
+        "problemMatcher": ["$tsc"]
+      },
+      {
+        "label": "Test Frontend",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "test"],
+        "options": {
+          "cwd": "${workspaceFolder}/frontend"
+        },
+        "group": "test",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        },
+        "problemMatcher": []
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Frontend",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder}/frontend/node_modules/.bin/vite",
+        "args": ["--mode", "development"],
+        "cwd": "${workspaceFolder}/frontend",
+        "console": "integratedTerminal",
+        "env": {
+          "NODE_ENV": "development"
+        }
+      }
+    ]
+  }
+}

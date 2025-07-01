@@ -1,0 +1,9 @@
+﻿{
+  ReorderResponse: {
+    Status: 204 No Content,
+    Content: {
+      Headers: {}
+    }
+  },
+  QsoAfterReorder: {"id":"NORMALIZED_GUID","name":"QSO Test Order Verification","description":"QSO pour vérifier l'ordre après réorganisation","moderatorId":"NORMALIZED_GUID","frequency":145.5,"participants":[{"callSign":"F4TEST2","order":1,"country":null,"name":null,"qrzCallsignInfo":null,"qrzDxccInfo":null},{"callSign":"F4AAA","order":2,"country":null,"name":null,"qrzCallsignInfo":null,"qrzDxccInfo":null},{"callSign":"F4BBB","order":4,"country":null,"name":null,"qrzCallsignInfo":null,"qrzDxccInfo":null},{"callSign":"F4CCC","order":3,"country":null,"name":null,"qrzCallsignInfo":null,"qrzDxccInfo":null},{"callSign":"F4DDD","order":1,"country":null,"name":null,"qrzCallsignInfo":null,"qrzDxccInfo":null}],"startDateTime":"2025-06-22T18:55:34.576Z","createdDate":"2025-06-22T18:55:34.576Z"}
+}

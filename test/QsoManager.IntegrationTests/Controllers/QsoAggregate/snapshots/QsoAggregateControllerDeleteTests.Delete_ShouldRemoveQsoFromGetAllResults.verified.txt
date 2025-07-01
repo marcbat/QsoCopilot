@@ -1,0 +1,50 @@
+﻿{
+  BeforeDelete: {
+    Status: 200 OK,
+    Content: {
+      Headers: {
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: [
+        {
+          id: Guid_1,
+          name: QSO Test Visibility After Delete,
+          description: QSO pour vérifier qu'il disparaît après suppression,
+          moderatorId: Guid_2,
+          frequency: 28.405,
+          participants: [
+            {
+              callSign: F4TEST5,
+              order: 1,
+              country: null,
+              name: null,
+              qrzCallsignInfo: null,
+              qrzDxccInfo: null
+            }
+          ],
+          startDateTime: DateTimeOffset_1,
+          createdDate: DateTimeOffset_1,
+          history: {
+            DateTimeOffset_2: Création du QSO 'QSO Test Visibility After Delete',
+            DateTimeOffset_3: Ajout du participant F4TEST5 à la position 1
+          }
+        }
+      ]
+    }
+  },
+  AfterDelete: {
+    Status: 200 OK,
+    Content: {
+      Headers: {
+        Content-Type: application/json; charset=utf-8
+      },
+      Value: []
+    }
+  },
+  DeleteResponse: {
+    Status: 204 No Content,
+    Content: {
+      Headers: {}
+    }
+  }
+}

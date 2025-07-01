@@ -1,6 +1,7 @@
 using LanguageExt;
 using LanguageExt.Common;
 using QsoManager.Application.Interfaces;
+using QsoManager.Application.Projections.Interfaces;
 using QsoManager.Domain.Aggregates;
 using QsoManager.Domain.Repositories;
 
@@ -9,20 +10,27 @@ namespace QsoManager.Infrastructure.Repositories;
 public class QsoAggregateRepository : IQsoAggregateRepository
 {
     private readonly IEventRepository _eventRepository;
+    private readonly IQsoAggregateProjectionRepository _projectionRepository;
 
-    public QsoAggregateRepository(IEventRepository eventRepository)
+    public QsoAggregateRepository(IEventRepository eventRepository, IQsoAggregateProjectionRepository projectionRepository)
     {
         _eventRepository = eventRepository;
-    }
-
-    public async Task<Validation<Error, QsoAggregate>> GetByIdAsync(Guid id)
+        _projectionRepository = projectionRepository;
+    }    public async Task<Validation<Error, QsoAggregate>> GetByIdAsync(Guid id)
     {
         try
         {
             var eventsResult = await _eventRepository.GetAsync(id);
             
             return eventsResult.Match(
-                events => QsoAggregate.Create(events),
+                events => 
+                {
+                    if (!events.Any())
+                    {
+                        return Error.New($"Aucun QSO trouvé avec l'ID {id}.");
+                    }
+                    return QsoAggregate.Create(events);
+                },
                 errors => Validation<Error, QsoAggregate>.Fail(errors)
             );
         }
@@ -58,14 +66,50 @@ public class QsoAggregateRepository : IQsoAggregateRepository
         {
             return Error.New("Impossible de sauvegarder l'agrégat QSO.");
         }
-    }
-
-    public async Task<Validation<Error, bool>> ExistsWithNameAsync(string name)
+    }    public async Task<Validation<Error, bool>> ExistsWithNameAsync(string name)
     {
-        // Pour l'instant, implémentation simple - dans un vrai projet, 
-        // on utiliserait des projections ou des snapshots
-        // Ici on retourne false pour permettre la création
-        await Task.CompletedTask;
-        return false;
+        try
+        {
+            // Obtenir tous les événements du système
+            var allEventsResult = await _eventRepository.GetAllEventsAsync();
+            
+            return allEventsResult.Match(
+                events =>
+                {
+                    // Grouper les événements par AggregateId pour reconstituer l'état de chaque QSO
+                    var qsoEvents = events.GroupBy(e => e.AggregateId);
+                    
+                    foreach (var qsoEventGroup in qsoEvents)
+                    {
+                        // Chercher l'événement Created avec le même nom
+                        var createdEvent = qsoEventGroup
+                            .OfType<Domain.Aggregates.QsoAggregate.Events.Created>()
+                            .FirstOrDefault(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                        
+                        if (createdEvent != null)
+                        {
+                            // Vérifier si ce QSO a été supprimé
+                            var deletedEvent = qsoEventGroup
+                                .OfType<Domain.Aggregates.QsoAggregate.Events.Deleted>()
+                                .FirstOrDefault();
+                            
+                            // Si le QSO n'a pas été supprimé, alors il existe avec ce nom
+                            if (deletedEvent == null)
+                            {
+                                return Validation<Error, bool>.Success(true);
+                            }
+                        }
+                    }
+                    
+                    // Aucun QSO actif trouvé avec ce nom
+                    return Validation<Error, bool>.Success(false);
+                },
+                errors => Validation<Error, bool>.Fail(errors)
+            );
+        }
+        catch (Exception ex)
+        {
+            return Error.New($"Impossible de vérifier l'unicité du nom '{name}': {ex.Message}");
+        }
     }
 }

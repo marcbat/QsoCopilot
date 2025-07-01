@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # MongoDB Database
   mongodb:
     image: mongo:7.0
     container_name: qso-manager-mongodb
@@ -13,12 +12,11 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongodb_data:/data/db
       - ./mongo-init:/docker-entrypoint-initdb.d
+    command: mongod --auth --bind_ip_all
     networks:
       - qso-network
 
-  # QSO Manager API
   qso-api:
     build:
       context: ./backend
@@ -26,27 +24,29 @@ services:
     container_name: qso-manager-api
     restart: unless-stopped
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__MongoDB=mongodb://admin:password123@mongodb:27017
-      - Mongo__Database=QsoManager
+      - ConnectionStrings__MongoDB=mongodb://admin:password123@mongodb:27017/QsoManager?authSource=admin
     ports:
       - "5041:8080"
     depends_on:
       - mongodb
     networks:
       - qso-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+
+  qso-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: qso-manager-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - qso-api
+    networks:
+      - qso-network
 
 networks:
   qso-network:
     driver: bridge
-
-volumes:
-  mongodb_data:
-    driver: local
