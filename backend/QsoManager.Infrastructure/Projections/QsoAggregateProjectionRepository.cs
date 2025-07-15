@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using QsoManager.Application.Common;
 using QsoManager.Application.Projections.Interfaces;
+using System.Text.RegularExpressions;
 using ApplicationModels = QsoManager.Application.Projections.Models;
 using InfrastructureModels = QsoManager.Infrastructure.Projections.Models;
 using static LanguageExt.Prelude;
@@ -155,19 +156,46 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             
             _logger.LogInformation("Searching QSO projections containing '{SearchTerm}'", name);
             
-            // Créer un pattern regex pour recherche partielle case-insensitive
-            // Nous construisons manuellement le pattern pour éviter l'échappement complet
-            var safeSearchTerm = name.Replace("\\", "\\\\").Replace(".", "\\.");
-            var regexPattern = $".*{safeSearchTerm}.*";
+            // Détecter si nous utilisons Cosmos DB
+            var isCosmosDb = await IsCosmosDbAsync();
             
-            var filter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Regex(
-                x => x.Name, 
-                new MongoDB.Bson.BsonRegularExpression(regexPattern, "i"));
+            FilterDefinition<InfrastructureModels.QsoAggregateProjection> filter;
+            
+            if (isCosmosDb)
+            {
+                // Cosmos DB: Utiliser une recherche simple sans regex complexe
+                _logger.LogDebug("Using Cosmos DB compatible search for '{SearchTerm}'", name);
+                
+                // Recherche par égalité partielle avec StartsWith ou Contains
+                // Note: Cosmos DB supporte mieux les comparaisons simples
+                var startsWithFilter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Regex(
+                    x => x.Name, 
+                    new MongoDB.Bson.BsonRegularExpression($"^{Regex.Escape(name)}", "i"));
+                
+                var containsFilter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Regex(
+                    x => x.Name, 
+                    new MongoDB.Bson.BsonRegularExpression(Regex.Escape(name), "i"));
+                
+                // Utiliser une recherche par contains plus simple
+                filter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Or(startsWithFilter, containsFilter);
+            }
+            else
+            {
+                // MongoDB natif: Utiliser des regex complètes
+                _logger.LogDebug("Using MongoDB native regex search for '{SearchTerm}'", name);
+                
+                var safeSearchTerm = name.Replace("\\", "\\\\").Replace(".", "\\.");
+                var regexPattern = $".*{safeSearchTerm}.*";
+                
+                filter = Builders<InfrastructureModels.QsoAggregateProjection>.Filter.Regex(
+                    x => x.Name, 
+                    new MongoDB.Bson.BsonRegularExpression(regexPattern, "i"));
+            }
             
             var results = await collection.Find(filter).ToListAsync(cancellationToken);
             
-            _logger.LogInformation("Found {Count} QSO projections containing '{SearchTerm}' using pattern '{Pattern}'", 
-                results.Count, name, regexPattern);
+            _logger.LogInformation("Found {Count} QSO projections containing '{SearchTerm}'", 
+                results.Count, name);
             
             return Success<Error, IEnumerable<ApplicationModels.QsoAggregateProjectionDto>>(results.Select(MapToDto).AsEnumerable());
         }
@@ -175,6 +203,41 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
         {
             _logger.LogError(ex, "Error searching QsoAggregate projections by name '{Name}'", name);
             return Error.New($"Failed to search QsoAggregate projections by name '{name}': {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Détecte si nous utilisons Azure Cosmos DB
+    /// </summary>
+    private async Task<bool> IsCosmosDbAsync()
+    {
+        try
+        {
+            // Vérifier les variables d'environnement ou la configuration
+            var cosmosDbIndicator = Environment.GetEnvironmentVariable("COSMOS_DB_ENABLED");
+            if (!string.IsNullOrEmpty(cosmosDbIndicator) && 
+                (cosmosDbIndicator.ToLower() == "true" || cosmosDbIndicator == "1"))
+            {
+                return true;
+            }
+
+            // Méthode alternative: tenter une commande MongoDB spécifique
+            var database = _mongoClient.GetDatabase(_databaseName);
+            var command = new MongoDB.Bson.BsonDocument("buildInfo", 1);
+            var result = await database.RunCommandAsync<MongoDB.Bson.BsonDocument>(command);
+            
+            if (result.Contains("version"))
+            {
+                var version = result["version"].AsString;
+                return version.ToLower().Contains("cosmos");
+            }
+            
+            return false;
+        }
+        catch
+        {
+            // En cas d'erreur, assumer MongoDB natif
+            return false;
         }
     }
 

@@ -28,7 +28,12 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IMongoClient>(provider =>
         {
             return new MongoClient(mongoConnectionString);
-        });        // Repositories
+        });
+
+        // Service d'initialisation de la base de données
+        services.AddHostedService<QsoManager.Infrastructure.Configuration.DatabaseInitializationService>();
+
+        // Repositories
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IQsoAggregateRepository, QsoAggregateRepository>();
         services.AddScoped<IModeratorAggregateRepository, ModeratorAggregateRepository>();

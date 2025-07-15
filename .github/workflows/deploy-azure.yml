@@ -61,7 +61,7 @@ jobs:
           --registry-password ${{ secrets.ACR_PASSWORD }} \
           --target-port 8080 \
           --ingress external \
-          --env-vars ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_URLS=http://+:8080 ConnectionStrings__MongoDB="${{ secrets.MONGODB_CONNECTION_STRING }}" \
+          --env-vars ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_URLS=http://+:8080 COSMOS_DB_ENABLED=true ConnectionStrings__MongoDB="${{ secrets.MONGODB_CONNECTION_STRING }}" \
           --cpu 0.5 \
           --memory 1.0Gi \
           --min-replicas 1 \
