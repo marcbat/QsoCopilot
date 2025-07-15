@@ -275,22 +275,45 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             
             // Compter le total d'éléments
             var totalCount = await collection.CountDocumentsAsync(_ => true, cancellationToken: cancellationToken);
-              // Récupérer les éléments paginés triés par date de création décroissante (plus récent en premier)
-            var results = await collection
-                .Find(_ => true)
-                .SortByDescending(x => x.CreatedAt)
-                .Skip(pagination.Skip)
-                .Limit(pagination.PageSize)
-                .ToListAsync(cancellationToken);
+            try
+            {
+                // Récupérer les éléments paginés triés par date de création décroissante (plus récent en premier)
+                var results = await collection
+                    .Find(_ => true)
+                    .SortByDescending(x => x.CreatedAt)
+                    .Skip(pagination.Skip)
+                    .Limit(pagination.PageSize)
+                    .ToListAsync(cancellationToken);
 
-            var mappedResults = results.Select(MapToDto);
-            var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
-                mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
+                var mappedResults = results.Select(MapToDto);
+                var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
+                    mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
 
-            _logger.LogInformation("Retrieved page {PageNumber} of {TotalPages} with {ItemCount} items (total: {TotalCount})",
-                pagedResult.PageNumber, pagedResult.TotalPages, results.Count, totalCount);
+                _logger.LogInformation("Retrieved page {PageNumber} of {TotalPages} with {ItemCount} items (total: {TotalCount})",
+                    pagedResult.PageNumber, pagedResult.TotalPages, results.Count, totalCount);
 
-            return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+                return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+            }
+            catch (MongoCommandException ex) when (ex.Message.Contains("index path corresponding to the specified order-by item is excluded"))
+            {
+                _logger.LogWarning("Index missing for sorting by CreatedAt, falling back to unsorted results. Restart the application to create missing indexes.");
+                
+                // Fallback: récupérer sans tri si l'index n'existe pas
+                var results = await collection
+                    .Find(_ => true)
+                    .Skip(pagination.Skip)
+                    .Limit(pagination.PageSize)
+                    .ToListAsync(cancellationToken);
+
+                var mappedResults = results.Select(MapToDto);
+                var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
+                    mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
+
+                _logger.LogInformation("Retrieved page {PageNumber} of {TotalPages} with {ItemCount} items (total: {TotalCount}) - NO SORTING due to missing index",
+                    pagedResult.PageNumber, pagedResult.TotalPages, results.Count, totalCount);
+
+                return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+            }
         }
         catch (Exception ex)
         {
@@ -320,23 +343,45 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
                 new MongoDB.Bson.BsonRegularExpression(regexPattern, "i"));
               // Compter le total d'éléments correspondant au filtre
             var totalCount = await collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
-            
-            // Récupérer les éléments paginés triés par date de création décroissante (plus récent en premier)
-            var results = await collection
-                .Find(filter)
-                .SortByDescending(x => x.CreatedAt)
-                .Skip(pagination.Skip)
-                .Limit(pagination.PageSize)
-                .ToListAsync(cancellationToken);
-            
-            var mappedResults = results.Select(MapToDto);
-            var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
-                mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
+              try
+            {
+                // Récupérer les éléments paginés triés par date de création décroissante (plus récent en premier)
+                var results = await collection
+                    .Find(filter)
+                    .SortByDescending(x => x.CreatedAt)
+                    .Skip(pagination.Skip)
+                    .Limit(pagination.PageSize)
+                    .ToListAsync(cancellationToken);
+                
+                var mappedResults = results.Select(MapToDto);
+                var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
+                    mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
 
-            _logger.LogInformation("Found page {PageNumber} of {TotalPages} with {ItemCount} items containing '{SearchTerm}' (total: {TotalCount})", 
-                pagedResult.PageNumber, pagedResult.TotalPages, results.Count, name, totalCount);
-            
-            return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+                _logger.LogInformation("Found page {PageNumber} of {TotalPages} with {ItemCount} items containing '{SearchTerm}' (total: {TotalCount})", 
+                    pagedResult.PageNumber, pagedResult.TotalPages, results.Count, name, totalCount);
+
+                return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+            }
+            catch (MongoCommandException ex) when (ex.Message.Contains("index path corresponding to the specified order-by item is excluded"))
+            {
+                _logger.LogWarning("Index missing for sorting by CreatedAt in search, falling back to unsorted results. Restart the application to create missing indexes.");
+                
+                // Fallback: récupérer sans tri si l'index n'existe pas
+                var results = await collection
+                    .Find(filter)
+                    .Skip(pagination.Skip)
+                    .Limit(pagination.PageSize)
+                    .ToListAsync(cancellationToken);
+                
+                var mappedResults = results.Select(MapToDto);
+                var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
+                    mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
+
+                _logger.LogInformation("Found page {PageNumber} of {TotalPages} with {ItemCount} items containing '{SearchTerm}' (total: {TotalCount}) - NO SORTING due to missing index", 
+                    pagedResult.PageNumber, pagedResult.TotalPages, results.Count, name, totalCount);
+
+                return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+            }
         }
         catch (Exception ex)
         {
@@ -361,22 +406,45 @@ public class QsoAggregateProjectionRepository : IQsoAggregateProjectionRepositor
             
             // Compter le total d'éléments correspondant au filtre
             var totalCount = await collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
-              // Récupérer les éléments paginés triés par date de création décroissante (plus récent en premier)
-            var results = await collection
-                .Find(filter)
-                .SortByDescending(x => x.CreatedAt)
-                .Skip(pagination.Skip)
-                .Limit(pagination.PageSize)
-                .ToListAsync(cancellationToken);
-            
-            var mappedResults = results.Select(MapToDto);
-            var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
-                mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
+            try
+            {
+                // Récupérer les éléments paginés triés par date de création décroissante (plus récent en premier)
+                var results = await collection
+                    .Find(filter)
+                    .SortByDescending(x => x.CreatedAt)
+                    .Skip(pagination.Skip)
+                    .Limit(pagination.PageSize)
+                    .ToListAsync(cancellationToken);
+                
+                var mappedResults = results.Select(MapToDto);
+                var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
+                    mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
 
-            _logger.LogInformation("Found page {PageNumber} of {TotalPages} with {ItemCount} items moderated by user '{ModeratorId}' (total: {TotalCount})", 
-                pagedResult.PageNumber, pagedResult.TotalPages, results.Count, moderatorId, totalCount);
-            
-            return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+                _logger.LogInformation("Found page {PageNumber} of {TotalPages} with {ItemCount} items moderated by user '{ModeratorId}' (total: {TotalCount})", 
+                    pagedResult.PageNumber, pagedResult.TotalPages, results.Count, moderatorId, totalCount);
+                
+                return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+            }
+            catch (MongoCommandException ex) when (ex.Message.Contains("index path corresponding to the specified order-by item is excluded"))
+            {
+                _logger.LogWarning("Index missing for sorting by CreatedAt in moderator search, falling back to unsorted results. Restart the application to create missing indexes.");
+                
+                // Fallback: récupérer sans tri si l'index n'existe pas
+                var results = await collection
+                    .Find(filter)
+                    .Skip(pagination.Skip)
+                    .Limit(pagination.PageSize)
+                    .ToListAsync(cancellationToken);
+                
+                var mappedResults = results.Select(MapToDto);
+                var pagedResult = new PagedResult<ApplicationModels.QsoAggregateProjectionDto>(
+                    mappedResults, totalCount, pagination.PageNumber, pagination.PageSize);
+
+                _logger.LogInformation("Found page {PageNumber} of {TotalPages} with {ItemCount} items moderated by user '{ModeratorId}' (total: {TotalCount}) - NO SORTING due to missing index", 
+                    pagedResult.PageNumber, pagedResult.TotalPages, results.Count, moderatorId, totalCount);
+                
+                return Success<Error, PagedResult<ApplicationModels.QsoAggregateProjectionDto>>(pagedResult);
+            }
         }
         catch (Exception ex)
         {

@@ -146,6 +146,14 @@ public class DatabaseInitializationService : IHostedService
             var nameIndex = Builders<object>.IndexKeys.Ascending("Name");
             await CreateIndexSafelyAsync(projectionsCollection, nameIndex, "Projections_Name");
             
+            // Index sur CreatedAt pour le tri (ESSENTIEL pour Cosmos DB)
+            var createdAtIndex = Builders<object>.IndexKeys.Descending("CreatedAt");
+            await CreateIndexSafelyAsync(projectionsCollection, createdAtIndex, "Projections_CreatedAt");
+            
+            // Index sur ModeratorId
+            var moderatorIdIndex = Builders<object>.IndexKeys.Ascending("ModeratorId");
+            await CreateIndexSafelyAsync(projectionsCollection, moderatorIdIndex, "Projections_ModeratorId");
+            
             _logger.LogInformation("✅ Cosmos DB indexes created successfully");
         }
         catch (Exception ex)
@@ -186,6 +194,10 @@ public class DatabaseInitializationService : IHostedService
             // Index texte pour la recherche par nom (supporté par MongoDB natif)
             var textIndex = Builders<object>.IndexKeys.Text("Name");
             await CreateIndexSafelyAsync(projectionsCollection, textIndex, "Projections_Name_Text");
+            
+            // Index sur CreatedAt pour le tri
+            var createdAtIndex = Builders<object>.IndexKeys.Descending("CreatedAt");
+            await CreateIndexSafelyAsync(projectionsCollection, createdAtIndex, "Projections_CreatedAt");
             
             // Index sur ModeratorId
             var moderatorIndex = Builders<object>.IndexKeys.Ascending("ModeratorId");
