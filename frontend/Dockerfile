@@ -15,9 +15,9 @@ RUN npm ci
 COPY src/ ./src/
 COPY public/ ./public/
 COPY index.html ./
-COPY .env ./
+COPY .env.production ./
 
-# Build l'application
+# Build l'application (utilise .env.production avec placeholders)
 RUN npm run build
 
 # Production stage

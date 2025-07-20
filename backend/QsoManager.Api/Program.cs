@@ -116,7 +116,7 @@ builder.Services.AddAuthorization(options =>
 // Domain services
 builder.Services.AddScoped<IQsoAggregateService, QsoAggregateService>();
 
-// CORS policy for development
+// CORS policy for development and production
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Development", policy =>
@@ -126,12 +126,36 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowCredentials(); // Important pour SignalR
     });
+    
+    options.AddPolicy("Production", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+        // Note: On ne peut pas utiliser AllowCredentials() avec AllowAnyOrigin()
+    });
 });
 
 var app = builder.Build();
 
+// MIDDLEWARE CORS EN PREMIER - AVANT TOUT LE RESTE
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+    context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+    context.Response.Headers["Access-Control-Allow-Headers"] = "*";
+    
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 200;
+        return;
+    }
+    
+    await next();
+});
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
@@ -139,7 +163,12 @@ if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docke
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "QSO Manager API v1");
         c.RoutePrefix = "swagger"; // Swagger sera accessible à /swagger
     });
-    app.UseCors("Development");
+    Console.WriteLine("Using Development CORS policy");
+}
+else
+{
+    // En production ou dans Docker (Azure Container Apps)
+    Console.WriteLine("Using Production CORS policy - FORCED CORS HEADERS");
 }
 
 app.UseHttpsRedirection();

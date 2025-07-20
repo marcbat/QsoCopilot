@@ -22,13 +22,18 @@ public static class InfrastructureServiceCollectionExtensions
     {
         // Get MongoDB connection string
         var mongoConnectionString = configuration.GetConnectionString("MongoDB") ?? "mongodb://localhost:27017";
-        var mongoDatabaseName = configuration["Mongo:Database"] ?? "QsoManagerDb";
+        var mongoDatabaseName = configuration["Mongo:Database"] ?? "QsoManager";
         
         // MongoDB
         services.AddSingleton<IMongoClient>(provider =>
         {
             return new MongoClient(mongoConnectionString);
-        });        // Repositories
+        });
+
+        // Service d'initialisation de la base de données
+        services.AddHostedService<QsoManager.Infrastructure.Configuration.DatabaseInitializationService>();
+
+        // Repositories
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IQsoAggregateRepository, QsoAggregateRepository>();
         services.AddScoped<IModeratorAggregateRepository, ModeratorAggregateRepository>();

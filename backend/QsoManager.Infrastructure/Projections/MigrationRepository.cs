@@ -21,7 +21,7 @@ public class MigrationRepository : IMigrationRepository
     {
         _mongoClient = mongoClient;
         _logger = logger;
-        _databaseName = configuration["Mongo:Database"] ?? "QsoManagerProjections";
+        _databaseName = configuration["Mongo:Database"] ?? "QsoManager";
     }
 
     public async Task<Validation<Error, Unit>> ResetProjectionsAsync(CancellationToken cancellationToken = default)

@@ -21,7 +21,7 @@ public class EventRepository : IEventRepository
     {
         _mongoClient = mongoClient;
         _logger = logger;
-        _databaseName = configuration["Mongo:Database"];
+        _databaseName = configuration["Mongo:Database"] ?? "QsoManager";
     }
 
     public async Task<Validation<Error, IEnumerable<IEvent>>> GetAsync(Guid aggregateId, CancellationToken cancellationToken = default, int fromVersion = 0)
