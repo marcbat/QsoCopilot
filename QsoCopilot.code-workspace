@@ -18,7 +18,7 @@
     "typescript.suggest.autoImports": true,
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true
+      "source.organizeImports": "explicit"
     },
     "files.exclude": {
       "**/node_modules": true,
